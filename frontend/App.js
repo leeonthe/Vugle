@@ -5,7 +5,7 @@ import Navigator from './components/navigation/navigator.js'
 import { Context, Provider } from "./components/globalContext/globalContext.js";
 
 function App(props) {
-
+  
   return(
     <Provider>
       <View style={{flex:1}}>

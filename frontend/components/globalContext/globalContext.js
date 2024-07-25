@@ -4,9 +4,7 @@ import React, { useState, useEffect, useRef, createContext} from "react";
 const Context = createContext()
 
 const Provider = ( { children } ) => {
-
-
-  const [ domain, setDomain ] = useState("http://192.168.84.243:8000")
+  const [ domain, setDomain ] = useState("127.0.0.1:8000/")
   const [ isLoggedIn, setIsLoggedIn ] = useState(false)
   const [ userObj, setUserObj ] = useState()
   const [ appSettings, setAppSettings ] = useState({})
