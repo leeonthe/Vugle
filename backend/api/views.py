@@ -1,58 +1,57 @@
-from django.shortcuts import render
+from django.shortcuts import redirect
+from django.conf import settings
+from oauth2_provider.models import Application
+import requests
+import base64
+import hashlib
+import secrets
 
-from rest_framework.views import APIView
-from rest_framework.response import Response 
-from .serializer import UserSerializer
-from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login, logout
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import SessionAuthentication, TokenAuthentication
+def generate_code_verifier():
+    return base64.urlsafe_b64encode(secrets.token_bytes(32)).decode('utf-8').rstrip('=')
 
-class TestView(APIView):
-    
-    def get(self,format=None):
-        print("API was called")
-        return Response("Good", status=201)
+def generate_code_challenge(verifier):
+    code_challenge = hashlib.sha256(verifier.encode('utf-8')).digest()
+    return base64.urlsafe_b64encode(code_challenge).decode('utf-8').rstrip('=')
 
+def oauth_login(request):
+    client_id = settings.OAUTH_CLIENT_ID
+    redirect_uri = settings.OAUTH_REDIRECT_URI
+    verifier = generate_code_verifier()
+    challenge = generate_code_challenge(verifier)
 
-class UserView(APIView):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-    def post(self, request, format=None):
-        print("creating user")
+    request.session['code_verifier'] = verifier
 
-        user_data = request.data
-        user_serializer = UserSerializer(data=user_data)
-        if user_serializer.is_valid(raise_exception=False):
-            user_serializer.save()
-            return Response({"user":user_serializer.data}, status=201) 
-        
-        return Response({"msg":"ERR"}, status=400)
-    
+    state = 'random_state_string'
+    scope = 'profile openid offline_access disability_rating.read service_history.read veteran_status.read'
 
-    def get(self, reqeust, format=None):
-        print("getting user")
-        if reqeust.user.is_authenticated == False or reqeust.user.is_active == False:
-            return Response("invalid credentials", status=400)
-        
-        user = UserSerializer(reqeust.user)
-        print(user)
-        return Response(user.data, status=201)
-    
+    auth_url = (
+        f'https://sandbox-api.va.gov/oauth2/veteran-verification/v1/authorization?response_type=code'
+        f'&client_id={client_id}'
+        f'&redirect_uri={redirect_uri}'
+        f'&scope={scope}'
+        f'&state={state}'
+        f'&code_challenge={challenge}'
+        f'&code_challenge_method=S256'
+    )
+    print("SUCCESS")
+    return redirect(auth_url)
 
-class UserLoginView(APIView):
-    authentication_classes = [SessionAuthentication, TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-    def get(self, request, format=None):
+def oauth_callback(request):
+    code = request.GET.get('code')
+    verifier = request.session['code_verifier']
 
-        if request.user.is_authenticated == False or request.user.is_active == False:
-            return Response("invalid credentials", status=403)
-        
-        user = UserSerializer(request.user)
-        return Response(user.data, status=201)
-    
-    def post(self, request, format=None):
-        user_obj = User.objects.filter(username=request.data['username']).first() or User.objects.filter(email=request.data['email']).first()
+    token_url = 'https://va.gov/oauth2/token'
+    client_id = '0oax86sg7sEgacnY52p7'  # Use your actual client ID here
+    redirect_uri = 'http://localhost:8000/api/oauth/callback/'
 
-        if user_obj is None:
-            return Response("invalid credentials", status=400)
+    response = requests.post(token_url, data={
+        'grant_type': 'authorization_code',
+        'code': code,
+        'redirect_uri': redirect_uri,
+        'client_id': client_id,
+        'code_verifier': verifier,
+    })
+
+    token_data = response.json()
+
+    return redirect('some-view-name')

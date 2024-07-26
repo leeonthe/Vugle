@@ -15,6 +15,10 @@ from datetime import timedelta
 from dotenv import load_dotenv
 import os, datetime
 
+load_dotenv()
+VA_API_URL = os.getenv('VA_API_URL')
+VA_CLIENT_ID = '0oax7g1h68fkSGhHT2p7'
+VA_REDIRECT_URI = 'http://127.0.0.1:8000/api/va-callback/'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -44,6 +48,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'api',
     'appSettings',
+    'oauth2_provider',
+    'rest_framework.authtoken',
+
 
 ]
 
@@ -56,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'oauth2_provider.middleware.OAuth2TokenMiddleware',
 
 ]
 
@@ -159,6 +167,14 @@ SIMPLE_JWT = {
 #     'JWT_ALLOW_REFRESH': True,
 # }
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ORIGINS = [
+     'exp://10.1.10.143:8081',
+]
 CORS_ALLOWS_CREDENTIALS = True
 
+
+OAUTH2_PROVIDER = {
+    'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
+    'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.OAuthLibCore',
+    'OAUTH2_VALIDATOR_CLASS': 'oauth2_provider.oauth2_validators.OAuth2Validator',
+}

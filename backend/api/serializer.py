@@ -1,8 +1,18 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.settings import api_settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User 
 
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+
+
+
+
+#ignore below
 class UserSerializer(serializers.ModelSerializer):
     token = serializers.SerializerMethodField()
 
