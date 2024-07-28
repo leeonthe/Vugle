@@ -1,10 +1,7 @@
 from django.shortcuts import redirect
 from django.conf import settings
 from oauth2_provider.models import Application
-import requests
-import base64
-import hashlib
-import secrets
+import requests, base64, hashlib, secrets
 
 def generate_code_verifier():
     return base64.urlsafe_b64encode(secrets.token_bytes(32)).decode('utf-8').rstrip('=')
@@ -41,7 +38,7 @@ def oauth_callback(request):
     verifier = request.session['code_verifier']
 
     token_url = 'https://va.gov/oauth2/token'
-    client_id = '0oax86sg7sEgacnY52p7'  # Use your actual client ID here
+    client_id = '0oax86sg7sEgacnY52p7'  
     redirect_uri = 'http://localhost:8000/api/oauth/callback/'
 
     response = requests.post(token_url, data={
