@@ -18,7 +18,7 @@ import os, datetime
 load_dotenv()
 VA_API_URL = os.getenv('VA_API_URL')
 VA_CLIENT_ID = '0oax7g1h68fkSGhHT2p7'
-VA_REDIRECT_URI = 'http://127.0.0.1:8000/api/va-callback/'
+VA_REDIRECT_URI = 'http://127.0.0.1:8000/api/oauth/callback/'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -59,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -168,7 +169,7 @@ SIMPLE_JWT = {
 # }
 
 CORS_ALLOW_ORIGINS = [
-     'exp://10.1.10.143:8081',
+     'http://localhost:8000',
 ]
 CORS_ALLOWS_CREDENTIALS = True
 
@@ -178,3 +179,9 @@ OAUTH2_PROVIDER = {
     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.OAuthLibCore',
     'OAUTH2_VALIDATOR_CLASS': 'oauth2_provider.oauth2_validators.OAuth2Validator',
 }
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Default: Use database-backed sessions
+SESSION_COOKIE_NAME = 'sessionid'  # Default
+SESSION_COOKIE_SECURE = False  # Set to True if using HTTPS
+SESSION_COOKIE_HTTPONLY = True  # Default
+SESSION_COOKIE_SAMESITE = 'Lax'  # Default

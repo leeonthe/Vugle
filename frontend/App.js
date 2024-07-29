@@ -8,8 +8,8 @@ const config = {
   clientId: '0oax86sg7sEgacnY52p7',
   redirectUri: 'http://localhost:8000/api/oauth/callback/',
   scopes: [
+    'profile',  
     'openid',
-    'profile',
     'offline_access',
     'disability_rating.read',
     'service_history.read',
@@ -28,6 +28,8 @@ console.log('Redirect URI:', config.redirectUri);
 
 export default function App() {
   const [authState, setAuthState] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const [disabilityRating, setDisabilityRating] = useState(null);
   const [request, result, promptAsync] = AuthSession.useAuthRequest(
     {
       clientId: config.clientId,
@@ -57,6 +59,10 @@ export default function App() {
           const tokenData = await tokenResponse.json();
           setAuthState(tokenData);
           await AsyncStorage.setItem('auth', JSON.stringify(tokenData));
+
+          // Fetch user info and disability rating
+          fetchUserInfo(tokenData.access_token);
+          fetchDisabilityRating(tokenData.access_token);
         };
 
         fetchToken();
@@ -66,18 +72,71 @@ export default function App() {
     }
   }, [result]);
 
-  const handleLogin = async () => {
-    const codeVerifier = await generateCodeVerifier();
-    const codeChallenge = await generateCodeChallenge(codeVerifier);
+  const fetchUserInfo = async (token) => {
+    const response = await fetch('https://sandbox-api.va.gov/services/veteran_verification/v0/user', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+    setUserInfo(data);
+  };
 
-    request.codeChallenge = codeChallenge;
-    promptAsync();
+  const fetchDisabilityRating = async (token) => {
+    const response = await fetch('https://sandbox-api.va.gov/services/veteran_verification/v0/disability_rating', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    const data = await response.json();
+    setDisabilityRating(data);
+  };
+
+  const fetchWithCredentials = async (url, options) => {
+    const response = await fetch(url, {
+      ...options,
+      credentials: 'include',  // Ensure cookies are sent
+    });
+    return response;
+  };
+  
+
+  const handleLogin = async () => {
+    try {
+      const codeVerifier = await generateCodeVerifier();
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+      console.log('Code Challenge:', codeChallenge);
+      request.codeChallenge = codeChallenge;
+  
+      console.log("Initiating OAuth login");
+  
+      // Make the OAuth login request with credentials
+      await fetchWithCredentials('http://localhost:8000/api/oauth/login/', {
+        method: 'GET',
+      });
+  
+      promptAsync();
+    } catch (error) {
+      console.error("Login error:", error);  // Log errors to debug
+    }
   };
 
   return (
     <View style={styles.container}>
       {authState ? (
-        <Text>Logged in</Text>
+        <>
+          <Text>Logged in</Text>
+          {userInfo && (
+            <>
+              <Text>Welcome, {userInfo.profile.first_name} {userInfo.profile.last_name}</Text>
+              <Text>Gender: {userInfo.profile.gender}</Text>
+              <Text>Date of Birth: {userInfo.profile.birth_date}</Text>
+            </>
+          )}
+          {disabilityRating && (
+            <Text>Disability Rating: {disabilityRating.rating}%</Text>
+          )}
+        </>
       ) : (
         <Button title="Login with VA.gov" onPress={handleLogin} />
       )}
