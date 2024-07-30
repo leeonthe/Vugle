@@ -3,12 +3,13 @@ import { Button, View, Text, StyleSheet } from 'react-native';
 import * as AuthSession from 'expo-auth-session';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
+import axios from 'axios';
 
 const config = {
   clientId: '0oax86sg7sEgacnY52p7',
-  redirectUri: 'http://localhost:8000/api/oauth/callback/',
+  redirectUri: 'http://localhost:8000/api/oauth/callback/', // Use Expo's proxy for redirection
   scopes: [
-    'profile',  
+    'profile',
     'openid',
     'offline_access',
     'disability_rating.read',
@@ -18,25 +19,40 @@ const config = {
   serviceConfiguration: {
     authorizationEndpoint: 'https://sandbox-api.va.gov/oauth2/veteran-verification/v1/authorization',
     tokenEndpoint: 'https://va.gov/oauth2/token',
-  },
-  additionalParameters: {
-    code_challenge_method: 'S256'
   }
 };
-
-console.log('Redirect URI:', config.redirectUri);
 
 export default function App() {
   const [authState, setAuthState] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [disabilityRating, setDisabilityRating] = useState(null);
+
+  const generateCodeVerifier = async () => {
+    const randomBytes = await Crypto.getRandomBytesAsync(32);
+    return base64UrlEncode(randomBytes);
+  };
+
+  const generateCodeChallenge = async (verifier) => {
+    const hashBuffer = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      verifier,
+      { encoding: Crypto.CryptoEncoding.BASE64 }
+    );
+    return hashBuffer
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+  };
+
   const [request, result, promptAsync] = AuthSession.useAuthRequest(
     {
       clientId: config.clientId,
       redirectUri: config.redirectUri,
+      responseType: 'code',
       scopes: config.scopes,
-      codeChallengeMethod: AuthSession.CodeChallengeMethod.S256,
-      codeChallenge: '',
+      extraParams: {
+        code_challenge_method: 'S256',
+      },
     },
     config.serviceConfiguration
   );
@@ -47,13 +63,13 @@ export default function App() {
         const { code } = result.params;
 
         const fetchToken = async () => {
-          const codeVerifier = await generateCodeVerifier();
+          const codeVerifier = await AsyncStorage.getItem('codeVerifier');
           const tokenResponse = await fetch(config.serviceConfiguration.tokenEndpoint, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded'
             },
-            body: `grant_type=authorization_code&code=${code}&redirect_uri=${config.redirectUri}&client_id=${config.clientId}&code_verifier=${codeVerifier}`
+            body: `grant_type=authorization_code&code=${code}&client_id=${config.clientId}&redirect_uri=${config.redirectUri}&code_verifier=${codeVerifier}`
           });
 
           const tokenData = await tokenResponse.json();
@@ -92,34 +108,43 @@ export default function App() {
     setDisabilityRating(data);
   };
 
-  const fetchWithCredentials = async (url, options) => {
-    const response = await fetch(url, {
-      ...options,
-      credentials: 'include',  // Ensure cookies are sent
-    });
-    return response;
-  };
-  
-
   const handleLogin = async () => {
     try {
       const codeVerifier = await generateCodeVerifier();
       const codeChallenge = await generateCodeChallenge(codeVerifier);
-      console.log('Code Challenge:', codeChallenge);
-      request.codeChallenge = codeChallenge;
   
-      console.log("Initiating OAuth login");
+      // Store the code verifier
+      await AsyncStorage.setItem('codeVerifier', codeVerifier);
+  
+      console.log('Code Verifier (React Native):', codeVerifier);
+      console.log('Code Challenge (React Native):', codeChallenge);
   
       // Make the OAuth login request with credentials
-      await fetchWithCredentials('http://localhost:8000/api/oauth/login/', {
-        method: 'GET',
-      });
+      const response = await axios.post(
+        'http://localhost:8000/api/oauth/login/',
+        {
+          code_challenge: codeChallenge,
+          code_challenge_method: 'S256',
+          code_verifier: codeVerifier, // Include the code verifier to store in session
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true,
+        }
+      );
+  
+      console.log("Login request response:", response);
   
       promptAsync();
     } catch (error) {
-      console.error("Login error:", error);  // Log errors to debug
+      console.error("Login error:", error.response ? error.response.data : error);  // Log errors to debug
     }
   };
+  
+  
+  
 
   return (
     <View style={styles.container}>
@@ -146,24 +171,6 @@ export default function App() {
 
 function base64UrlEncode(buffer) {
   return btoa(String.fromCharCode.apply(null, buffer))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-}
-
-async function generateCodeVerifier() {
-  const randomBytes = await Crypto.getRandomBytesAsync(32);
-  return base64UrlEncode(randomBytes);
-}
-
-async function generateCodeChallenge(verifier) {
-  const hashBuffer = await Crypto.digestStringAsync(
-    Crypto.CryptoDigestAlgorithm.SHA256,
-    verifier,
-    { encoding: Crypto.CryptoEncoding.BASE64 }
-  );
-
-  return hashBuffer
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');

@@ -170,6 +170,7 @@ SIMPLE_JWT = {
 
 CORS_ALLOW_ORIGINS = [
      'http://localhost:8000',
+     'exp://192.168.50.115:8081',
 ]
 CORS_ALLOWS_CREDENTIALS = True
 
@@ -180,8 +181,13 @@ OAUTH2_PROVIDER = {
     'OAUTH2_VALIDATOR_CLASS': 'oauth2_provider.oauth2_validators.OAuth2Validator',
 }
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Default: Use database-backed sessions
-SESSION_COOKIE_NAME = 'sessionid'  # Default
-SESSION_COOKIE_SECURE = False  # Set to True if using HTTPS
-SESSION_COOKIE_HTTPONLY = True  # Default
-SESSION_COOKIE_SAMESITE = 'Lax'  # Default
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_SAMESITE = 'Lax'  # or 'None' if cross-site
+SESSION_COOKIE_SECURE = False  # True if using HTTPS
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
+CSRF_COOKIE_SECURE = False  # True if using HTTPS
+CSRF_USE_SESSIONS = True
