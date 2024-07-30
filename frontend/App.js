@@ -135,7 +135,7 @@ export default function App() {
         }
       );
   
-      console.log("Login request response:", response);
+      // console.log("Login request response:", response);
   
       promptAsync();
     } catch (error) {

@@ -16,9 +16,9 @@ from dotenv import load_dotenv
 import os, datetime
 
 load_dotenv()
-VA_API_URL = os.getenv('VA_API_URL')
+
 VA_CLIENT_ID = '0oax7g1h68fkSGhHT2p7'
-VA_REDIRECT_URI = 'http://127.0.0.1:8000/api/oauth/callback/'
+VA_REDIRECT_URI = 'http://localhost:8000/api/oauth/callback/'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -57,9 +57,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -177,8 +177,17 @@ CORS_ALLOWS_CREDENTIALS = True
 
 OAUTH2_PROVIDER = {
     'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
-    'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.OAuthLibCore',
+    'AUTHORIZATION_CODE_EXPIRE_SECONDS': 600,
+    'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.JSONOAuthLibCore',
     'OAUTH2_VALIDATOR_CLASS': 'oauth2_provider.oauth2_validators.OAuth2Validator',
+    'SCOPES': {
+        'profile': 'Read user profile information',
+        'openid': 'OpenID Connect',
+        'offline_access': 'Offline access',
+        'disability_rating.read': 'Read disability rating',
+        'service_history.read': 'Read service history',
+        'veteran_status.read': 'Read veteran status',
+    }
 }
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'

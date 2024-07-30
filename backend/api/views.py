@@ -1,9 +1,7 @@
-# views.py
-
 from django.shortcuts import redirect
 from django.conf import settings
-import requests, base64, hashlib, re, os, string, random, json
-from django.http import HttpResponse, JsonResponse
+import requests, json, string, random
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 def generate_random_string(length=16):
@@ -15,8 +13,6 @@ def generate_random_string(length=16):
 def oauth_login(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid request method'}, status=405)
-
-    print("IS CALLED")
 
     try:
         data = json.loads(request.body)
@@ -35,15 +31,17 @@ def oauth_login(request):
     # Save the code verifier and state in session
     request.session['code_verifier'] = verifier
     request.session['state'] = state
+    request.session.save()  # Ensure session is saved
 
-    print("Received Challenge (Django):", challenge)
-    print("Received Verifier (Django):", verifier)
+    # Debug prints
+    print("OAuth Login:")
+    print("Received Challenge:", challenge)
+    print("Received Verifier:", verifier)
+    print("Generated State:", state)
     print("Session ID (login):", request.session.session_key)
     print("Session Data (login):", request.session.items())
-    print("State:", state)
-    print("Cookies (login):", request.COOKIES)
 
-    client_id = '0oax86sg7sEgacnY52p7'
+    client_id = '0oax86sg7sEgacnY52p7'  # Ensure this matches the client_id of your application in the admin
     redirect_uri = 'http://localhost:8000/api/oauth/callback/'
     scope = 'profile openid offline_access disability_rating.read service_history.read veteran_status.read'
     auth_url = (
@@ -57,10 +55,10 @@ def oauth_login(request):
         f'&code_challenge={challenge}'
     )
 
-    request.session.save()
-    print("SUCCESS: ", auth_url)
+    print("Redirecting to:", auth_url)
     return redirect(auth_url)
 
+@csrf_exempt
 def oauth_callback(request):
     code = request.GET.get('code')
     state = request.GET.get('state')
@@ -68,16 +66,18 @@ def oauth_callback(request):
     client_id = '0oax86sg7sEgacnY52p7'
     redirect_uri = 'http://localhost:8000/api/oauth/callback/'
 
-    verifier = request.session.get('code_verifier')
-    print("Retrieved Verifier (Django):", verifier)
+    # Debug prints
+    print("OAuth Callback:")
+    print("Received Code:", code)
+    print("Received State:", state)
     print("Session ID (callback):", request.session.session_key)
     print("Session Data (callback):", request.session.items())
-    print("State callback:", request.session.get('state'))
-    print("Cookies (callback):", request.COOKIES)
+
+    verifier = request.session.get('code_verifier')
+    print("Retrieved Verifier:", verifier)
 
     if not verifier:
-        print("Error: Verifier not found in session")
-        return redirect('/errorJSON')
+        return JsonResponse({'error': 'Verifier not found in session'}, status=400)
 
     data = {
         'grant_type': 'authorization_code',
@@ -92,19 +92,21 @@ def oauth_callback(request):
     }
 
     response = requests.post(token_url, data=data, headers=headers)
-    print("Request Data:", data)
-    print("Request Headers:", headers)
-    print("Response status code:", response.status_code)
-    print("Response content:", response.text)
+
+    # Debug prints
+    print("Token Request Data:", data)
+    print("Token Request Headers:", headers)
+    print("Token Response Status Code:", response.status_code)
+    print("Token Response Content:", response.text)
 
     if response.status_code != 200:
-        print("Error: Failed to obtain token")
-        return redirect('/errorStatus')
+        return JsonResponse({'error': 'Failed to obtain token', 'details': response.json()}, status=response.status_code)
 
     try:
         token_data = response.json()
+        print("Token Data:", token_data)
     except ValueError as e:
         print("Error decoding JSON response:", e)
-        return redirect('/errorJSON')
+        return JsonResponse({'error': 'Error decoding JSON response'}, status=400)
 
-    return redirect('http://localhost:8000/api/oauth/callback/')
+    return JsonResponse(token_data)
