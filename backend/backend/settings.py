@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 import os, datetime
 
 load_dotenv()
-
+VA_API_URL = os.getenv('VA_API_URL')
 VA_CLIENT_ID = '0oax7g1h68fkSGhHT2p7'
 VA_REDIRECT_URI = 'http://localhost:8000/api/oauth/callback/'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -190,13 +190,28 @@ OAUTH2_PROVIDER = {
     }
 }
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
-SESSION_SAVE_EVERY_REQUEST = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-SESSION_COOKIE_SAMESITE = 'Lax'  # or 'None' if cross-site
-SESSION_COOKIE_SECURE = False  # True if using HTTPS
-
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
-CSRF_COOKIE_SECURE = False  # True if using HTTPS
-CSRF_USE_SESSIONS = True
+SESSION_OP_AUTHORIZATION_URL = 'oidc_op_authorization_url'
+SESSION_OP_TOKEN_URL = 'oidc_op_token_url'
+SESSION_OP_USERINFO_URL = 'oidc_op_userinfo_url'
+SESSION_OP_JWKS_URL = 'oidc_op_jwks_url'
+SESSION_OP_JWKS = 'oidc_op_jwks'
+SESSION_OP_END_SESSION_URL = 'oidc_op_end_session_url'
+SESSION_OP_CLAIMS_PARAMETER_SUPPORTED = 'oidc_op_claims_parameter_supported'
+SESSION_NEXT_URL = 'oidc_next_url'
+SESSION_FAIL_URL = 'oidc_fail_url'
+SESSION_STATE = 'oidc_state'
+SESSION_NONCE = 'oidc_nonce'
+SESSION_CHALLENGE = 'oidc_challenge'
+SESSION_ID_TOKEN = 'oidc_id_token'
+SESSION_ACCESS_TOKEN = 'oidc_access_token'
+SESSION_ACCESS_EXPIRES_AT = 'oidc_access_expires_at'
+SESSION_REFRESH_TOKEN = 'oidc_refresh_token'
+SESSION_EXPIRES_AT = 'oidc_expires_at'
+SESSION_LOGOUT_STATE = 'oidc_logout_state'
+OIDC_URL_AUTHENTICATION_NAME = 'oidc_authentication'
+OIDC_URL_CALLBACK_NAME = 'oidc_callback'
+OIDC_URL_LOGOUT_NAME = 'oidc_logout'
+OIDC_URL_TOTAL_LOGOUT_NAME = 'oidc_total_logout'
+OIDC_URL_LOGOUT_BY_OP_NAME = 'oidc_logout_by_op'
+OIDC_FROM_CLI_QUERY_STRING = 'from_cli'
+OIDC_CLAIMS_PARAMETER_SUPPORTED = 'claims_parameter_supported'

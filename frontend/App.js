@@ -1,185 +1,125 @@
 import React, { useState, useEffect } from 'react';
-import { Button, View, Text, StyleSheet } from 'react-native';
-import * as AuthSession from 'expo-auth-session';
+import { StyleSheet, Text, View, Button, Linking, ScrollView } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Crypto from 'expo-crypto';
-import axios from 'axios';
 
-const config = {
-  clientId: '0oax86sg7sEgacnY52p7',
-  redirectUri: 'http://localhost:8000/api/oauth/callback/', // Use Expo's proxy for redirection
-  scopes: [
-    'profile',
-    'openid',
-    'offline_access',
-    'disability_rating.read',
-    'service_history.read',
-    'veteran_status.read'
-  ],
-  serviceConfiguration: {
-    authorizationEndpoint: 'https://sandbox-api.va.gov/oauth2/veteran-verification/v1/authorization',
-    tokenEndpoint: 'https://va.gov/oauth2/token',
-  }
-};
+const backendUrl = 'http://localhost:8000/api/oauth/login/';
+
+const scopes = [
+  { scope: 'profile', description: 'Granted by default, allows access to a user\'s first and last name and email.' },
+  { scope: 'offline_access', description: 'This scope causes the authorization server to provide a refresh token when the access token is requested.' },
+  { scope: 'openid', description: 'An id_token is available in the authorization code grant (response_type = code) token response when the \'openid\' scope is used.' },
+  { scope: 'disability_rating.read', description: 'View a Veteran\'s VA disability ratings and the effective date of the rating.' },
+  { scope: 'service_history.read', description: 'View a Veteran\'s service history including deployments and discharge status.' },
+  { scope: 'veteran_status.read', description: 'Confirm the Veteran status of an individual.' }
+];
 
 export default function App() {
-  const [authState, setAuthState] = useState(null);
-  const [userInfo, setUserInfo] = useState(null);
-  const [disabilityRating, setDisabilityRating] = useState(null);
-
-  const generateCodeVerifier = async () => {
-    const randomBytes = await Crypto.getRandomBytesAsync(32);
-    return base64UrlEncode(randomBytes);
-  };
-
-  const generateCodeChallenge = async (verifier) => {
-    const hashBuffer = await Crypto.digestStringAsync(
-      Crypto.CryptoDigestAlgorithm.SHA256,
-      verifier,
-      { encoding: Crypto.CryptoEncoding.BASE64 }
-    );
-    return hashBuffer
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-  };
-
-  const [request, result, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: config.clientId,
-      redirectUri: config.redirectUri,
-      responseType: 'code',
-      scopes: config.scopes,
-      extraParams: {
-        code_challenge_method: 'S256',
-      },
-    },
-    config.serviceConfiguration
-  );
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [tokenData, setTokenData] = useState(null);
 
   useEffect(() => {
-    if (result) {
-      if (result.type === 'success') {
-        const { code } = result.params;
+    const handleRedirect = async (event) => {
+      let { url } = event;
+      if (url) {
+        const urlParams = new URLSearchParams(url.split('?')[1]);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
 
-        const fetchToken = async () => {
-          const codeVerifier = await AsyncStorage.getItem('codeVerifier');
-          const tokenResponse = await fetch(config.serviceConfiguration.tokenEndpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `grant_type=authorization_code&code=${code}&client_id=${config.clientId}&redirect_uri=${config.redirectUri}&code_verifier=${codeVerifier}`
+        const storedState = await AsyncStorage.getItem('state');
+
+        if (state !== storedState) {
+          console.error('State mismatch');
+          return;
+        }
+
+        const callbackUrl = `http://localhost:8000/api/oauth/callback/?code=${code}&state=${state}`;
+        try {
+          const tokenResponse = await fetch(callbackUrl, {
+            method: 'GET',
           });
-
           const tokenData = await tokenResponse.json();
-          setAuthState(tokenData);
-          await AsyncStorage.setItem('auth', JSON.stringify(tokenData));
-
-          // Fetch user info and disability rating
-          fetchUserInfo(tokenData.access_token);
-          fetchDisabilityRating(tokenData.access_token);
-        };
-
-        fetchToken();
-      } else {
-        console.error('Authentication failed', result);
+          console.log('Token Data:', tokenData);
+          setTokenData(tokenData);
+          setLoggedIn(true);
+        } catch (error) {
+          console.error('Failed to complete OAuth flow', error);
+        }
       }
-    }
-  }, [result]);
+    };
 
-  const fetchUserInfo = async (token) => {
-    const response = await fetch('https://sandbox-api.va.gov/services/veteran_verification/v0/user', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    const data = await response.json();
-    setUserInfo(data);
-  };
+    const subscription = Linking.addEventListener('url', handleRedirect);
 
-  const fetchDisabilityRating = async (token) => {
-    const response = await fetch('https://sandbox-api.va.gov/services/veteran_verification/v0/disability_rating', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    const data = await response.json();
-    setDisabilityRating(data);
-  };
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   const handleLogin = async () => {
+    console.log('Logging in...');
     try {
-      const codeVerifier = await generateCodeVerifier();
-      const codeChallenge = await generateCodeChallenge(codeVerifier);
-  
-      // Store the code verifier
-      await AsyncStorage.setItem('codeVerifier', codeVerifier);
-  
-      console.log('Code Verifier (React Native):', codeVerifier);
-      console.log('Code Challenge (React Native):', codeChallenge);
-  
-      // Make the OAuth login request with credentials
-      const response = await axios.post(
-        'http://localhost:8000/api/oauth/login/',
-        {
-          code_challenge: codeChallenge,
-          code_challenge_method: 'S256',
-          code_verifier: codeVerifier, // Include the code verifier to store in session
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          withCredentials: true,
-        }
-      );
-  
-      // console.log("Login request response:", response);
-  
-      promptAsync();
+      // Make a request to the backend to initiate the OAuth flow
+      const response = await fetch(backendUrl, {
+        method: 'GET',
+      });
+      const data = await response.json();
+      const { auth_url, state } = data;
+
+      console.log('state [react]:', state);
+
+      // Store state in AsyncStorage
+      await AsyncStorage.setItem('state', state);
+
+      // Open the auth URL in the web browser
+      const result = await WebBrowser.openBrowserAsync(auth_url);
+      console.log(result);
     } catch (error) {
-      console.error("Login error:", error.response ? error.response.data : error);  // Log errors to debug
+      console.error('Failed to initiate OAuth flow', error);
     }
   };
-  
-  
-  
+
+  if (loggedIn && tokenData) {
+    return (
+      <ScrollView style={styles.container}>
+        <Text style={styles.header}>Scopes Information</Text>
+        {scopes.map((scope, index) => (
+          <View key={index} style={styles.scopeContainer}>
+            <Text style={styles.scopeTitle}>{scope.scope}</Text>
+            <Text style={styles.scopeDescription}>{scope.description}</Text>
+          </View>
+        ))}
+      </ScrollView>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {authState ? (
-        <>
-          <Text>Logged in</Text>
-          {userInfo && (
-            <>
-              <Text>Welcome, {userInfo.profile.first_name} {userInfo.profile.last_name}</Text>
-              <Text>Gender: {userInfo.profile.gender}</Text>
-              <Text>Date of Birth: {userInfo.profile.birth_date}</Text>
-            </>
-          )}
-          {disabilityRating && (
-            <Text>Disability Rating: {disabilityRating.rating}%</Text>
-          )}
-        </>
-      ) : (
-        <Button title="Login with VA.gov" onPress={handleLogin} />
-      )}
+      <Text>Login to VA.gov</Text>
+      <Button title="Login" onPress={handleLogin} />
     </View>
   );
-}
-
-function base64UrlEncode(buffer) {
-  return btoa(String.fromCharCode.apply(null, buffer))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  scopeContainer: {
+    marginBottom: 20,
+  },
+  scopeTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  scopeDescription: {
+    fontSize: 16,
   },
 });
