@@ -120,6 +120,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 20,
     marginBottom: 20,
+
   },
   infoContainer: {
     flexDirection: 'row',
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 20,
     width: '100%',
-    backgroundColor: '#004990',
+    backgroundColor: '#162E52',
     paddingVertical: 15,
     borderRadius: 10,
     alignItems: 'center',
