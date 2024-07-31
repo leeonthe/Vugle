@@ -64,10 +64,6 @@ class OAuthCallbackView(View):
         state = request.GET.get('state')
         code_verifier = OAuthLoginView().get_code_verifier(state)
         
-        print("[callback] code ", code)
-        print("[callback] state ", state)
-        print("[callback] code_verifier ", code_verifier)
-        
         if not code:
             logger.error("Missing code")
             return HttpResponseBadRequest("Missing code")
@@ -78,8 +74,10 @@ class OAuthCallbackView(View):
             logger.error("Missing code_verifier")
             return HttpResponseBadRequest("Missing code_verifier")
         
-        token_url = "https://sandbox-api.va.gov/oauth2/veteran-verification/v1/token"
+        token_url = "https://sandbox-api.va.gov/oauth2/veteran-verification/v1/token/"
         
+
+
         token_data = {
             'grant_type': 'authorization_code',
             'code': code,
@@ -91,9 +89,9 @@ class OAuthCallbackView(View):
         response = requests.post(token_url, data=token_data)
 
         if response.status_code == 200:
-            print("SCUUUCEUCUCUSU")
             token_response = response.json()
             return JsonResponse(token_response)
+            # return redirect('http://localhost:8000/api/oauth/callback/?code=${code}&state=${state}')
         else:
             logger.error(f"Token exchange failed: {response.status_code}, {response.text}")
             return HttpResponseBadRequest("Token exchange failed")
