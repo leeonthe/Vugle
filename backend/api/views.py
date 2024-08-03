@@ -6,10 +6,12 @@ import hashlib
 import base64
 import requests, os
 from django.shortcuts import redirect
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseRedirect, HttpResponse
 from django.views import View
 from urllib.parse import urlencode
 import logging
+from django.utils.http import url_has_allowed_host_and_scheme
+
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +24,13 @@ class OAuthLoginView(View):
         code_verifier = self._generate_code_verifier()
         code_challenge = self._generate_code_challenge(code_verifier)
         state = self._generate_state()
-
         # Store code_verifier and state in TEMP_STORAGE
         TEMP_STORAGE[state] = code_verifier
         print("[login] code_verifier ", code_verifier)
         print("doublechekc", code_verifier)
         print('[login] state ', state)
         print('[login] code_challenge ', code_challenge)
+
         params = {
             'client_id': '0oax86sg7sEgacnY52p7',
             'redirect_uri': 'http://localhost:8000/api/oauth/callback/',
@@ -63,7 +65,9 @@ class OAuthCallbackView(View):
         code = request.GET.get('code')
         state = request.GET.get('state')
         code_verifier = OAuthLoginView().get_code_verifier(state)
-        
+        print("[callback] code ", code)
+        print("[callback] state ", state)
+        print("[callback] code_verifier ", code_verifier)
         if not code:
             logger.error("Missing code")
             return HttpResponseBadRequest("Missing code")
@@ -75,23 +79,40 @@ class OAuthCallbackView(View):
             return HttpResponseBadRequest("Missing code_verifier")
         
         token_url = "https://sandbox-api.va.gov/oauth2/veteran-verification/v1/token/"
-        
-
-
+    
         token_data = {
             'grant_type': 'authorization_code',
             'code': code,
             'client_id': '0oax86sg7sEgacnY52p7',
-            'redirect_uri': 'http://localhost:8000/api/oauth/callback/',
+            'redirect_uri': 'yourapp://oauthredirect',
             'code_verifier': code_verifier,
         }
 
         response = requests.post(token_url, data=token_data)
-
+        print("response: ",response)
         if response.status_code == 200:
             token_response = response.json()
-            return JsonResponse(token_response)
-            # return redirect('http://localhost:8000/api/oauth/callback/?code=${code}&state=${state}')
+            access_token = token_response.get('access_token')
+
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>OAuth Redirect</title>
+                <script type="text/javascript">
+                    function postToken() {{
+                        window.ReactNativeWebView.postMessage("{access_token}");
+                    }}
+                    window.onload = postToken;
+                </script>
+            </head>
+            <body>
+                <p>Redirecting...</p>
+            </body>
+            </html>
+            """
+            return HttpResponse(html_content)
+        
         else:
             logger.error(f"Token exchange failed: {response.status_code}, {response.text}")
             return HttpResponseBadRequest("Token exchange failed")

@@ -1,6 +1,6 @@
 {
   "expo": {
-    "scheme": "frontend",
+    "scheme": "yourapp",
     "name": "reactProject",
     "slug": "reactProject",
     "version": "1.0.0",

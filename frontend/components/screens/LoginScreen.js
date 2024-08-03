@@ -1,62 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, Button, Linking , Image, TouchableOpacity} from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { WebView } from 'react-native-webview';
+import { useNavigation } from '@react-navigation/native';
 
 const backendUrl = 'http://localhost:8000/api/oauth/login/';
 
-function LoginScreen({ navigation }) {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [tokenData, setTokenData] = useState(null);
+const LoginScreen = () => {
+  const [authUrl, setAuthUrl] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [showWebView, setShowWebView] = useState(false);
+  const navigation = useNavigation();
 
   useEffect(() => {
-    const handleRedirect = async (event) => {
-      let { url } = event;
-      if (url) {
-        const urlParams = new URLSearchParams(url.split('?')[1]);
-        const code = urlParams.get('code');
-        const state = urlParams.get('state');
-
-        const storedState = await AsyncStorage.getItem('state');
-
-        console.log('urlParams:', urlParams);
-        console.log('Code [react]:', code);
-        console.log('State [react]:', state);
-        console.log('Stored State [react]:', storedState);
-        if (state !== storedState) {
-          console.error('State mismatch');
-          return;
-        }
-
-        const callbackUrl = `http://localhost:8000/api/oauth/callback/?code=${code}&state=${state}`;
-        try {
-          const tokenResponse = await fetch(callbackUrl, {
-            method: 'GET',
-          });
-          if (tokenResponse.status === 200) {
-            const tokenData = await tokenResponse.json();
-            console.log('Token Data:', tokenData);
-            setTokenData(tokenData);
-            setLoggedIn(true);
-            navigation.navigate('Example', { tokenData });
-          } else {
-            console.error('Token exchange failed', tokenResponse.status);
-          }
-        } catch (error) {
-          console.error('Failed to complete OAuth flow', error);
-        }
+    const initiateOAuth = async () => {
+      try {
+        const response = await fetch(backendUrl, {
+          method: 'GET',
+        });
+        const data = await response.json();
+        setAuthUrl(data.auth_url);
+        setLoading(false);
+      } catch (error) {
+        console.error('Failed to initiate OAuth flow', error);
       }
     };
 
-    const subscription = Linking.addEventListener('url', handleRedirect);
-
-    return () => {
-      subscription.remove();
-    };
-  }, [navigation]);
+    initiateOAuth();
+  }, []);
 
   const handleLogin = async () => {
-    console.log('Logging in...');
     try {
       const response = await fetch(backendUrl, {
         method: 'GET',
@@ -64,17 +38,39 @@ function LoginScreen({ navigation }) {
       const data = await response.json();
       const { auth_url, state } = data;
 
-      console.log('auth_url:', auth_url);
-      console.log('state [react]:', state);
-
       await AsyncStorage.setItem('state', state);
-
-      const result = await WebBrowser.openBrowserAsync(auth_url);
-      console.log(result);
+      setShowWebView(true); // Show WebView to handle OAuth flow
     } catch (error) {
       console.error('Failed to initiate OAuth flow', error);
     }
   };
+
+  const handleWebViewMessage = async (event) => {
+    const accessToken = event.nativeEvent.data;
+    if (accessToken) {
+      await AsyncStorage.setItem('access_token', accessToken);
+      setShowWebView(false); // Hide WebView after receiving the token
+      navigation.navigate('UserStart', { tokenData: { access_token: accessToken } });
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
+  if (showWebView) {
+    return (
+      <WebView
+        source={{ uri: authUrl }}
+        onMessage={handleWebViewMessage}
+        style={{ marginTop: 20 }}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -92,7 +88,7 @@ function LoginScreen({ navigation }) {
       </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -100,11 +96,11 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#ffffff', 
+    backgroundColor: '#ffffff',
   },
   image: {
     width: 200,
-    height: 200, 
+    height: 200,
     resizeMode: 'contain',
     marginBottom: 20,
   },
@@ -120,7 +116,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 20,
     marginBottom: 20,
-
   },
   infoContainer: {
     flexDirection: 'row',
@@ -136,7 +131,7 @@ const styles = StyleSheet.create({
   },
   icon: {
     width: 24,
-    height: 24, 
+    height: 24,
     marginRight: 10,
   },
   infoText: {

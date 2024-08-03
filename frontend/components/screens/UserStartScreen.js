@@ -2,14 +2,18 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 function UserStartScreen({ route }) {
-  const { tokenData } = route.params;
+  const tokenData = route.params ? route.params.tokenData : null;
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Hello, Welcome to UserStartScreen!</Text>
-      {tokenData && (
+      {tokenData ? (
         <Text style={styles.tokenInfo}>
           Token: {tokenData.access_token}
+        </Text>
+      ) : (
+        <Text style={styles.tokenInfo}>
+          No token data available.
         </Text>
       )}
     </View>
