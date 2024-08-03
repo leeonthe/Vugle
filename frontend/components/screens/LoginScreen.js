@@ -37,7 +37,7 @@ const LoginScreen = () => {
       });
       const data = await response.json();
       const { auth_url, state } = data;
-
+      console.log('auth_url:', auth_url);
       await AsyncStorage.setItem('state', state);
       setShowWebView(true); // Show WebView to handle OAuth flow
     } catch (error) {
@@ -48,8 +48,10 @@ const LoginScreen = () => {
   const handleWebViewMessage = async (event) => {
     const accessToken = event.nativeEvent.data;
     if (accessToken) {
+      console.log("accessToken:", accessToken);
       await AsyncStorage.setItem('access_token', accessToken);
       setShowWebView(false); // Hide WebView after receiving the token
+      console.log("Navigating to UserStart!");
       navigation.navigate('UserStart', { tokenData: { access_token: accessToken } });
     }
   };
