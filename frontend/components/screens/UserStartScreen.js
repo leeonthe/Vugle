@@ -1,57 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { StyleSheet, Text, View, ActivityIndicator, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const API_BASE_URL = 'https://sandbox-api.va.gov/services/veteran_verification/v2';
-
-const endpoints = {
-  disabilityRating: '/disability_rating',
-  serviceHistory: '/service_history',
-};
-
-const fetchVeteranData = async (accessToken, endpoint) => {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  if (response.status !== 200) {
-    throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);
-  }
-  return response.json();
-};
+import { useVeteranData } from '../../APIHandler'; // Adjust the import path as needed
 
 function UserStartScreen({ route }) {
-  const [userInfo, setUserInfo] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { userInfo, loading, error } = useVeteranData();
   const navigation = useNavigation();
-
-  useEffect(() => {
-    const fetchAllData = async () => {
-      const token = await AsyncStorage.getItem('access_token');
-      if (!token) {
-        setError('Access token not found');
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const [disabilityRating, serviceHistory] = await Promise.all(
-          Object.values(endpoints).map(endpoint => fetchVeteranData(token, endpoint))
-        );
-        setUserInfo({ disabilityRating, serviceHistory });
-      } catch (error) {
-        setError(`Error: ${error.message}`);
-      }
-      setLoading(false);
-    };
-
-    fetchAllData();
-  }, []);
 
   if (loading) {
     return (
@@ -119,7 +73,6 @@ function UserStartScreen({ route }) {
     </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,

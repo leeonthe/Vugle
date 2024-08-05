@@ -2,13 +2,33 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
+import { useVeteranData } from '../../../APIHandler'; // Adjust the import path as needed
 
 const ConsultPageScreen = () => {
   const navigation = useNavigation();
+  const { userInfo, loading, error } = useVeteranData();
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  const firstName = userInfo.serviceHistory?.data?.[0]?.attributes?.first_name;
+
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-       </View>
+      <View style={styles.header}></View>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>Meet </Text>
         <Text style={styles.titleHighlight}>Dex,</Text>
@@ -23,7 +43,7 @@ const ConsultPageScreen = () => {
       
       <View style={styles.chatContainer}>
         <Animatable.View animation="fadeIn" duration={1000} delay={1000} style={styles.messageContainer}>
-          <Text style={styles.messageText}>Hello, Robert 👋</Text>
+          <Text style={styles.messageText}>Hello, {firstName} 👋</Text>
         </Animatable.View>
         
         <Animatable.View animation="fadeIn" duration={1000} delay={2000} style={styles.messageContainer}>
