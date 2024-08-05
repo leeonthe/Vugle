@@ -54,7 +54,7 @@ const ConsultPageScreen = () => {
         
         <Animatable.View animation="fadeIn" duration={1000} delay={3000} style={styles.messageContainer}>
           <Text style={styles.messageText}>
-            After that, Erica will guide you through the rest of the claim process.
+            After that, Dex will guide you through the rest of the claim process.
           </Text>
         </Animatable.View>
       </View>
