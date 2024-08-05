@@ -1,12 +1,60 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
 import { useVeteranData } from '../../../APIHandler'; // Adjust the import path as needed
+import axios from 'axios';
 
 const ConsultPageScreen = () => {
   const navigation = useNavigation();
   const { userInfo, loading, error } = useVeteranData();
+  const [chatFlow, setChatFlow] = useState(null);
+  const [currentStep, setCurrentStep] = useState(null);
+  const [chatHistory, setChatHistory] = useState([]);
+  const [showInitialButton, setShowInitialButton] = useState(true);
+  const [csrfToken, setCsrfToken] = useState('');
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/chatbot/')
+      .then(response => {
+        setChatFlow(response.data.chatbot_flow);
+        setCsrfToken(response.data.csrf_token);
+      })
+      .catch(error => console.error(error));
+  }, []);
+
+  const handleOptionClick = (option, index) => {
+    const nextStep = chatFlow[option.next];
+    setChatHistory(prevChatHistory => [
+      ...prevChatHistory,
+      { type: 'user', text: option.text },
+      { type: 'bot', text: nextStep.prompt }
+    ]);
+    setCurrentStep(option.next);
+
+    // Send the response to the server to get the next step
+    axios.post('http://localhost:8000/chatbot/', 
+      { response: index, current_step: currentStep }, 
+      { headers: { 'X-CSRFToken': csrfToken } }
+    )
+    .then(response => {
+      setChatFlow(prevChatFlow => ({
+        ...prevChatFlow,
+        [option.next]: response.data
+      }));
+    })
+    .catch(error => console.error(error));
+  };
+
+  const handleInitialButtonClick = () => {
+    setShowInitialButton(false);
+    const startStep = chatFlow['start'];
+    setChatHistory(prevChatHistory => [
+      ...prevChatHistory,
+      { type: 'bot', text: startStep.prompt }
+    ]);
+    setCurrentStep('question_1');
+  };
 
   if (loading) {
     return (
@@ -26,8 +74,10 @@ const ConsultPageScreen = () => {
 
   const firstName = userInfo.serviceHistory?.data?.[0]?.attributes?.first_name;
 
+  const step = currentStep && chatFlow ? chatFlow[currentStep] : null;
+
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}></View>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>Meet </Text>
@@ -37,7 +87,7 @@ const ConsultPageScreen = () => {
       
       <Animatable.View animation="fadeIn" duration={1000} style={styles.logoContainer}>
         <View style={styles.logoBackground}>
-          <Image source={ require('../../../assets/vugle.png')} style={styles.logo} />
+          <Image source={require('../../../assets/vugle.png')} style={styles.logo} />
         </View>
       </Animatable.View>
       
@@ -59,12 +109,49 @@ const ConsultPageScreen = () => {
         </Animatable.View>
       </View>
       
-      <Animatable.View animation="fadeIn" duration={1000} delay={4000} style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('UserStart')}>
-          <Text style={styles.buttonText}>Sounds good!</Text>
-        </TouchableOpacity>
-      </Animatable.View>
-    </View>
+      {showInitialButton && (
+        <Animatable.View animation="fadeIn" duration={1000} delay={4000} style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={handleInitialButtonClick}>
+            <Text style={styles.buttonText}>Sounds good!</Text>
+          </TouchableOpacity>
+        </Animatable.View>
+      )}
+
+      {chatFlow && (
+        <View style={styles.chatContainer}>
+          {chatHistory.map((chat, index) => (
+            <Animatable.View
+              key={index}
+              animation="fadeIn"
+              duration={1000}
+              style={[
+                styles.messageContainer,
+                chat.type === 'user' ? styles.userMessage : styles.botMessage,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.messageText,
+                  chat.type === 'user' ? styles.userText : styles.botText,
+                ]}
+              >
+                {chat.text}
+              </Text>
+            </Animatable.View>
+          ))}
+          {step && step.options && step.options.map((option, index) => (
+            <Animatable.View animation="fadeIn" duration={1000} delay={index * 500} key={index}>
+              <TouchableOpacity
+                style={styles.optionButton}
+                onPress={() => handleOptionClick(option, index)}
+              >
+                <Text style={styles.optionText}>{option.text}</Text>
+              </TouchableOpacity>
+            </Animatable.View>
+          ))}
+        </View>
+      )}
+    </ScrollView>
   );
 };
 
@@ -77,7 +164,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: 'white',
     padding: 16,
   },
@@ -134,12 +221,25 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     maxWidth: '80%',
   },
+  botMessage: {
+    alignSelf: 'flex-start',
+  },
+  userMessage: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#3182F6',
+  },
   messageText: {
     color: '#323D4C',
     fontSize: 16,
     fontFamily: 'SF Pro',
     fontWeight: '510',
     lineHeight: 28,
+  },
+  botText: {
+    color: '#323D4C',
+  },
+  userText: {
+    color: '#fff',
   },
   buttonContainer: {
     marginTop: 16,
@@ -159,6 +259,25 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro Display',
     fontWeight: '500',
     lineHeight: 16,
+  },
+  optionButton: {
+    alignSelf: 'stretch',
+    backgroundColor: '#fff',
+    borderColor: '#e6e6e6',
+    borderWidth: 1,
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  optionText: {
+    fontSize: 13,
+    color: '#191F28',
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 28,
+    textAlign: 'center',
   },
 });
 

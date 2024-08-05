@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'appSettings',
     'oauth2_provider',
     'rest_framework.authtoken',
+    'chatbot',
 
 
 ]
