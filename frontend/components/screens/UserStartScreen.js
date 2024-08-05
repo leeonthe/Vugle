@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, ScrollView, TouchableOpacity, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 const API_BASE_URL = 'https://sandbox-api.va.gov/services/veteran_verification/v2';
 
 const endpoints = {
   disabilityRating: '/disability_rating',
-  // profile: '/profile',
-  // enrolledBenefits: '/enrolled_benefits',
-  // flashes: '/flashes',
-  // serviceHistory: '/service_history',
-  // status: '/status',
+  serviceHistory: '/service_history',
 };
 
 const fetchVeteranData = async (accessToken, endpoint) => {
@@ -28,6 +25,7 @@ const fetchVeteranData = async (accessToken, endpoint) => {
 };
 
 function UserStartScreen({ route }) {
+  const navigation = useNavigation();
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,10 +40,10 @@ function UserStartScreen({ route }) {
       }
 
       try {
-        const [disabilityRating, enrolledBenefits, flashes, serviceHistory, status] = await Promise.all(
+        const [disabilityRating, serviceHistory] = await Promise.all(
           Object.values(endpoints).map(endpoint => fetchVeteranData(token, endpoint))
         );
-        setUserInfo({ disabilityRating, enrolledBenefits, flashes, serviceHistory, status });
+        setUserInfo({ disabilityRating, serviceHistory });
       } catch (error) {
         setError(`Error: ${error.message}`);
       }
@@ -71,45 +69,48 @@ function UserStartScreen({ route }) {
     );
   }
 
+  const firstName = userInfo.serviceHistory?.data?.[0]?.attributes?.first_name;
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Fuck yea</Text>
-      {userInfo.profile && (
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>User Profile</Text>
-          <Text style={styles.infoText}>{JSON.stringify(userInfo.profile, null, 2)}</Text>
+      <Text style={styles.title}>Welcome {firstName}</Text>
+      <Text style={styles.subtitle}>We thank you for your service.</Text>
+
+      <View style={styles.listContainer}>
+        <View style={styles.listItem}>
+          <Image source={require('../../assets/Discharge_status.png')} style={styles.icon} />
+          <Text style={styles.listItemText}>Discharge status</Text>
+          <Text style={styles.checkmark}>✓</Text>
         </View>
-      )}
-      {userInfo.disabilityRating && (
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>Disability Rating:</Text>
-          <Text style={styles.infoText}>{JSON.stringify(userInfo.disabilityRating, null, 2)}</Text>
+        <View style={styles.listItem}>
+          <Image source={require('../../assets/service_treatment.png')} style={styles.icon} />
+          <Text style={styles.listItemText}>Service Treatment Records</Text>
+          <Text style={styles.checkmark}>✓</Text>
         </View>
-      )}
-      {userInfo.enrolledBenefits && (
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>Enrolled Benefits:</Text>
-          <Text style={styles.infoText}>{JSON.stringify(userInfo.enrolledBenefits, null, 2)}</Text>
+        <View style={styles.listItem}>
+          <Image source={require('../../assets/Medical_records.png')} style={styles.icon} />
+          <Text style={styles.listItemText}>VA Medical Records</Text>
+          <Text style={styles.checkmark}>✓</Text>
         </View>
-      )}
-      {userInfo.flashes && (
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>Benefit Flashes:</Text>
-          <Text style={styles.infoText}>{JSON.stringify(userInfo.flashes, null, 2)}</Text>
+        <View style={styles.listItem}>
+          <Image source={require('../../assets/Benefits_info.png')} style={styles.icon} />
+          <Text style={styles.listItemText}>Benefits Information</Text>
+          <Text style={styles.checkmark}>✓</Text>
         </View>
-      )}
-      {userInfo.serviceHistory && (
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>Service History:</Text>
-          <Text style={styles.infoText}>{JSON.stringify(userInfo.serviceHistory, null, 2)}</Text>
+        <View style={styles.listItem}>
+          <Image source={require('../../assets/claims_appeal.png')} style={styles.icon} />
+          <Text style={styles.listItemText}>Claims & Appeals Status</Text>
+          <Text style={styles.checkmark}>✓</Text>
         </View>
-      )}
-      {userInfo.status && (
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>Veteran Status:</Text>
-          <Text style={styles.infoText}>{JSON.stringify(userInfo.status, null, 2)}</Text>
-        </View>
-      )}
+      </View>
+
+      <View style={styles.securityContainer}>
+        <Text style={styles.securityText}>We use 128-bit encryption for added security and do not share your data.</Text>
+      </View>
+
+      <TouchableOpacity style={styles.continueButton} onPress={() => navigation.navigate('HomePage')}>
+        <Text style={styles.continueButtonText}>Continue</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -125,20 +126,59 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  infoContainer: {
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  infoTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
     marginBottom: 10,
   },
-  infoText: {
+  subtitle: {
+    fontSize: 18,
+    marginBottom: 30,
+  },
+  listContainer: {
+    width: '100%',
+    backgroundColor: '#f0f4f7',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 30,
+  },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  listItemText: {
+    fontWeight: 510,
+    fontFamily: "SF Pro",
+    fontSize: 13,
+    flex: 1,
+  },
+  checkmark: {
     fontSize: 16,
+    color: '#4CAF50',
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    marginRight: 10,
+  },
+  securityContainer: {
+    marginBottom: 20,
+  },
+  securityText: {
+    fontSize: 14,
     color: '#666',
+    textAlign: 'center',
+  },
+  continueButton: {
+    backgroundColor: '#007bff',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+  },
+  continueButtonText: {
+    fontSize: 16,
+    color: '#fff',
     textAlign: 'center',
   },
   errorText: {
