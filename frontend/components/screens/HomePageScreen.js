@@ -1,8 +1,11 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Svg, { Rect } from 'react-native-svg';
 
 function HomePage() {
+  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -62,7 +65,7 @@ function HomePage() {
               </View>
             </View>
           </View>
-          <TouchableOpacity style={styles.button}>
+          <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('ConsultPageScreen')}>
             <Text style={styles.buttonText}>How much I can earn?</Text>
           </TouchableOpacity>
         </View>
@@ -80,9 +83,9 @@ function HomePage() {
                 <Text style={styles.infoValue}>70%</Text>
               </View>
             </View>
-            <View style={styles.infoRight}>
+            <TouchableOpacity style={styles.infoRight} onPress={() => navigation.navigate('StatsDisabilityPage')}>
               <Text style={styles.viewText}>View</Text>
-            </View>
+            </TouchableOpacity>
           </View>
           <View style={styles.infoItem}>
             <View style={styles.infoLeft}>
@@ -95,49 +98,49 @@ function HomePage() {
                 <Text style={styles.infoValue}>$782</Text>
               </View>
             </View>
-            <View style={styles.infoRight}>
+            <TouchableOpacity style={styles.infoRight} onPress={() => navigation.navigate('StatsCompPage')}>
               <Text style={styles.viewText}>View</Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
       </ScrollView>
       <View style={styles.bottomNavigation}>
-        <View style={styles.navItem}>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('HomePageScreen')}>
           <Image
             source={require('../../assets/home_icon.png')}
             style={styles.navIcon}
           />
           <Text style={styles.navText}>Home</Text>
-        </View>
-        <View style={styles.navItem}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ExplorePageScreen')}>
           <Image
             source={require('../../assets/explore_icon.png')}
             style={styles.navIcon}
           />
           <Text style={styles.navTextInactive}>Explore</Text>
-        </View>
-        <View style={styles.navItem}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ConsultPageScreen')}>
           <Image
             source={require('../../assets/consult_icon.png')}
             style={styles.navIcon}
           />
           <Text style={styles.navTextInactive}>Consult</Text>
-        </View>
-        <View style={styles.navItem}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('LoanPageScreen')}>
           <Image
             source={require('../../assets/loan_icon.png')}
             style={styles.navIcon}
           />
           <Text style={styles.navTextInactive}>Loan</Text>
-        </View>
-        <View style={styles.navItem}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('AllPageScreen')}>
           <Image
-            source={require('../../assets/loan_icon.png')} //change this icon
+            source={require('../../assets/loan_icon.png')} // Update with your all icon path
             style={styles.navIcon}
           />
           <Text style={styles.navTextInactive}>All</Text>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ActivityIndicator, ScrollView, TouchableOpacity, Image } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_BASE_URL = 'https://sandbox-api.va.gov/services/veteran_verification/v2';
 
@@ -25,10 +25,10 @@ const fetchVeteranData = async (accessToken, endpoint) => {
 };
 
 function UserStartScreen({ route }) {
-  const navigation = useNavigation();
   const [userInfo, setUserInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -82,21 +82,25 @@ function UserStartScreen({ route }) {
           <Text style={styles.listItemText}>Discharge status</Text>
           <Text style={styles.checkmark}>✓</Text>
         </View>
+        <View style={styles.divider} />
         <View style={styles.listItem}>
           <Image source={require('../../assets/service_treatment.png')} style={styles.icon} />
           <Text style={styles.listItemText}>Service Treatment Records</Text>
           <Text style={styles.checkmark}>✓</Text>
         </View>
+        <View style={styles.divider} />
         <View style={styles.listItem}>
           <Image source={require('../../assets/Medical_records.png')} style={styles.icon} />
           <Text style={styles.listItemText}>VA Medical Records</Text>
           <Text style={styles.checkmark}>✓</Text>
         </View>
+        <View style={styles.divider} />
         <View style={styles.listItem}>
           <Image source={require('../../assets/Benefits_info.png')} style={styles.icon} />
           <Text style={styles.listItemText}>Benefits Information</Text>
           <Text style={styles.checkmark}>✓</Text>
         </View>
+        <View style={styles.divider} />
         <View style={styles.listItem}>
           <Image source={require('../../assets/claims_appeal.png')} style={styles.icon} />
           <Text style={styles.listItemText}>Claims & Appeals Status</Text>
@@ -104,8 +108,9 @@ function UserStartScreen({ route }) {
         </View>
       </View>
 
-      <View style={styles.securityContainer}>
-        <Text style={styles.securityText}>We use 128-bit encryption for added security and do not share your data.</Text>
+      <View style={styles.infoContainer}>
+        <Image source={require('../../assets/logo.png')} style={styles.securityIcon} />
+        <Text style={styles.infoText}>We use 128-bit encryption for added security and do not share your data.</Text>
       </View>
 
       <TouchableOpacity style={styles.continueButton} onPress={() => navigation.navigate('HomePage')}>
@@ -124,57 +129,88 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: '400',
+    alignSelf: 'flex-start',
+    marginTop: 50,
+    marginBottom: 13,
   },
   subtitle: {
-    fontSize: 18,
-    marginBottom: 30,
+    fontSize: 25,
+    fontWeight: '600',
+    alignSelf: 'flex-start',
+    marginBottom: 20,
   },
   listContainer: {
     width: '100%',
-    backgroundColor: '#f0f4f7',
-    borderRadius: 10,
-    padding: 15,
+    height: 'auto',
+    backgroundColor: '#F5F8FE',
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 30,
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   listItem: {
+    width: '100%',
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-
     paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+  },
+  divider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#E1E1E1',
   },
   listItemText: {
-    fontWeight: 510,
-    fontFamily: "SF Pro",
     fontSize: 13,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    color: '#6B7685',
     flex: 1,
   },
   checkmark: {
     fontSize: 16,
-    color: '#4CAF50',
+    color: '#5CB297',
   },
   icon: {
+    width: 20,
+    height: 20,
+    marginRight: 10,
+  },
+  securityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  securityIcon: {
     width: 24,
     height: 24,
     marginRight: 10,
   },
-  securityContainer: {
-    marginBottom: 20,
-  },
-  securityText: {
+  infoText: {
     fontSize: 14,
     color: '#666',
-    textAlign: 'center',
+    flex: 1,
+    textAlign: 'left',
+    lineHeight: 20,
   },
   continueButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#237AF2',
     paddingVertical: 15,
     paddingHorizontal: 30,
-    borderRadius: 10,
+    borderRadius: 8,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 40, // Added margin bottom for spacing
   },
   continueButtonText: {
     fontSize: 16,
@@ -185,6 +221,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'red',
     textAlign: 'center',
+  },
+  infoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  icon: {
+    width: 24,
+    height: 24,
+    marginRight: 10,
+  },
+  infoText: {
+    fontSize: 14,
+    color: '#666',
+    flex: 1,
+    textAlign: 'left',
+    lineHeight: 20,
   },
 });
 

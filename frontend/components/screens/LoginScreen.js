@@ -81,10 +81,7 @@ const LoginScreen = () => {
       <Text style={styles.subtitle}>
         US regulations require us to get consent for utilizing your STRs and EHR before we can proceed with our service.
       </Text>
-      <View style={styles.infoContainer}>
-        <Image source={require('../../assets/logo.png')} style={styles.icon} />
-        <Text style={styles.infoText}>We use 128-bit encryption for added security and do not share your data.</Text>
-      </View>
+      
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Continue with VA.gov</Text>
       </TouchableOpacity>
@@ -119,30 +116,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
   },
-  infoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    bottom: -50,
-    width: '100%',
-    padding: 5,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    marginHorizontal: 20,
-    marginBottom: 40,
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
-  },
-  infoText: {
-    fontSize: 14,
-    color: '#666',
-    flex: 1,
-    textAlign: 'left',
-    lineHeight: 20,
-  },
+  
   button: {
     position: 'absolute',
     bottom: 20,
