@@ -2,10 +2,19 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Svg, { Rect } from 'react-native-svg';
+import { useVeteranData } from '../../APIHandler';
+
 
 function HomePage() {
+  const { userInfo, loading, error } = useVeteranData();
   const navigation = useNavigation();
-
+  let combinedDisabilityRating = 'N/A';
+  if (userInfo.disabilityRating) {
+    const parsedDisabilityRating = JSON.parse(JSON.stringify(userInfo.disabilityRating));
+    if (parsedDisabilityRating.data && parsedDisabilityRating.data.attributes) {
+      combinedDisabilityRating = parsedDisabilityRating.data.attributes.combined_disability_rating;
+    }
+  }
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -80,7 +89,7 @@ function HomePage() {
               />
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoTitle}>Disability rating</Text>
-                <Text style={styles.infoValue}>70%</Text>
+                <Text style={styles.infoText}>{combinedDisabilityRating}%</Text>
               </View>
             </View>
             <TouchableOpacity style={styles.infoRight} onPress={() => navigation.navigate('StatsDisabilityPage')}>
