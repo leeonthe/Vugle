@@ -89,7 +89,7 @@ function HomePage() {
               />
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoTitle}>Disability rating</Text>
-                <Text style={styles.infoText}>{combinedDisabilityRating}%</Text>
+                <Text style={styles.infoValue}>{combinedDisabilityRating}%</Text>
               </View>
             </View>
             <TouchableOpacity style={styles.infoRight} onPress={() => navigation.navigate('StatsDisabilityPage')}>
@@ -115,7 +115,7 @@ function HomePage() {
 
       </ScrollView>
       <View style={styles.bottomNavigation}>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('HomePageScreen')}>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('HomePage')}>
           <Image
             source={require('../../assets/home_icon.png')}
             style={styles.navIcon}
