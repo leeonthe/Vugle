@@ -8,15 +8,15 @@ def search_keywords(text, keywords):
             results[keyword] = text.lower().count(keyword.lower())
     return results
 
-def semantic_search(text, query):
-    nlp = spacy.load("en_core_web_lg")
-    doc = nlp(text)
-    query_doc = nlp(query)
-    results = []
-    for sent in doc.sents:
-        if query_doc.similarity(nlp(sent.text)) > 0.75:  # Adjust the threshold as needed
-            results.append(sent.text)
-    return results
+# def semantic_search(text, query):
+#     nlp = spacy.load("en_core_web_lg")
+#     doc = nlp(text)
+#     query_doc = nlp(query)
+#     results = []
+#     for sent in doc.sents:
+#         if query_doc.similarity(nlp(sent.text)) > 0.75:  # Adjust the threshold as needed
+#             results.append(sent.text)
+#     return results
 
 def main():
     file_path = 'Honeywell reimbursement form.pdf'
