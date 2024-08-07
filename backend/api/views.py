@@ -116,3 +116,9 @@ class OAuthCallbackView(View):
         else:
             logger.error(f"Token exchange failed: {response.status_code}, {response.text}")
             return HttpResponseBadRequest("Token exchange failed")
+        
+
+# class ClientCredentialsView(View):
+#     CLIENT_ID = '0oax86sg7sEgacnY52p7'
+
+

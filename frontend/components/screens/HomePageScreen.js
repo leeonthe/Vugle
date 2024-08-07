@@ -6,15 +6,26 @@ import { useVeteranData } from '../../APIHandler';
 
 
 function HomePage() {
-  const { userInfo, loading, error } = useVeteranData();
+  const { userInfo, statusInfo, loading, error } = useVeteranData();
   const navigation = useNavigation();
   let combinedDisabilityRating = 'N/A';
+  let veteranStatus = 'N/A';
+
   if (userInfo.disabilityRating) {
     const parsedDisabilityRating = JSON.parse(JSON.stringify(userInfo.disabilityRating));
     if (parsedDisabilityRating.data && parsedDisabilityRating.data.attributes) {
       combinedDisabilityRating = parsedDisabilityRating.data.attributes.combined_disability_rating;
+      veteranStatus = parsedDisabilityRating.data.id; // THIS IS ICN VALUE. 
     }
   }
+
+  // if (userInfo.status) {
+  //   const parsedStatus = JSON.parse(JSON.stringify(userInfo.status));
+  //   if (parsedStatus.data && parsedStatus.data.attributes) {
+  //     veteranStatus = parsedStatus.data.attributes.veteran_status;
+  //   }
+  // }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -104,7 +115,7 @@ function HomePage() {
               />
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoTitle}>Monthly compensation</Text>
-                <Text style={styles.infoValue}>$782</Text>
+                <Text style={styles.infoValue}>{veteranStatus}</Text>
               </View>
             </View>
             <TouchableOpacity style={styles.infoRight} onPress={() => navigation.navigate('StatsCompPage')}>

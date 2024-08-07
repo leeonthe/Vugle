@@ -5,6 +5,7 @@ const API_BASE_URL = 'https://sandbox-api.va.gov/services/veteran_verification/v
 const endpoints = {
   disabilityRating: '/disability_rating',
   serviceHistory: '/service_history',
+  status: '/status',
 };
 
 const fetchVeteranData = async (accessToken, endpoint) => {
@@ -30,6 +31,7 @@ export const VeteranDataProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchAllData = async () => {
+      setLoading(true);
       const token = await AsyncStorage.getItem('access_token');
       if (!token) {
         setError('Access token not found');
@@ -38,10 +40,14 @@ export const VeteranDataProvider = ({ children }) => {
       }
 
       try {
-        const [disabilityRating, serviceHistory] = await Promise.all(
-          Object.values(endpoints).map(endpoint => fetchVeteranData(token, endpoint))
-        );
-        setUserInfo({ disabilityRating, serviceHistory });
+        const [disabilityRating, serviceHistory, status] = await Promise.all([
+          fetchVeteranData(token, endpoints.disabilityRating),
+          fetchVeteranData(token, endpoints.serviceHistory),
+          fetchVeteranData(token, endpoints.status),
+        ]);
+        setUserInfo({ disabilityRating, serviceHistory, status });
+        // console.log('STATUS ', status);
+        console.log('UserInfo', { disabilityRating, serviceHistory, status });
       } catch (error) {
         setError(`Error: ${error.message}`);
       }
