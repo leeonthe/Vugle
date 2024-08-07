@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import Svg, { Rect } from 'react-native-svg';
 import { useVeteranData } from '../../APIHandler';
 
+import DocumentsIcon from '../../assets/documents_icon.svg';
 
 function HomePage() {
   const { userInfo, eligibleLetters, statusInfo, loading, error } = useVeteranData();
@@ -21,7 +22,7 @@ function HomePage() {
 
   
   if (eligibleLetters.benefitInformation) {
-    monthlyCompensation = `${eligibleLetters.benefitInformation.monthlyAwardAmount.currency} ${eligibleLetters.benefitInformation.monthlyAwardAmount.value}`;
+    monthlyCompensation = `${eligibleLetters.benefitInformation.monthlyAwardAmount.value}`;
   }
   if (userInfo.status) {
     const parsedStatus = JSON.parse(JSON.stringify(userInfo.status));
@@ -119,7 +120,7 @@ function HomePage() {
               />
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoTitle}>Monthly compensation</Text>
-                <Text style={styles.infoValue}>{monthlyCompensation}</Text>
+                <Text style={styles.infoValue}>${monthlyCompensation}</Text>
 
               </View>
             </View>
@@ -128,7 +129,93 @@ function HomePage() {
             </TouchableOpacity>
           </View>
         </View>
+              
 
+        {/* Claims Status */}
+        <View style={styles.claimsStatusContainer}>
+          <View style={styles.claimsStatusHeader}>
+            <Text style={styles.claimsStatusTitle}>Claims status</Text>
+            <View style={styles.claimsStatusIcon} />
+          </View>
+          <View style={styles.claimsStatusContent}>
+            <View style={styles.claimsStatusRow}>
+              <View style={styles.claimsStatusIconGreen} />
+              <View style={styles.claimsStatusTextContainer}>
+                <Text style={styles.claimsStatusTextGray}>4 claims completed</Text>
+                <Text style={styles.claimsStatusTextBlack}>Last update from Sep 2019</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* My Documents */}
+        <View style={styles.myDocumentsContainer}>
+          <View style={styles.myDocumentsContent}>
+            <View style={styles.myDocumentsRow}>
+              <View style={styles.myDocumentsIconContainer}>
+                <View style={styles.myDocumentsIconBlue} />
+                <View style={styles.myDocumentsIconLightBlue} />
+              </View>
+              <View style={styles.myDocumentsTextContainer}>
+                <Text style={styles.myDocumentsTitle}>My documents</Text>
+                <Text style={styles.myDocumentsSubtitle}>All your health records in one place</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Current Resources */}
+        <View style={styles.currentResourcesContainer}>
+          <View style={styles.currentResourcesHeader}>
+            <Text style={styles.currentResourcesTitle}>Current resources</Text>
+            <View style={styles.currentResourcesIcon} />
+          </View>
+          <View style={styles.currentResourcesContent}>
+            {/* GI Bill */}
+            <View style={styles.resourceRow}>
+              <View style={styles.resourceRowContent}>
+                <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
+                <View style={styles.resourceTextContainer}>
+                  <Text style={styles.resourceTitle}>GI Bill 2024</Text>
+                  <Text style={styles.resourceAmount}>$2,680</Text>
+                </View>
+              </View>
+              <View style={styles.resourceIconArrow} />
+            </View>
+            {/* Housing Support */}
+            <View style={styles.resourceRow}>
+              <View style={styles.resourceRowContent}>
+                <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
+                <View style={styles.resourceTextContainer}>
+                  <Text style={styles.resourceTitle}>Housing support</Text>
+                  <Text style={styles.resourceAmount}>$1,808</Text>
+                </View>
+              </View>
+              <View style={styles.resourceIconArrow} />
+            </View>
+            {/* Travel Reimbursement */}
+            <View style={styles.resourceRow}>
+              <View style={styles.resourceRowContent}>
+                <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
+                <View style={styles.resourceTextContainer}>
+                  <Text style={styles.resourceTitle}>Travel reimbursement</Text>
+                  <Text style={styles.resourceAmount}>$41.5 cents / mile</Text>
+                </View>
+              </View>
+              <View style={styles.resourceIconArrow} />
+            </View>
+            {/* Explore More Benefits */}
+            <View style={styles.exploreMoreContainer}>
+              <View style={styles.exploreMoreContent}>
+                <View style={styles.exploreMoreIconContainer}>
+                  <View style={styles.exploreMoreIcon} />
+                </View>
+                <Text style={styles.exploreMoreText}>Explore more benefits you’re eligible</Text>
+                <View style={styles.resourceIconArrow} />
+              </View>
+            </View>
+          </View>
+        </View>
       </ScrollView>
       <View style={styles.bottomNavigation}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('HomePage')}>
@@ -317,16 +404,15 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   infoCard: {
-    width: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.02,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
     marginBottom: 24,
@@ -411,6 +497,264 @@ const styles = StyleSheet.create({
     fontWeight: '510',
     color: '#ADB3BA',
   },
+  // Add these styles to your StyleSheet
+
+  claimsStatusContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 24,
+  },
+  claimsStatusHeader: {
+    flexDirection: 'row', // Ensure horizontal layout
+    alignSelf: 'stretch',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 14,
+  },
+  claimsStatusTitle: {
+    color: 'black',
+    fontSize: 16,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+    textAlign: 'left',
+  },
+  claimsStatusIcon: {
+    width: 5.87,
+    height: 10,
+    backgroundColor: '#ADB3BA',
+  },
+  claimsStatusContent: {
+    alignSelf: 'stretch',
+    padding: 10,
+    backgroundColor: '#F6F7F9',
+    borderRadius: 8,
+    flexDirection: 'row', 
+    justifyContent: 'flex-start',
+    alignItems: 'center', 
+  },
+  claimsStatusRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    gap: 16,
+  },
+  claimsStatusIconGreen: {
+    width: 20,
+    height: 20,
+    backgroundColor: '#5EAC24',
+    marginRight: 5, // space between icon and text
+  },
+  claimsStatusTextContainer: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  claimsStatusTextGray: {
+    color: '#6B7685',
+    fontSize: 12,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+  },
+  claimsStatusTextBlack: {
+    color: '#323D4C',
+    fontSize: 13,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 20,
+    wordWrap: 'break-word',
+  },
+
+  // DOCUMENT STYLING
+  myDocumentsContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 24,
+  },
+  myDocumentsRow: {
+    flexDirection: 'row', 
+    alignItems: 'center',
+  },
+  myDocumentsIconContainer: {
+    width: 32,
+    height: 32,
+    position: 'relative',
+    marginRight: 16, // Add some space between icon and text
+  },
+  myDocumentsIconBlue: {
+    width: 30.67,
+    height: 24,
+    position: 'absolute',
+    backgroundColor: '#376CFB',
+  },
+  myDocumentsIconLightBlue: {
+    width: 28.38,
+    height: 16,
+    position: 'absolute',
+    backgroundColor: '#4294FF',
+  },
+  myDocumentsTextContainer: {
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+  },
+  myDocumentsTitle: {
+    color: 'black',
+    fontSize: 16,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+  },
+  myDocumentsSubtitle: {
+    color: '#ADB3BA',
+    fontSize: 12,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+  },
+
+  // CURRENT RESOURCES STYLING
+  
+  currentResourcesContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 24,
+  },
+  currentResourcesHeader: {
+    flexDirection: 'row', 
+    alignSelf: 'stretch',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  currentResourcesTitle: {
+    color: '#191F28',
+    fontSize: 16,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+
+  },
+  currentResourcesIcon: {
+    width: 7,
+    height: 11.92,
+    backgroundColor: '#ADB3BA',
+  },
+  currentResourcesContent: {
+    alignSelf: 'stretch',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    gap: 20,
+    display: 'flex',
+    marginTop: 10,
+  },
+  resourceRow: {
+    width: '100%',
+    flexDirection: 'row', 
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8, // Add vertical padding for spacing
+  },
+  resourceRowContent: {
+    flexDirection: 'row', 
+    alignItems: 'center',
+    flex: 1, // Allow the content to stretch and fill the space
+  },
+  resourceIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 16, // Add some space between icon and text
+  },
+  resourceTextContainer: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    flex: 1, // Allow the text container to stretch
+  },
+  resourceTitle: {
+    color: '#6B7685',
+    fontSize: 12,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+  },
+  resourceAmount: {
+    color: '#191F28',
+    fontSize: 13,
+    fontFamily: 'SF Pro',
+    fontWeight: '590',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+  },
+  resourceIconArrow: {
+    width: 5.87,
+    height: 10,
+    backgroundColor: '#ADB3BA',
+  },
+  exploreMoreContainer: {
+    width: '100%',
+    padding: 12,
+    backgroundColor: '#F2F9FF',
+    borderRadius: 8,
+    flexDirection: 'row', 
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  exploreMoreContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1, // Allow the content to stretch and fill the space
+  },
+  exploreMoreIconContainer: {
+    marginRight: 10, // Add some space between icon and text
+  },
+  exploreMoreIcon: {
+    width: 16,
+    height: 13.71,
+    backgroundColor: '#006DC3',
+  },
+  exploreMoreText: {
+    color: '#323D4C',
+    fontSize: 12,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+  },
+
 });
 
 export default HomePage;
