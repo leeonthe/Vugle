@@ -24,7 +24,8 @@ const DexConsultPageScreen = () => {
 
   const handleStepChange = (step, prompt, options = []) => {
     if (!prompt) return;
-    const prompts = prompt.split('\n');
+    const processedPrompt = prompt.replace('{user_name}', firstName);
+    const prompts = processedPrompt.split('\n');
     prompts.forEach((text, index) => {
       const isImagePlaceholder = text.includes('[[IMAGE]]');
       setChatHistory(prevChatHistory => [
