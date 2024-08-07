@@ -1,12 +1,18 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { useNavigation } from '@react-navigation/native';
 import { useVeteranData } from '../../../APIHandler'; // Adjust the import path as needed
+import axios from 'axios';
 
 const ConsultPageScreen = () => {
   const navigation = useNavigation();
   const { userInfo, loading, error } = useVeteranData();
+  const [showInitialButton, setShowInitialButton] = useState(true);
+
+  const navigateToDexConsultPage = () => {
+    navigation.navigate('DexConsultPage', { firstName: userInfo.serviceHistory?.data?.[0]?.attributes?.first_name });
+  };
 
   if (loading) {
     return (
@@ -27,7 +33,7 @@ const ConsultPageScreen = () => {
   const firstName = userInfo.serviceHistory?.data?.[0]?.attributes?.first_name;
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}></View>
       <View style={styles.titleContainer}>
         <Text style={styles.title}>Meet </Text>
@@ -37,7 +43,7 @@ const ConsultPageScreen = () => {
       
       <Animatable.View animation="fadeIn" duration={1000} style={styles.logoContainer}>
         <View style={styles.logoBackground}>
-          <Image source={ require('../../../assets/vugle.png')} style={styles.logo} />
+          <Image source={require('../../../assets/vugle.png')} style={styles.logo} />
         </View>
       </Animatable.View>
       
@@ -59,12 +65,14 @@ const ConsultPageScreen = () => {
         </Animatable.View>
       </View>
       
-      <Animatable.View animation="fadeIn" duration={1000} delay={4000} style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('UserStart')}>
-          <Text style={styles.buttonText}>Sounds good!</Text>
-        </TouchableOpacity>
-      </Animatable.View>
-    </View>
+      {showInitialButton && (
+        <Animatable.View animation="fadeIn" duration={1000} delay={4000} style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.button} onPress={navigateToDexConsultPage}>
+            <Text style={styles.buttonText}>Let's get started it!</Text>
+          </TouchableOpacity>
+        </Animatable.View>
+      )}
+    </ScrollView>
   );
 };
 
@@ -77,7 +85,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: 'white',
     padding: 16,
   },
@@ -134,12 +142,25 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     maxWidth: '80%',
   },
+  botMessage: {
+    alignSelf: 'flex-start',
+  },
+  userMessage: {
+    alignSelf: 'flex-end',
+    backgroundColor: '#3182F6',
+  },
   messageText: {
     color: '#323D4C',
     fontSize: 16,
     fontFamily: 'SF Pro',
     fontWeight: '510',
     lineHeight: 28,
+  },
+  botText: {
+    color: '#323D4C',
+  },
+  userText: {
+    color: '#fff',
   },
   buttonContainer: {
     marginTop: 16,
