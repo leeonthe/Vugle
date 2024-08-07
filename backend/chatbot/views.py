@@ -5,11 +5,10 @@ import json
 import logging
 
 logger = logging.getLogger(__name__)
-
+image = "static/vugle.png"
 chatbot_flow = {
     "start": {
-        
-        "prompt": "Nice to meet you, {user_name}. \n Before we begin, I need to ask you a few questions that will help me evaluate best approach for you.",
+        "prompt": "[[IMAGE]]\nNice to meet you, {user_name}.\nBefore we begin, I need to ask you a few questions that will help me evaluate the best approach for you.",
 
         "options": [
             {
@@ -19,7 +18,7 @@ chatbot_flow = {
         ]
     },
     "question_1": {
-        "prompt": "Which claims would you like to submit? Select all that applies.",
+        "prompt": "[[IMAGE]]\nWhich claims would you like to submit? Select all that apply.",
         "options": [
             {
                 "text": "New claim",
@@ -32,8 +31,7 @@ chatbot_flow = {
         ]
     },
     "question_2": {
-        "prompt": "Do you think your current circumstance falls under the right claim?",
-        "prompt": "HEHE TEST",
+        "prompt": "[[IMAGE]]\nDo you think your current circumstance falls under the right claim?",
         "options": [
             {
                 "text": "Yes, it is",
@@ -46,7 +44,7 @@ chatbot_flow = {
         ]
     },
     "end": {
-        "prompt": "Thank you for your responses. We will guide you further."
+        "prompt": "[[IMAGE]]\nThank you for your responses. We will guide you further."
     }
 }
 
@@ -72,7 +70,8 @@ class ChatbotView(View):
                 return JsonResponse({'error': 'Invalid request'}, status=400)
 
             next_step = chatbot_flow[current_step]['options'][int(user_response)]['next']
-            return JsonResponse(chatbot_flow[next_step])
+            next_prompt = chatbot_flow[next_step]['prompt'].split('\n')
+            return JsonResponse({"image": chatbot_flow[next_step].get('image', None), "prompts": next_prompt, "options": chatbot_flow[next_step].get('options', [])})
 
         except KeyError as e:
             logger.error(f'KeyError: {e}')

@@ -17,21 +17,27 @@ const DexConsultPageScreen = () => {
       .then(response => {
         setChatFlow(response.data.chatbot_flow);
         setCsrfToken(response.data.csrf_token);
+        handleStepChange('start', response.data.chatbot_flow.start.prompt, response.data.chatbot_flow.start.options);
       })
       .catch(error => console.error(error));
   }, []);
 
-  useEffect(() => {
-    if (currentStep && chatFlow) {
-      const step = chatFlow[currentStep];
-      if (step && !chatHistory.some(chat => chat.step === currentStep)) {
-        setChatHistory(prevChatHistory => [
-          ...prevChatHistory,
-          { type: 'bot', text: step.prompt, options: step.options, image: require('../../../assets/vugle.png'), step: currentStep }
-        ]);
-      }
-    }
-  }, [currentStep, chatFlow]);
+  const handleStepChange = (step, prompt, options = []) => {
+    if (!prompt) return;
+    const prompts = prompt.split('\n');
+    prompts.forEach((text, index) => {
+      const isImagePlaceholder = text.includes('[[IMAGE]]');
+      setChatHistory(prevChatHistory => [
+        ...prevChatHistory,
+        {
+          type: 'bot',
+          text: isImagePlaceholder ? '' : text,
+          options: index === prompts.length - 1 ? options : [],
+          isImagePlaceholder
+        }
+      ]);
+    });
+  };
 
   const handleOptionClick = async (option, index) => {
     setChatHistory(prevChatHistory => [
@@ -44,10 +50,21 @@ const DexConsultPageScreen = () => {
         { response: index, current_step: currentStep }, 
         { headers: { 'X-CSRFToken': csrfToken } }
       );
-      setChatFlow(prevChatFlow => ({
-        ...prevChatFlow,
-        [option.next]: response.data
-      }));
+      const { prompts, options } = response.data;
+      if (prompts) {
+        prompts.forEach((text, idx) => {
+          const isImagePlaceholder = text.includes('[[IMAGE]]');
+          setChatHistory(prevChatHistory => [
+            ...prevChatHistory,
+            {
+              type: 'bot',
+              text: isImagePlaceholder ? '' : text,
+              options: idx === prompts.length - 1 ? options : [],
+              isImagePlaceholder
+            }
+          ]);
+        });
+      }
       setCurrentStep(option.next);
     } catch (error) {
       console.error(error);
@@ -68,18 +85,20 @@ const DexConsultPageScreen = () => {
             chat.type === 'user' ? styles.userMessage : styles.botMessage,
           ]}
         >
-          {chat.type === 'bot' && chat.image && (
-            <Image source={chat.image} style={styles.image} />
+          {chat.isImagePlaceholder && (
+            <Image source={require('../../../assets/vugle.png')} style={styles.image} />
           )}
-          <Text
-            style={[
-              styles.messageText,
-              chat.type === 'user' ? styles.userText : styles.botText,
-            ]}
-          >
-            {chat.text}
-          </Text>
-          {chat.options && chat.options.map((option, idx) => (
+          {chat.text && (
+            <Text
+              style={[
+                styles.messageText,
+                chat.type === 'user' ? styles.userText : styles.botText,
+              ]}
+            >
+              {chat.text}
+            </Text>
+          )}
+          {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
             <TouchableOpacity
               key={idx}
               style={styles.optionButton}
@@ -108,16 +127,18 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   messageContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    // paddingHorizontal: 10,
+    // paddingVertical: 10,
     backgroundColor: '#F5F6F8',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'flex-start',
     marginBottom: 8,
     maxWidth: '80%',
+    gap:10,
     flexDirection: 'column',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    padding: 16,
   },
   botMessage: {
     alignSelf: 'flex-start',
@@ -132,6 +153,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro',
     fontWeight: '510',
     lineHeight: 28,
+    marginBottom: 16,
   },
   botText: {
     color: '#323D4C',
@@ -170,7 +192,9 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     alignSelf: 'stretch',
-    padding: 16,
+    padding: 13,
+    // paddingVertical: 8, 
+    // paddingHorizontal: 16,
     backgroundColor: 'white',
     borderRadius: 8,
     justifyContent: 'center',
