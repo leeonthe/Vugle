@@ -6,7 +6,7 @@ import { useVeteranData } from '../../APIHandler';
 
 
 function HomePage() {
-  const { userInfo, statusInfo, loading, error } = useVeteranData();
+  const { userInfo, eligibleLetters, statusInfo, loading, error } = useVeteranData();
   const navigation = useNavigation();
   let combinedDisabilityRating = 'N/A';
   let veteranStatus = 'N/A';
@@ -19,12 +19,16 @@ function HomePage() {
     }
   }
 
-  // if (userInfo.status) {
-  //   const parsedStatus = JSON.parse(JSON.stringify(userInfo.status));
-  //   if (parsedStatus.data && parsedStatus.data.attributes) {
-  //     veteranStatus = parsedStatus.data.attributes.veteran_status;
-  //   }
-  // }
+  
+  if (eligibleLetters.benefitInformation) {
+    monthlyCompensation = `${eligibleLetters.benefitInformation.monthlyAwardAmount.currency} ${eligibleLetters.benefitInformation.monthlyAwardAmount.value}`;
+  }
+  if (userInfo.status) {
+    const parsedStatus = JSON.parse(JSON.stringify(userInfo.status));
+    if (parsedStatus.data && parsedStatus.data.attributes) {
+      veteranStatus = parsedStatus.data.attributes.veteran_status;
+    }
+  }
 
   return (
     <View style={styles.container}>
@@ -115,7 +119,8 @@ function HomePage() {
               />
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoTitle}>Monthly compensation</Text>
-                <Text style={styles.infoValue}>{veteranStatus}</Text>
+                <Text style={styles.infoValue}>{monthlyCompensation}</Text>
+
               </View>
             </View>
             <TouchableOpacity style={styles.infoRight} onPress={() => navigation.navigate('StatsCompPage')}>
