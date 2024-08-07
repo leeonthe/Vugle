@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { useRoute } from '@react-navigation/native';
@@ -11,6 +11,9 @@ const DexConsultPageScreen = () => {
   const [currentStep, setCurrentStep] = useState('start');
   const [chatHistory, setChatHistory] = useState([]);
   const [csrfToken, setCsrfToken] = useState('');
+  const scrollViewRef = useRef();
+  const messageHeights = useRef([]);
+  const userMessageIndices = useRef([]); // To track the indices of user messages
 
   useEffect(() => {
     axios.get('http://localhost:8000/chatbot/')
@@ -41,10 +44,12 @@ const DexConsultPageScreen = () => {
   };
 
   const handleOptionClick = async (option, index) => {
+    const userMessageIndex = chatHistory.length;
     setChatHistory(prevChatHistory => [
       ...prevChatHistory,
       { type: 'user', text: option.text }
     ]);
+    userMessageIndices.current.push(userMessageIndex);
 
     try {
       const response = await axios.post('http://localhost:8000/chatbot/', 
@@ -67,13 +72,31 @@ const DexConsultPageScreen = () => {
         });
       }
       setCurrentStep(option.next);
+    //   setTimeout(() => {
+    //     const lastUserMessageIndex = userMessageIndices.current[userMessageIndices.current.length - 1];
+    //     // let scrollToY = messageHeights.current.slice(0, lastUserMessageIndex).reduce((acc, height) => acc + height, 0);
+    //     // if (scrollToY > 4000) {
+    //     //   scrollToY = 500;
+    //     // }
+    //     const scrollToY = 1500;
+    //     console.log('scrollToY value:', scrollToY);
+    //     scrollViewRef.current.scrollTo({ y: scrollToY, animated: true });
+    //   }, 100);
     } catch (error) {
       console.error(error);
     }
   };
 
+  const measureView = (event, index) => {
+    const { height } = event.nativeEvent.layout;
+    messageHeights.current[index] = height;
+  };
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      ref={scrollViewRef}
+    >
       <View style={styles.header}></View>
 
       {chatHistory.map((chat, index) => (
@@ -85,6 +108,7 @@ const DexConsultPageScreen = () => {
             styles.messageContainer,
             chat.type === 'user' ? styles.userMessage : styles.botMessage,
           ]}
+          onLayout={(event) => measureView(event, index)}
         >
           {chat.isImagePlaceholder && (
             <Image source={require('../../../assets/vugle.png')} style={styles.image} />
@@ -128,18 +152,16 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   messageContainer: {
-    // paddingHorizontal: 10,
-    // paddingVertical: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
     backgroundColor: '#F5F6F8',
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'flex-start',
     marginBottom: 8,
     maxWidth: '80%',
-    gap:10,
     flexDirection: 'column',
     alignItems: 'flex-start',
-    padding: 16,
   },
   botMessage: {
     alignSelf: 'flex-start',
@@ -193,9 +215,8 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     alignSelf: 'stretch',
-    padding: 13,
-    // paddingVertical: 8, 
-    // paddingHorizontal: 16,
+    paddingVertical: 8,  // Reduced padding to make the button smaller
+    paddingHorizontal: 16,  // Reduced padding to make the button smaller
     backgroundColor: 'white',
     borderRadius: 8,
     justifyContent: 'center',
