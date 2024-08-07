@@ -8,7 +8,9 @@ logger = logging.getLogger(__name__)
 
 chatbot_flow = {
     "start": {
-        "prompt": "Nice to meet you, {user_name}.",
+        
+        "prompt": "Nice to meet you, {user_name}. \n Before we begin, I need to ask you a few questions that will help me evaluate best approach for you.",
+
         "options": [
             {
                 "text": "Sounds good!",
@@ -31,6 +33,7 @@ chatbot_flow = {
     },
     "question_2": {
         "prompt": "Do you think your current circumstance falls under the right claim?",
+        "prompt": "HEHE TEST",
         "options": [
             {
                 "text": "Yes, it is",

@@ -10,6 +10,8 @@ import UserStartScreen from './components/screens/UserStartScreen';
 import HomePage from './components/screens/HomePageScreen';
 import ExplorePageScreen from './components/screens/home-screens/ExplorePageScreen';
 import ConsultPageScreen from './components/screens/home-screens/ConsultPageScreen';
+import DexConsultPage from './components/screens/home-screens/DexConsultPageScreen';
+
 import LoanPageScreen from './components/screens/home-screens/LoanPageScreen';
 import StatsDisabilityPage from './components/screens/home-screens/StatsDisabilityPage';
 import StatsCompPage from './components/screens/home-screens/StatsCompPage';
@@ -30,6 +32,7 @@ function App() {
           <Stack.Screen name="HomePage" component={HomePage} options={{ headerShown: false }} />
           <Stack.Screen name="ExplorePageScreen" component={ExplorePageScreen} options={{ headerShown: false }} />
           <Stack.Screen name="ConsultPageScreen" component={ConsultPageScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="DexConsultPage" component={DexConsultPage} options={{ headerShown: false }} />
           <Stack.Screen name="LoanPageScreen" component={LoanPageScreen} options={{ headerShown: false }} />
           <Stack.Screen name="StatsDisabilityPage" component={StatsDisabilityPage} options={{ headerShown: false }} />
           <Stack.Screen name="StatsCompPage" component={StatsCompPage} options={{ headerShown: false }} />

@@ -8,52 +8,10 @@ import axios from 'axios';
 const ConsultPageScreen = () => {
   const navigation = useNavigation();
   const { userInfo, loading, error } = useVeteranData();
-  const [chatFlow, setChatFlow] = useState(null);
-  const [currentStep, setCurrentStep] = useState(null);
-  const [chatHistory, setChatHistory] = useState([]);
   const [showInitialButton, setShowInitialButton] = useState(true);
-  const [csrfToken, setCsrfToken] = useState('');
 
-  useEffect(() => {
-    axios.get('http://localhost:8000/chatbot/')
-      .then(response => {
-        setChatFlow(response.data.chatbot_flow);
-        setCsrfToken(response.data.csrf_token);
-      })
-      .catch(error => console.error(error));
-  }, []);
-
-  const handleOptionClick = (option, index) => {
-    const nextStep = chatFlow[option.next];
-    setChatHistory(prevChatHistory => [
-      ...prevChatHistory,
-      { type: 'user', text: option.text },
-      { type: 'bot', text: nextStep.prompt }
-    ]);
-    setCurrentStep(option.next);
-
-    // Send the response to the server to get the next step
-    axios.post('http://localhost:8000/chatbot/', 
-      { response: index, current_step: currentStep }, 
-      { headers: { 'X-CSRFToken': csrfToken } }
-    )
-    .then(response => {
-      setChatFlow(prevChatFlow => ({
-        ...prevChatFlow,
-        [option.next]: response.data
-      }));
-    })
-    .catch(error => console.error(error));
-  };
-
-  const handleInitialButtonClick = () => {
-    setShowInitialButton(false);
-    const startStep = chatFlow['start'];
-    setChatHistory(prevChatHistory => [
-      ...prevChatHistory,
-      { type: 'bot', text: startStep.prompt }
-    ]);
-    setCurrentStep('question_1');
+  const navigateToDexConsultPage = () => {
+    navigation.navigate('DexConsultPage', { firstName: userInfo.serviceHistory?.data?.[0]?.attributes?.first_name });
   };
 
   if (loading) {
@@ -73,8 +31,6 @@ const ConsultPageScreen = () => {
   }
 
   const firstName = userInfo.serviceHistory?.data?.[0]?.attributes?.first_name;
-
-  const step = currentStep && chatFlow ? chatFlow[currentStep] : null;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -111,45 +67,10 @@ const ConsultPageScreen = () => {
       
       {showInitialButton && (
         <Animatable.View animation="fadeIn" duration={1000} delay={4000} style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.button} onPress={handleInitialButtonClick}>
-            <Text style={styles.buttonText}>Sounds good!</Text>
+          <TouchableOpacity style={styles.button} onPress={navigateToDexConsultPage}>
+            <Text style={styles.buttonText}>Let's get started it!</Text>
           </TouchableOpacity>
         </Animatable.View>
-      )}
-
-      {chatFlow && (
-        <View style={styles.chatContainer}>
-          {chatHistory.map((chat, index) => (
-            <Animatable.View
-              key={index}
-              animation="fadeIn"
-              duration={1000}
-              style={[
-                styles.messageContainer,
-                chat.type === 'user' ? styles.userMessage : styles.botMessage,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.messageText,
-                  chat.type === 'user' ? styles.userText : styles.botText,
-                ]}
-              >
-                {chat.text}
-              </Text>
-            </Animatable.View>
-          ))}
-          {step && step.options && step.options.map((option, index) => (
-            <Animatable.View animation="fadeIn" duration={1000} delay={index * 500} key={index}>
-              <TouchableOpacity
-                style={styles.optionButton}
-                onPress={() => handleOptionClick(option, index)}
-              >
-                <Text style={styles.optionText}>{option.text}</Text>
-              </TouchableOpacity>
-            </Animatable.View>
-          ))}
-        </View>
       )}
     </ScrollView>
   );
@@ -259,25 +180,6 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro Display',
     fontWeight: '500',
     lineHeight: 16,
-  },
-  optionButton: {
-    alignSelf: 'stretch',
-    backgroundColor: '#fff',
-    borderColor: '#e6e6e6',
-    borderWidth: 1,
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  optionText: {
-    fontSize: 13,
-    color: '#191F28',
-    fontFamily: 'SF Pro',
-    fontWeight: '510',
-    lineHeight: 28,
-    textAlign: 'center',
   },
 });
 
