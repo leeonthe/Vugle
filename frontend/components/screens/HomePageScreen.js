@@ -246,13 +246,13 @@ function HomePage() {
           />
           <Text style={styles.navTextInactive}>Loan</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('AllPageScreen')}>
+        {/* <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('AllPageScreen')}>
           <Image
             source={require('../../assets/loan_icon.png')} // Update with your all icon path
             style={styles.navIcon}
           />
           <Text style={styles.navTextInactive}>All</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
     </View>
   );
