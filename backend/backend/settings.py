@@ -33,6 +33,7 @@ SECRET_KEY = 'django-insecure-k^&20u1%#qe_p&8keuqpb7hg5_nmj!qadai4@nvxz1@#h=s^7w
 DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_REDIRECT_URI_SCHEMES = ['http', 'https', 'yourapp']
 
 
 # Application definition
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'appSettings',
     'oauth2_provider',
     'rest_framework.authtoken',
+    'chatbot',
 
 
 ]
@@ -65,6 +67,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'oauth2_provider.middleware.OAuth2TokenMiddleware',
+    'api.middleware.AllowCustomSchemeMiddleware',
 
 ]
 

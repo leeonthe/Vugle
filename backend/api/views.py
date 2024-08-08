@@ -1,15 +1,22 @@
 # views.py
 
+from pathlib import Path
 import random
-import string
+import string, json
 import hashlib
 import base64
 import requests, os
+import jwt
+import time
+import uuid
+from django.conf import settings
 from django.shortcuts import redirect
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseRedirect, HttpResponse
 from django.views import View
 from urllib.parse import urlencode
 import logging
+from django.utils.http import url_has_allowed_host_and_scheme
+
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +29,13 @@ class OAuthLoginView(View):
         code_verifier = self._generate_code_verifier()
         code_challenge = self._generate_code_challenge(code_verifier)
         state = self._generate_state()
-
         # Store code_verifier and state in TEMP_STORAGE
         TEMP_STORAGE[state] = code_verifier
         print("[login] code_verifier ", code_verifier)
         print("doublechekc", code_verifier)
         print('[login] state ', state)
         print('[login] code_challenge ', code_challenge)
+
         params = {
             'client_id': '0oax86sg7sEgacnY52p7',
             'redirect_uri': 'http://localhost:8000/api/oauth/callback/',
@@ -63,7 +70,9 @@ class OAuthCallbackView(View):
         code = request.GET.get('code')
         state = request.GET.get('state')
         code_verifier = OAuthLoginView().get_code_verifier(state)
-        
+        print("[callback] code ", code)
+        print("[callback] state ", state)
+        print("[callback] code_verifier ", code_verifier)
         if not code:
             logger.error("Missing code")
             return HttpResponseBadRequest("Missing code")
@@ -75,23 +84,140 @@ class OAuthCallbackView(View):
             return HttpResponseBadRequest("Missing code_verifier")
         
         token_url = "https://sandbox-api.va.gov/oauth2/veteran-verification/v1/token/"
-        
-
-
+    
         token_data = {
             'grant_type': 'authorization_code',
             'code': code,
             'client_id': '0oax86sg7sEgacnY52p7',
-            'redirect_uri': 'http://localhost:8000/api/oauth/callback/',
+            'redirect_uri': 'yourapp://oauthredirect',
             'code_verifier': code_verifier,
         }
 
         response = requests.post(token_url, data=token_data)
-
+        print("response: ",response)
         if response.status_code == 200:
             token_response = response.json()
-            return JsonResponse(token_response)
-            # return redirect('http://localhost:8000/api/oauth/callback/?code=${code}&state=${state}')
+            access_token = token_response.get('access_token')
+
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>OAuth Redirect</title>
+                <script type="text/javascript">
+                    function postToken() {{
+                        window.ReactNativeWebView.postMessage("{access_token}");
+                    }}
+                    window.onload = postToken;
+                </script>
+            </head>
+            <body>
+                <p>Redirecting...</p>
+            </body>
+            </html>
+            """
+            return HttpResponse(html_content)
+        
         else:
             logger.error(f"Token exchange failed: {response.status_code}, {response.text}")
             return HttpResponseBadRequest("Token exchange failed")
+        
+    
+class GenerateJWTView(View):
+    CLIENT_ID = '0oaxj51zcfaczzOaw2p7'
+    PRIVATE_KEY_PATH = Path(__file__).resolve().parent.parent.parent / 'private.pem'
+    audience = 'https://deptva-eval.okta.com/oauth2/ausftw7zk6eHr7gMN2p7/v1/token'
+    def get(self, request):
+        print("IS CALLED, GENEREATE JWT VIEW")
+        with open(self.PRIVATE_KEY_PATH, 'r') as key_file:
+            private_key = key_file.read()
+        
+
+        # Generate JWT
+        iat = int(time.time())
+        exp = iat + 300
+        payload = {
+            "aud": self.audience,
+            "iss": self.CLIENT_ID,
+            "sub": self.CLIENT_ID,
+            "iat": iat,
+            "exp": exp,
+            "jti": str(uuid.uuid4())
+        }
+        
+        jwt_token = jwt.encode(payload, private_key, algorithm='RS256')
+        jwt_token_str = jwt_token.decode('utf-8')
+        print("jwt_token_str: ", jwt)
+        return JsonResponse({"jwt_token": jwt_token_str})
+    
+class GetAccessTokenView(View):
+    CLIENT_ID = '0oaxj51zcfaczzOaw2p7'
+    TOKEN_URL = 'https://sandbox-api.va.gov/oauth2/va-letter-generator/system/v1/token'
+    
+    def get(self, request):
+        print("IS CALLED, GET ACCESS TOKEN VIEW")
+        generate_jwt_view = GenerateJWTView()
+        jwt_response = generate_jwt_view.get(request)
+        print("jwt_response: ", jwt_response.content)
+        jwt_token = json.loads(jwt_response.content).get('jwt_token')
+        print("jwt_token: ", jwt_token)
+        
+        token_data = {
+            'grant_type': 'client_credentials',
+            'client_assertion_type': 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+            'client_assertion': jwt_token,
+            'scope': 'letters.read'
+        }
+        response = requests.post(self.TOKEN_URL, data=token_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        
+        if response.status_code == 200:
+            token_response = response.json()
+            access_token = token_response.get('access_token')
+            print("access_token: ", access_token)
+            return JsonResponse({"access_token": access_token})
+        else:
+            print(f"Token exchange failed: {response.status_code}, {response.text}")
+            logger.error(f"Token exchange failed: {response.status_code}, {response.text}")
+            return HttpResponseBadRequest("Token exchange failed")
+
+    # def get(self, request):
+    #     # Generate JWT
+    #     generate_jwt_view = GenerateJWTView()
+    #     jwt_response = generate_jwt_view.get(request)
+    #     jwt_token = jwt_response.json().get('jwt_token')
+        
+    #     # Request access token
+    #     token_data = {
+    #         'grant_type': 'client_credentials',
+    #         'client_assertion_type': 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+    #         'client_assertion': jwt_token,
+    #         'scope': 'letters.read'
+    #     }
+    #     response = requests.post(self.TOKEN_URL, data=token_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+        
+    #     if response.status_code == 200:
+    #         token_response = response.json()
+    #         access_token = token_response.get('access_token')
+    #         print("access_token: [ELIGLBE}] ", access_token)
+    #         # Send access token to React Native Expo
+    #         html_content = f"""
+    #         <!DOCTYPE html>
+    #         <html>
+    #         <head>
+    #             <title>OAuth Redirect</title>
+    #             <script type="text/javascript">
+    #                 function postToken() {{
+    #                     window.ReactNativeWebView.postMessage("{access_token}");
+    #                 }}
+    #                 window.onload = postToken;
+    #             </script>
+    #         </head>
+    #         <body>
+    #             <p>Redirecting...</p>
+    #         </body>
+    #         </html>
+    #         """
+    #         return HttpResponse(html_content)
+    #     else:
+    #         logger.error(f"Token exchange failed: {response.status_code}, {response.text}")
+    #         return HttpResponseBadRequest("Token exchange failed")
