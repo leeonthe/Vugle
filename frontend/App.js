@@ -20,10 +20,13 @@ import Chatbot from './components/screens/home-screens/ChatbotScreen';
 
 import HospitalPageScreen from './components/screens/hospital-screens/HospitalPageScreen';
 
+import useClearDataOnAppStateChange from './useClearDataOnAppStateChange';
 
 const Stack = createStackNavigator();
 
 function App() {
+  useClearDataOnAppStateChange();
+  
   return (
     <VeteranDataProvider>
       <NavigationContainer>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
 import { useNavigation } from '@react-navigation/native';
@@ -14,8 +13,19 @@ const LoginScreen = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
+    const clearUserData = async () => {
+      try {
+        await AsyncStorage.removeItem('access_token');
+        await AsyncStorage.removeItem('letters_access_token');
+        console.log('User data cleared successfully on reload');
+      } catch (error) {
+        console.error('Error clearing user data on reload', error);
+      }
+    };
+
     const initiateOAuth = async () => {
       try {
+        await clearUserData();
         const response = await fetch(backendUrl, {
           method: 'GET',
         });
@@ -39,7 +49,7 @@ const LoginScreen = () => {
       const { auth_url, state } = data;
       console.log('auth_url:', auth_url);
       await AsyncStorage.setItem('state', state);
-      setShowWebView(true); // Show WebView to handle OAuth flow
+      setShowWebView(true);
     } catch (error) {
       console.error('Failed to initiate OAuth flow', error);
     }
@@ -50,7 +60,7 @@ const LoginScreen = () => {
     if (accessToken) {
       console.log("accessToken:", accessToken);
       await AsyncStorage.setItem('access_token', accessToken);
-      setShowWebView(false); // Hide WebView after receiving the token
+      setShowWebView(false);
       console.log("Navigating to UserStart!");
       navigation.navigate('UserStart', { tokenData: { access_token: accessToken } });
     }
@@ -81,7 +91,6 @@ const LoginScreen = () => {
       <Text style={styles.subtitle}>
         US regulations require us to get consent for utilizing your STRs and EHR before we can proceed with our service.
       </Text>
-      
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Continue with VA.gov</Text>
       </TouchableOpacity>
@@ -116,7 +125,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
   },
-  
   button: {
     position: 'absolute',
     bottom: 20,

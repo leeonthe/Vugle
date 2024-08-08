@@ -11,19 +11,20 @@ function HomePage() {
   const navigation = useNavigation();
   let combinedDisabilityRating = 'N/A';
   let veteranStatus = 'N/A';
+  let monthlyCompensation = 'NULL';
 
   if (userInfo.disabilityRating) {
     const parsedDisabilityRating = JSON.parse(JSON.stringify(userInfo.disabilityRating));
     if (parsedDisabilityRating.data && parsedDisabilityRating.data.attributes) {
       combinedDisabilityRating = parsedDisabilityRating.data.attributes.combined_disability_rating;
-      veteranStatus = parsedDisabilityRating.data.id; // THIS IS ICN VALUE. 
+      veteranStatus = parsedDisabilityRating.data.id; // THIS IS ICN VALUE.
     }
   }
 
-  
   if (eligibleLetters.benefitInformation) {
-    monthlyCompensation = `${eligibleLetters.benefitInformation.monthlyAwardAmount.value}`;
+    monthlyCompensation = `${eligibleLetters.benefitInformation.monthlyAwardAmount?.value ?? 'NULL'}`;
   }
+
   if (userInfo.status) {
     const parsedStatus = JSON.parse(JSON.stringify(userInfo.status));
     if (parsedStatus.data && parsedStatus.data.attributes) {
@@ -36,7 +37,7 @@ function HomePage() {
       <View style={styles.header}>
         <Text style={styles.headerText}>Home</Text>
         <Image
-          source={require('../../assets/notification_icon.png')} // Update with your notification icon path
+          source={require('../../assets/notification_icon.png')}
           style={styles.notificationIcon}
         />
       </View>
@@ -95,12 +96,11 @@ function HomePage() {
           </TouchableOpacity>
         </View>
 
-        {/* New Section */}
         <View style={styles.infoCard}>
           <View style={styles.infoItem}>
             <View style={styles.infoLeft}>
               <Image
-                source={require('../../assets/disability_icon.png')} // Update with your disability icon path
+                source={require('../../assets/disability_icon.png')}
                 style={styles.infoIcon}
               />
               <View style={styles.infoTextContainer}>
@@ -115,13 +115,12 @@ function HomePage() {
           <View style={styles.infoItem}>
             <View style={styles.infoLeft}>
               <Image
-                source={require('../../assets/compensation_icon.png')} // Update with your compensation icon path
+                source={require('../../assets/compensation_icon.png')}
                 style={styles.infoIcon}
               />
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoTitle}>Monthly compensation</Text>
                 <Text style={styles.infoValue}>${monthlyCompensation}</Text>
-
               </View>
             </View>
             <TouchableOpacity style={styles.infoRight} onPress={() => navigation.navigate('StatsCompPage')}>
@@ -129,9 +128,7 @@ function HomePage() {
             </TouchableOpacity>
           </View>
         </View>
-              
 
-        {/* Claims Status */}
         <View style={styles.claimsStatusContainer}>
           <View style={styles.claimsStatusHeader}>
             <Text style={styles.claimsStatusTitle}>Claims status</Text>
@@ -148,7 +145,6 @@ function HomePage() {
           </View>
         </View>
 
-        {/* My Documents */}
         <View style={styles.myDocumentsContainer}>
           <View style={styles.myDocumentsContent}>
             <View style={styles.myDocumentsRow}>
@@ -164,14 +160,12 @@ function HomePage() {
           </View>
         </View>
 
-        {/* Current Resources */}
         <View style={styles.currentResourcesContainer}>
           <View style={styles.currentResourcesHeader}>
             <Text style={styles.currentResourcesTitle}>Current resources</Text>
             <View style={styles.currentResourcesIcon} />
           </View>
           <View style={styles.currentResourcesContent}>
-            {/* GI Bill */}
             <View style={styles.resourceRow}>
               <View style={styles.resourceRowContent}>
                 <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
@@ -182,7 +176,6 @@ function HomePage() {
               </View>
               <View style={styles.resourceIconArrow} />
             </View>
-            {/* Housing Support */}
             <View style={styles.resourceRow}>
               <View style={styles.resourceRowContent}>
                 <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
@@ -193,7 +186,6 @@ function HomePage() {
               </View>
               <View style={styles.resourceIconArrow} />
             </View>
-            {/* Travel Reimbursement */}
             <View style={styles.resourceRow}>
               <View style={styles.resourceRowContent}>
                 <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
@@ -204,7 +196,6 @@ function HomePage() {
               </View>
               <View style={styles.resourceIconArrow} />
             </View>
-            {/* Explore More Benefits */}
             <View style={styles.exploreMoreContainer}>
               <View style={styles.exploreMoreContent}>
                 <View style={styles.exploreMoreIconContainer}>
@@ -246,13 +237,6 @@ function HomePage() {
           />
           <Text style={styles.navTextInactive}>Loan</Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('AllPageScreen')}>
-          <Image
-            source={require('../../assets/loan_icon.png')} // Update with your all icon path
-            style={styles.navIcon}
-          />
-          <Text style={styles.navTextInactive}>All</Text>
-        </TouchableOpacity> */}
       </View>
     </View>
   );
@@ -265,7 +249,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     paddingHorizontal: 20,
-    paddingTop: 30, //placing container: Earn additional $16,286 benefits annually
+    paddingTop: 30, 
   },
   header: {
     flexDirection: 'row',
@@ -337,10 +321,9 @@ const styles = StyleSheet.create({
   graphContainer: {
     color: '#F7F9FD',
     flexDirection: 'row',
-    justifyContent: 'space-around', // Adjusted to bring graph items closer
+    justifyContent: 'space-around', 
     width: '100%',
     marginBottom: 22,
-
   },
   graphItem: {
     alignItems: 'center',
@@ -352,7 +335,7 @@ const styles = StyleSheet.create({
   },
   barGroup: {
     alignItems: 'center',
-    marginHorizontal: 2, // Adjusted to bring bars closer
+    marginHorizontal: 2, 
   },
   barLabel: {
     color: '#575757',
@@ -497,8 +480,6 @@ const styles = StyleSheet.create({
     fontWeight: '510',
     color: '#ADB3BA',
   },
-  // Add these styles to your StyleSheet
-
   claimsStatusContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -514,7 +495,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   claimsStatusHeader: {
-    flexDirection: 'row', // Ensure horizontal layout
+    flexDirection: 'row',
     alignSelf: 'stretch',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -553,7 +534,7 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     backgroundColor: '#5EAC24',
-    marginRight: 5, // space between icon and text
+    marginRight: 5, 
   },
   claimsStatusTextContainer: {
     flexDirection: 'column',
@@ -576,8 +557,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     wordWrap: 'break-word',
   },
-
-  // DOCUMENT STYLING
   myDocumentsContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -600,7 +579,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     position: 'relative',
-    marginRight: 16, // Add some space between icon and text
+    marginRight: 16, 
   },
   myDocumentsIconBlue: {
     width: 30.67,
@@ -635,9 +614,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     wordWrap: 'break-word',
   },
-
-  // CURRENT RESOURCES STYLING
-  
   currentResourcesContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -665,7 +641,6 @@ const styles = StyleSheet.create({
     fontWeight: '510',
     lineHeight: 22,
     wordWrap: 'break-word',
-
   },
   currentResourcesIcon: {
     width: 7,
@@ -686,22 +661,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8, // Add vertical padding for spacing
+    paddingVertical: 8, 
   },
   resourceRowContent: {
     flexDirection: 'row', 
     alignItems: 'center',
-    flex: 1, // Allow the content to stretch and fill the space
+    flex: 1, 
   },
   resourceIcon: {
     width: 20,
     height: 20,
-    marginRight: 16, // Add some space between icon and text
+    marginRight: 16, 
   },
   resourceTextContainer: {
     flexDirection: 'column',
     justifyContent: 'center',
-    flex: 1, // Allow the text container to stretch
+    flex: 1, 
   },
   resourceTitle: {
     color: '#6B7685',
@@ -736,10 +711,10 @@ const styles = StyleSheet.create({
   exploreMoreContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1, // Allow the content to stretch and fill the space
+    flex: 1, 
   },
   exploreMoreIconContainer: {
-    marginRight: 10, // Add some space between icon and text
+    marginRight: 10, 
   },
   exploreMoreIcon: {
     width: 16,
@@ -754,7 +729,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     wordWrap: 'break-word',
   },
-
 });
 
 export default HomePage;

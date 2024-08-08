@@ -18,10 +18,33 @@ const fetchVeteranData = async (accessToken, endpoint) => {
       'Content-Type': 'application/json',
     },
   });
+  if (response.status === 401) {
+    console.error(`Access token is invalid or expired. Fetching a new token...`);
+    const newAccessToken = await fetchLetterAccessToken();
+    return fetchVeteranData(newAccessToken, endpoint);
+  }
+  
   if (response.status !== 200) {
+    console.log(`Failed to fetch ${endpoint}: ${response.statusText}, response status is:`, response.status);
     throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);
   }
   return response.json();
+};
+
+const fetchUserIDFromDisabilityRating = async (accessToken) => {
+  const response = await fetch(`${API_BASE_URL}${endpoints.disabilityRating}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (response.status !== 200) {
+    throw new Error(`Failed to fetch disability rating: ${response.statusText}`);
+  }
+  const data = await response.json();
+  return data.id;
 };
 
 const fetchEligibleLetters = async (accessToken, icn) => {
@@ -50,8 +73,6 @@ const fetchEligibleLetters = async (accessToken, icn) => {
   }
   return response.json();
 };
-
-
 
 const fetchLetterAccessToken = async () => {
   try {
@@ -121,7 +142,16 @@ export const VeteranDataProvider = ({ children }) => {
       setLoading(false);
     };
 
-    fetchAllData();
+    const waitForTokenAndFetchData = async () => {
+      let token = await AsyncStorage.getItem('access_token');
+      while (!token) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        token = await AsyncStorage.getItem('access_token');
+      }
+      await fetchAllData();
+    };
+
+    waitForTokenAndFetchData();
   }, []);
 
   return (
