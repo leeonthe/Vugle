@@ -6,5 +6,6 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('api/v1.0/app/', include('appSettings.urls')),
     path('chatbot/', include('chatbot.urls')),
+    # path('ai/', include('ai.urls')),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]

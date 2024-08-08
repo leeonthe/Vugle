@@ -9,7 +9,6 @@ image = "static/vugle.png"
 chatbot_flow = {
     "start": {
         "prompt": "[[IMAGE]]\nNice to meet you, {user_name}.\nBefore we begin, I need to ask you a few questions that will help me evaluate the best approach for you.",
-
         "options": [
             {
                 "text": "Sounds good!",
@@ -27,7 +26,11 @@ chatbot_flow = {
             {
                 "text": "Current disability worsened",
                 "next": "question_2"
-            }
+            },
+            {
+                "text": "Hospital linking",
+                "next": "hospital_linking"
+            },
         ]
     },
     "question_2": {
@@ -42,6 +45,19 @@ chatbot_flow = {
                 "next": "question_1"
             }
         ]
+    },
+    "hospital_linking": {
+        "prompt": "[[IMAGE]]\nGot it. Click the link below to test hospital linking.",
+        "options": [
+            {
+                "text": "TEST LINKING HOSIPITAL",
+                "next": "navigate_hospital"
+            }
+        ]
+    },
+    "navigate_hospital": {
+        "prompt": "",
+        "navigation_url": "/hospital"
     },
     "end": {
         "prompt": "[[IMAGE]]\nThank you for your responses. We will guide you further."
@@ -71,7 +87,8 @@ class ChatbotView(View):
 
             next_step = chatbot_flow[current_step]['options'][int(user_response)]['next']
             next_prompt = chatbot_flow[next_step]['prompt'].split('\n')
-            return JsonResponse({"image": chatbot_flow[next_step].get('image', None), "prompts": next_prompt, "options": chatbot_flow[next_step].get('options', [])})
+            navigation_url = chatbot_flow[next_step].get('navigation_url', None)
+            return JsonResponse({"image": chatbot_flow[next_step].get('image', None), "prompts": next_prompt, "options": chatbot_flow[next_step].get('options', []), "navigation_url": navigation_url})
 
         except KeyError as e:
             logger.error(f'KeyError: {e}')

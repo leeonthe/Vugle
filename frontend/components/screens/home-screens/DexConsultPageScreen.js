@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 
 const DexConsultPageScreen = () => {
   const route = useRoute();
+  const navigation = useNavigation();
   const { firstName } = route.params;
   const [chatFlow, setChatFlow] = useState(null);
   const [currentStep, setCurrentStep] = useState('start');
@@ -56,8 +57,10 @@ const DexConsultPageScreen = () => {
         { response: index, current_step: currentStep }, 
         { headers: { 'X-CSRFToken': csrfToken } }
       );
-      const { prompts, options } = response.data;
-      if (prompts) {
+      const { prompts, options, navigation_url } = response.data;
+      if (navigation_url) {
+        navigation.navigate('HospitalPageScreen');
+      } else if (prompts) {
         prompts.forEach((text, idx) => {
           const isImagePlaceholder = text.includes('[[IMAGE]]');
           setChatHistory(prevChatHistory => [
@@ -72,16 +75,6 @@ const DexConsultPageScreen = () => {
         });
       }
       setCurrentStep(option.next);
-    //   setTimeout(() => {
-    //     const lastUserMessageIndex = userMessageIndices.current[userMessageIndices.current.length - 1];
-    //     // let scrollToY = messageHeights.current.slice(0, lastUserMessageIndex).reduce((acc, height) => acc + height, 0);
-    //     // if (scrollToY > 4000) {
-    //     //   scrollToY = 500;
-    //     // }
-    //     const scrollToY = 1500;
-    //     console.log('scrollToY value:', scrollToY);
-    //     scrollViewRef.current.scrollTo({ y: scrollToY, animated: true });
-    //   }, 100);
     } catch (error) {
       console.error(error);
     }

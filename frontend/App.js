@@ -18,6 +18,9 @@ import StatsCompPage from './components/screens/home-screens/StatsCompPage';
 import AllPageScreen from './components/screens/home-screens/AllPageScreen';
 import Chatbot from './components/screens/home-screens/ChatbotScreen';
 
+import HospitalPageScreen from './components/screens/hospital-screens/HospitalPageScreen';
+
+
 const Stack = createStackNavigator();
 
 function App() {
@@ -38,6 +41,8 @@ function App() {
           <Stack.Screen name="StatsCompPage" component={StatsCompPage} options={{ headerShown: false }} />
           <Stack.Screen name="AllPageScreen" component={AllPageScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Chatbot" component={Chatbot} options={{ headerShown: false }} />
+          <Stack.Screen name="HospitalPageScreen" component={HospitalPageScreen} options={{ headerShown: false }} />
+
         </Stack.Navigator>
       </NavigationContainer>
     </VeteranDataProvider>
