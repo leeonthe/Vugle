@@ -23,7 +23,7 @@ const fetchVeteranData = async (accessToken, endpoint) => {
     const newAccessToken = await fetchLetterAccessToken();
     return fetchVeteranData(newAccessToken, endpoint);
   }
-  
+
   if (response.status !== 200) {
     console.log(`Failed to fetch ${endpoint}: ${response.statusText}, response status is:`, response.status);
     throw new Error(`Failed to fetch ${endpoint}: ${response.statusText}`);

@@ -18,6 +18,9 @@ const LoginScreen = () => {
         await AsyncStorage.removeItem('access_token');
         await AsyncStorage.removeItem('letters_access_token');
         console.log('User data cleared successfully on reload');
+        console.log('Current access_token:', await AsyncStorage.getItem('access_token'));
+        console.log("Current letters_access_token:", await AsyncStorage.getItem('letters_access_token'));
+        console.log("Currnet ICN:", await AsyncStorage.getItem('icn'));
       } catch (error) {
         console.error('Error clearing user data on reload', error);
       }
@@ -42,6 +45,7 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
+
       const response = await fetch(backendUrl, {
         method: 'GET',
       });
@@ -59,6 +63,8 @@ const LoginScreen = () => {
     const accessToken = event.nativeEvent.data;
     if (accessToken) {
       console.log("accessToken:", accessToken);
+      console.log("Logging with this ICN:", await AsyncStorage.getItem('icn'));
+
       await AsyncStorage.setItem('access_token', accessToken);
       setShowWebView(false);
       console.log("Navigating to UserStart!");

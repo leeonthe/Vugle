@@ -25,7 +25,7 @@ import useClearDataOnAppStateChange from './useClearDataOnAppStateChange';
 const Stack = createStackNavigator();
 
 function App() {
-  useClearDataOnAppStateChange();
+  // useClearDataOnAppStateChange();
   
   return (
     <VeteranDataProvider>
@@ -45,7 +45,6 @@ function App() {
           <Stack.Screen name="AllPageScreen" component={AllPageScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Chatbot" component={Chatbot} options={{ headerShown: false }} />
           <Stack.Screen name="HospitalPageScreen" component={HospitalPageScreen} options={{ headerShown: false }} />
-
         </Stack.Navigator>
       </NavigationContainer>
     </VeteranDataProvider>
