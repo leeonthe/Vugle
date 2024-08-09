@@ -63,7 +63,7 @@ chatbot_flow = {
         ]
     },
     "get_more_condition": {
-        "prompt": "[[IMAGE]][BR]Any other conditions?[CLOSE][NEWLINE]It’s okay if they are not severe. Any conditions or symptoms that are troubling you can help us improve your chance.",
+        "prompt": "[[IMAGE]][BR][BOLD]Any other conditions?[CLOSE][NEWLINE]It’s okay if they are not severe. Any conditions or symptoms that are troubling you can help us improve your chance.",
         "options": [
             {
                 "text": "Add more",
@@ -91,7 +91,7 @@ chatbot_flow = {
 
     # TODO: Create navigate_potential_condition
     "potential_condition_linking":{
-        "prompt": "[[IMAGE]][BR][BOLD]Potential affected conditions[CLOSE][NEWLINE]Based on your health records and the condition you’ve mentioned, we’ve listed potential conditions that you might also be experiencing.[LINE_START]Why it’s important[LINK_END]",
+        "prompt": "[[IMAGE]][BR][BOLD]Potential affected conditions[CLOSE][NEWLINE]Based on your health records and the condition you’ve mentioned, we’ve listed potential conditions that you might also be experiencing.[LINK_START]Why it’s important[LINK_END]",
         "options": [
             {
                 "text": "Let's check",

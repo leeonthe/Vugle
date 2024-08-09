@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Button } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Button, Keyboard } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -20,6 +20,8 @@ const DexConsultPageScreen = () => {
   const scrollViewRef = useRef([]);
   const messageHeights = useRef([]);
   const userMessageIndices = useRef([]);
+  const inputRef = useRef(null); // Ref for the TextInput
+
 
   useEffect(() => {
     axios.get('http://localhost:8000/chatbot/')
@@ -30,6 +32,11 @@ const DexConsultPageScreen = () => {
       })
       .catch(error => console.error(error));
   }, []);
+  useEffect(() => {
+    if (currentStep === 'new_condition') {
+      inputRef.current?.focus(); // Focus the TextInput when 'new_condition' step is reached
+    }
+  }, [currentStep]);
 
   const handleStepChange = (step, prompt, options = []) => {
     if (!prompt) return;
@@ -37,9 +44,9 @@ const DexConsultPageScreen = () => {
     const processedPrompt = prompt
         .replace('{user_name}', firstName)
         .replace(/\[NEWLINE\]/g, '\n')  // Replace [NEWLINE] with actual new lines within the same container
-        .replace(/\[IMAGE\]/g, 'IMAGE_PLACEHOLDER')  // Placeholder for the image
-        .replace(/\[BOLD\](.*?)\[CLOSE\]/g, (_, match) => `<b>${match}</b>`)  // Handle bold text
-        .replace(/\[LINK_START\](.*?)\[LINK_END\]/g, (_, match) => `<a href="#">${match}</a>`); // Handle links
+        .replace(/\[BOLD\](.*?)\[CLOSE\]/g, (_, match) => `<b>${match}</b>`)  // Convert to HTML-like bold tags for further processing
+        .replace(/\[LINK_START\](.*?)\[LINK_END\]/g, (_, match) => `<a href="#">${match}</a>`) // Convert to link tags for further processing
+        .replace(/\[IMAGE\]/g, 'IMAGE_PLACEHOLDER');  // Handle image placeholder
 
     const messages = processedPrompt.split('[BR]');
 
@@ -48,17 +55,17 @@ const DexConsultPageScreen = () => {
         const isImagePlaceholder = message.includes('IMAGE_PLACEHOLDER');
 
         setChatHistory(prevChatHistory => [
-              ...prevChatHistory,
-              {
-                  type: 'bot',
-                  text: isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim(),
-                  imageSource: isImagePlaceholder ? require('../../../assets/vugle.png') : null,  // Set the image source
-                  options: isLastMessage ? options : [],  // Only attach options to the last message
-                  isImagePlaceholder
-              }
-          ]);
-      });
-  };
+            ...prevChatHistory,
+            {
+                type: 'bot',
+                text: isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim(),
+                imageSource: isImagePlaceholder ? require('../../../assets/vugle.png') : null,  // Set the image source
+                options: isLastMessage ? options : [],  // Only attach options to the last message
+                isImagePlaceholder
+            }
+        ]);
+    });
+};
 
   const handleUserInputSubmit = () => {
     if (userInput.trim()) {
@@ -68,7 +75,7 @@ const DexConsultPageScreen = () => {
         { type: 'user', text: userInput }
       ]);
       setUserInput(''); // Clear the input field
-
+      Keyboard.dismiss();
       // Move to the next step
       setCurrentStep('get_more_condition');
       handleStepChange('get_more_condition', chatFlow.get_more_condition.prompt, chatFlow.get_more_condition.options);
@@ -79,29 +86,40 @@ const DexConsultPageScreen = () => {
     const parts = [];
     let lastIndex = 0;
 
-    const boldRegex = /\<b\>(.*?)\<\/b\>/g;
+    // Combine regex for both bold and link processing
+    const combinedRegex = /<b>(.*?)<\/b>|<a href="#">(.*?)<\/a>/g;
     let match;
-    while ((match = boldRegex.exec(text)) !== null) {
+    while ((match = combinedRegex.exec(text)) !== null) {
         if (match.index > lastIndex) {
-            parts.push({ text: text.substring(lastIndex, match.index), bold: false });
+            parts.push({ text: text.substring(lastIndex, match.index), bold: false, link: false });
         }
-        parts.push({ text: match[1], bold: true });
+        if (match[1]) {  // Bold
+            parts.push({ text: match[1], bold: true, link: false });
+        } else if (match[2]) {  // Link
+            parts.push({ text: match[2], bold: false, link: true });
+        }
         lastIndex = match.index + match[0].length;
     }
     if (lastIndex < text.length) {
-        parts.push({ text: text.substring(lastIndex), bold: false });
+        parts.push({ text: text.substring(lastIndex), bold: false, link: false });
     }
 
     return (
         <Text>
             {parts.map((part, index) => (
-                <Text key={index} style={part.bold ? styles.boldText : styles.normalText}>
+                <Text
+                    key={index}
+                    style={part.bold ? styles.boldText : (part.link ? styles.linkText : styles.normalText)}
+                    onPress={() => part.link ? console.log('Link pressed!') : null}
+                >
                     {part.text}
                 </Text>
             ))}
         </Text>
     );
 };
+
+
 
   const handleFileUpload = async () => {
     try {
@@ -226,6 +244,7 @@ return (
           placeholder="Type your condition here..."
           value={userInput}
           onChangeText={setUserInput}
+          autoFocus={true} 
         />
         <Button title="Submit" onPress={handleUserInputSubmit} />
       </View>
@@ -283,6 +302,10 @@ const styles = StyleSheet.create({
   boldText: {
     fontWeight: 'bold',
   },
+  linkText: {
+    color: '#3182F6',
+    textDecorationLine: 'underline',
+},
   normalText: {
     fontWeight: 'normal',
   },
