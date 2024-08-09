@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "vugle-dex",
+  "private_key_id": "1505d9c56161c5b838f5c501f9a83c4738217900",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7cVZdJZughBuH\nicZPMrTq29/qgOt2VQbWADmnZ82ZY05lfjhnYrtcTz22Pm8qhvFh1RnbRU+ehI5Y\n73nScqwvhzmc1Zs8NWe0ig1gso/ZN8pTuq66S52VnSNmTz+vUtst/IMMuhlRf6nB\nOw7knecz7SuA6y4jNcbOqay5Q6vKTPnftAEpwFgBbhTULfgvC1CESGwzbekhIvXG\n9e1nLUBoijUXxMMZ46jOD9ZiUBPKcC1GJ9wZla9uQzyWeEOgNk5CLoPTCgI2GW8u\njjSKBXvD4I1srnOVJfw43/yiF3gek7SPoOPL1+qzyy5arWRKl3KTmMbLpx2BX9/x\njRpS/k5ZAgMBAAECggEAKJAPArLGAh88juDtgYuFU7K3utlhuxaM12gukc/YkfpH\nx5ZgMd1PktsSDXtm1qLjnwp84TLXV0QzwsK2D+jhYpqmiM4/3PBorAzY9sVFdFoK\npoJmV+nPpQYfmD8Lls79H+8+U9V876JLE8YKQ8Z490d6i9g5AIUda/ETb/cZOLp+\nqLkN9yZHzweh6hHnb53TrvA8gbrZM3XeCQkVBXbKDXDL9UHsdvQ2DedVNa1XQUt9\nrGKaqRwDr8Elzk83PbsM6RO4eQsbuba6wkU175V/aF/hzSikGdBp7gV6obKOPGpZ\n688VaPWcAiS9bYUThw0mG6xicmsZNKsGMq2/3CHXZQKBgQD4CGjf12Alqc6XrUp5\nAX02+AIKOzmpLzy8OPbVX6wJPnV9klU6vDzWtMvcXOVQffFCp63smEGlBm2gEUNq\n+kzueK5dHjkWfXF1TAjsOKkkbogZhSRgbHiN8anUMjwf6mj1vILkUMKnHGNwX4gb\nblYRHIa00QWQWDKacOQ6mU1nVQKBgQDBdrDtqnoZpv0WYqvkMtEO3uPbt8P+V82x\npwfcaVM4z9bJYab4s8cM1W2r+ogS8NIYRq56/QW0Qz1TR79wWz+fXlcNpIKjkRSr\nSZYbR8pemeIomubIgaK+rotsHpbLJ+eJVTxdR9iAV1M+hScGkRbGCuEPcSNHn+bB\nFChcbSzC9QKBgQDEokYiTyjWMwypiqRj0h5mma9kVRedXOmVfsOQ3UwR+AZFCuGu\nstS4kpSbmrnhWjcOVMi5rOs93R7Dq2v7P3wGAn6ZLACuJ7zu9NyOCU1uqIIVWUxB\ndT0NquysYTbxRnD3f/906eGnggYDbHkG5i4tWqQgbSUwDfvwHFeTbT3EEQKBgQCN\nU2pORAHsKVuq9avCCQlFRrfHcwffDj857t3EOsDLuLCb7hUuiw32pxb10g+DXp7r\nkv60448+LvxmkPwdVNs2TZFkau/wEvS5aAkapqgD0YAvz3CVunWrvBAnjHT1tZHj\ndfuh3PEgWCp8eoKWvniXda0RPcHa+cl09IfDdRGE3QKBgGgGcVZycQG7FYwEGPNF\nwFrlCmutQPOJJ3zftIg7u1E5t0JPU9HE0oxxPzMf2pX2K7fTfP8f6NKUzvOVc9/I\nJWseu+2uP1uuKN/LnDchD/Iy1RKns641WcQ4QRzF5DsGVe6g22YiK9RgnY2EDQ7Z\nvsv8ge5DCv3q5tFaf8kXBivR\n-----END PRIVATE KEY-----\n",
+  "client_email": "vugle-dex-ocr@vugle-dex.iam.gserviceaccount.com",
+  "client_id": "108103020644352966232",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/vugle-dex-ocr%40vugle-dex.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

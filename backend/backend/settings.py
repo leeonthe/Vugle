@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'rest_framework.authtoken',
     'chatbot',
+    'documents',    # tony
+    'ai_dex',
 
 
 ]
@@ -99,6 +101,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 'NAME': 'myprojectdb',
+        # 'USER': 'myprojectuser',
+        # 'PASSWORD': 'mypassword',
+        # 'HOST': 'localhost',
+        # 'PORT': '5432',
     }
 }
 
@@ -121,6 +129,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Tony
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Google Cloud credentials
+GOOGLE_APPLICATION_CREDENTIALS = os.path.join(BASE_DIR, '../vugle-health-431600-c998419c9312.json')
+GCLOUD_PROJECT = 'vugle-health-431600'
+DOCUMENT_AI_PROCESSOR_ID = 'd544f32e83e0e56'
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
