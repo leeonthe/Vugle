@@ -4,7 +4,7 @@ import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
 import { useNavigation } from '@react-navigation/native';
-
+import ConnectRecord from '../../assets/assets-userStart/connect_record.svg';
 const backendUrl = 'http://localhost:8000/api/oauth/login/';
 
 const LoginScreen = () => {
@@ -85,14 +85,24 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/logo.png')} style={styles.image} />
+      <ConnectRecord/>
+
       <Text style={styles.title}>Connect your records with VA</Text>
       <Text style={styles.subtitle}>
         US regulations require us to get consent for utilizing your STRs and EHR before we can proceed with our service.
       </Text>
+      <View style={styles.continueContainer}>
+        <Text style={styles.text}>
+          By continuing, you agree to our{' '}
+          <Text style={styles.link}>Privacy Policy</Text>
+          {' '}and{' '}
+          <Text style={styles.link}>Terms of Service</Text>
+          .
+      </Text>
+    </View>
       
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Continue with VA.gov</Text>
+        <Text style={styles.buttonText}>VA Continue with VA.gov</Text>
       </TouchableOpacity>
     </View>
   );
@@ -137,8 +147,29 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+  },
+
+  continueContainer: {
+    width: '100%',
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  text: {
+    color: '#636467',
+    fontSize: 12,
+    fontFamily: 'SF Pro',
+    fontWeight: '400',
+    lineHeight: 18,
+  },
+  link: {
+    color: '#3182F6',
+    fontSize: 12,
+    fontFamily: 'SF Pro',
+    fontWeight: '400',
+    lineHeight: 18,
   },
 });
 

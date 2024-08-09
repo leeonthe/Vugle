@@ -7,6 +7,7 @@ import ServiceTreatment from '../../assets/assets-userStart/Service_treatment.sv
 import MedicalBook from '../../assets/assets-userStart/Medical_Book.svg';
 import ServiceTreatmentRecords from '../../assets/assets-userStart/Service_treatment.svg';
 import BenefitInfo from '../../assets/assets-userStart/Benefits_info.svg';
+import Lock from '../../assets/assets-userStart/lock.svg';
 // SVG COMPLETE
 function UserStartScreen({ route }) {
   const { userInfo, loading, error } = useVeteranData();
@@ -68,7 +69,8 @@ function UserStartScreen({ route }) {
       </View>
 
       <View style={styles.infoContainer}>
-        <Image source={require('../../assets/logo.png')} style={styles.securityIcon} />
+        <Lock width={24} height={24} marginRight={10} />
+
         <Text style={styles.infoText}>We use 128-bit encryption for added security and do not share your data.</Text>
       </View>
 
