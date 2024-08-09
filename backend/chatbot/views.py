@@ -7,8 +7,12 @@ import logging
 logger = logging.getLogger(__name__)
 image = "static/vugle.png"
 chatbot_flow = {
+    # \n new message container
+    # \t bold
+    # \r New line
+    # \f set link
     "start": {
-        "prompt": "[[IMAGE]]\nNice to meet you, {user_name}.\nBefore we begin, I need to ask you a few questions that will help me evaluate the best approach for you.",
+        "prompt": "[[IMAGE]]\nNice to meet you, {user_name}.  \nPlease upload your DD214 Before we begin, we just need one more document from you to evaluate the best approach for your application! I don't have it right now",
         "options": [
             {
                 "text": "Sounds good!",
@@ -64,6 +68,19 @@ chatbot_flow = {
     }
 }
 
+def handle_step_change(prompt, user_name):
+    if not prompt:
+        return []
+
+    # Replace custom commands
+    processed_prompt = prompt.replace('{user_name}', user_name)
+    processed_prompt = processed_prompt.replace('\t', '**')  # For bold text
+    processed_prompt = processed_prompt.replace('\r', '\n')  # For new line
+    processed_prompt = processed_prompt.replace('\f', 'LINK(').replace('\f\f', ')')  # For link text
+    
+    # Split into separate lines
+    return processed_prompt.split('\n')
+
 class ChatbotView(View):
     def get(self, request):
         response = {
@@ -77,6 +94,7 @@ class ChatbotView(View):
             data = json.loads(request.body)
             user_response = data.get('response')
             current_step = data.get('current_step')
+            user_name = data.get('user_name', 'User')  # Assuming user_name is passed from the frontend
 
             logger.debug(f'POST data: {data}')
             logger.debug(f'Current step: {current_step}')
@@ -86,9 +104,16 @@ class ChatbotView(View):
                 return JsonResponse({'error': 'Invalid request'}, status=400)
 
             next_step = chatbot_flow[current_step]['options'][int(user_response)]['next']
-            next_prompt = chatbot_flow[next_step]['prompt'].split('\n')
+            next_prompt = chatbot_flow[next_step]['prompt']
+
+            processed_prompts = handle_step_change(next_prompt, user_name)
             navigation_url = chatbot_flow[next_step].get('navigation_url', None)
-            return JsonResponse({"image": chatbot_flow[next_step].get('image', None), "prompts": next_prompt, "options": chatbot_flow[next_step].get('options', []), "navigation_url": navigation_url})
+            return JsonResponse({
+                "image": chatbot_flow[next_step].get('image', None), 
+                "prompts": processed_prompts, 
+                "options": chatbot_flow[next_step].get('options', []), 
+                "navigation_url": navigation_url
+            })
 
         except KeyError as e:
             logger.error(f'KeyError: {e}')

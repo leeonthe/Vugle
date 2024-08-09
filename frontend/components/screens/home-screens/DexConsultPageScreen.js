@@ -28,6 +28,7 @@ const DexConsultPageScreen = () => {
 
   const handleStepChange = (step, prompt, options = []) => {
     if (!prompt) return;
+
     const processedPrompt = prompt.replace('{user_name}', firstName);
     const prompts = processedPrompt.split('\n');
     prompts.forEach((text, index) => {
@@ -80,6 +81,37 @@ const DexConsultPageScreen = () => {
     }
   };
 
+  const renderFormattedText = (text) => {
+    const parts = text.split(/(\*\*.*?\*\*|LINK\(.*?\))/g); // Split text into parts
+
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        // Bold text
+        return <Text key={index} style={{ fontWeight: 'bold' }}>{part.slice(2, -2)}</Text>;
+      } else if (part.startsWith('LINK(') && part.endsWith(')')) {
+        // Link text
+        const linkText = part.slice(5, -1);
+        return (
+          <Text
+            key={index}
+            style={{ color: 'blue', textDecorationLine: 'underline' }}
+            onPress={() => handleLinkPress(linkText)}
+          >
+            {linkText}
+          </Text>
+        );
+      } else {
+        // Normal text
+        return part;
+      }
+    });
+  };
+
+  const handleLinkPress = (link) => {
+    console.log('Link pressed:', link);
+    // Handle link press action here
+  };
+
   const measureView = (event, index) => {
     const { height } = event.nativeEvent.layout;
     messageHeights.current[index] = height;
@@ -113,7 +145,7 @@ const DexConsultPageScreen = () => {
                 chat.type === 'user' ? styles.userText : styles.botText,
               ]}
             >
-              {chat.text}
+              {renderFormattedText(chat.text)}
             </Text>
           )}
           {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
@@ -208,8 +240,8 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     alignSelf: 'stretch',
-    paddingVertical: 8,  // Reduced padding to make the button smaller
-    paddingHorizontal: 16,  // Reduced padding to make the button smaller
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     backgroundColor: 'white',
     borderRadius: 8,
     justifyContent: 'center',

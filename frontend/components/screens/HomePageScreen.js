@@ -11,6 +11,7 @@ function HomePage() {
   const navigation = useNavigation();
   let combinedDisabilityRating = 'N/A';
   let veteranStatus = 'N/A';
+  let monthlyCompensation = 'NULL';
 
   if (userInfo.disabilityRating) {
     const parsedDisabilityRating = JSON.parse(JSON.stringify(userInfo.disabilityRating));
@@ -120,7 +121,7 @@ function HomePage() {
               />
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoTitle}>Monthly compensation</Text>
-                <Text style={styles.infoValue}>${monthlyCompensation}</Text>
+                <Text style={styles.infoValue}>{monthlyCompensation !== 'NULL' ? `$${monthlyCompensation}` : 'NULL'}</Text>
 
               </View>
             </View>

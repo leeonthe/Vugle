@@ -13,7 +13,14 @@ const LoginScreen = () => {
   const [showWebView, setShowWebView] = useState(false);
   const navigation = useNavigation();
 
+  const clearStoredTokens = async () => {
+    await AsyncStorage.removeItem('access_token');
+    await AsyncStorage.removeItem('letters_access_token');
+    await AsyncStorage.removeItem('state');
+  };
+  
   useEffect(() => {
+    // clearStoredTokens();
     const initiateOAuth = async () => {
       try {
         const response = await fetch(backendUrl, {
@@ -51,10 +58,12 @@ const LoginScreen = () => {
       console.log("accessToken:", accessToken);
       await AsyncStorage.setItem('access_token', accessToken);
       setShowWebView(false); // Hide WebView after receiving the token
-      console.log("Navigating to UserStart!");
       navigation.navigate('UserStart', { tokenData: { access_token: accessToken } });
+    } else {
+      console.error('No access token received from WebView');
     }
   };
+  
 
   if (loading) {
     return (
