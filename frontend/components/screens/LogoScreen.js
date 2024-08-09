@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
-
+import LOGO from '../../assets/logo.svg';
 function LogoScreen({ navigation }) {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -12,7 +12,7 @@ function LogoScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/logo.png')} style={styles.logo} /> 
+      <LOGO></LOGO>
     </View>
   );
 }

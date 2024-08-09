@@ -2,7 +2,12 @@ import React from 'react';
 import { StyleSheet, Text, View, ActivityIndicator, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useVeteranData } from '../../APIHandler'; // Adjust the import path as needed
-
+import DischargeStatus from '../../assets/assets-userStart/Discharge_status.svg';
+import ServiceTreatment from '../../assets/assets-userStart/Service_treatment.svg';
+import MedicalBook from '../../assets/assets-userStart/Medical_Book.svg';
+import ServiceTreatmentRecords from '../../assets/assets-userStart/Service_treatment.svg';
+import BenefitInfo from '../../assets/assets-userStart/Benefits_info.svg';
+// SVG COMPLETE
 function UserStartScreen({ route }) {
   const { userInfo, loading, error } = useVeteranData();
   const navigation = useNavigation();
@@ -32,31 +37,31 @@ function UserStartScreen({ route }) {
 
       <View style={styles.listContainer}>
         <View style={styles.listItem}>
-          <Image source={require('../../assets/Discharge_status.png')} style={styles.icon} />
+          <DischargeStatus width={20} height={20} marginRight={10} />
           <Text style={styles.listItemText}>Discharge status</Text>
           <Text style={styles.checkmark}>✓</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.listItem}>
-          <Image source={require('../../assets/service_treatment.png')} style={styles.icon} />
+          <ServiceTreatment width={20} height={20} marginRight={10} />
           <Text style={styles.listItemText}>Service Treatment Records</Text>
           <Text style={styles.checkmark}>✓</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.listItem}>
-          <Image source={require('../../assets/Medical_records.png')} style={styles.icon} />
+          <MedicalBook width={20} height={20} marginRight={10} />
           <Text style={styles.listItemText}>VA Medical Records</Text>
           <Text style={styles.checkmark}>✓</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.listItem}>
-          <Image source={require('../../assets/Benefits_info.png')} style={styles.icon} />
+          <BenefitInfo width={20} height={20} marginRight={10} />
           <Text style={styles.listItemText}>Benefits Information</Text>
           <Text style={styles.checkmark}>✓</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.listItem}>
-          <Image source={require('../../assets/claims_appeal.png')} style={styles.icon} />
+          <ServiceTreatmentRecords width={20} height={20} marginRight={10} />
           <Text style={styles.listItemText}>Claims & Appeals Status</Text>
           <Text style={styles.checkmark}>✓</Text>
         </View>
