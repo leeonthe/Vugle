@@ -13,11 +13,11 @@ const LoginScreen = () => {
   const [showWebView, setShowWebView] = useState(false);
   const navigation = useNavigation();
 
-  const clearStoredTokens = async () => {
-    await AsyncStorage.removeItem('access_token');
-    await AsyncStorage.removeItem('letters_access_token');
-    await AsyncStorage.removeItem('state');
-  };
+  // const clearStoredTokens = async () => {
+  //   await AsyncStorage.removeItem('access_token');
+  //   await AsyncStorage.removeItem('letters_access_token');
+  //   await AsyncStorage.removeItem('state');
+  // };
   
   useEffect(() => {
     // clearStoredTokens();
