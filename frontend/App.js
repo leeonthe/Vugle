@@ -19,7 +19,7 @@ import AllPageScreen from './components/screens/home-screens/AllPageScreen';
 import Chatbot from './components/screens/home-screens/ChatbotScreen';
 import HospitalPageScreen from './components/screens/prompt-to-page/HospitalPageScreen';
 import PotentialConditionPageScreen from './components/screens/prompt-to-page/PotentialConditionPageScreen';
-
+import PainScaleSlider from './components/screens/home-screens/PainScaleSlider';  // Added import statement
 const Stack = createStackNavigator();
 
 function App() {
@@ -55,7 +55,7 @@ function App() {
           <Stack.Screen name="Chatbot" component={Chatbot} options={{ headerShown: false }} />
           <Stack.Screen name="HospitalPageScreen" component={HospitalPageScreen} options={{ headerShown: false }} />
           <Stack.Screen name="PotentialConditionPageScreen" component={PotentialConditionPageScreen} options={{ headerShown: false }} />
-
+          <Stack.Screen name="PainScaleSlider" component={PainScaleSlider} options={{ headerShown: false }} />  
         </Stack.Navigator>
       </NavigationContainer>
     </VeteranDataProvider>

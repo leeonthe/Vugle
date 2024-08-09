@@ -6,6 +6,10 @@ import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 
+import PainScaleSlider from './PainScaleSlider';  
+
+
+
 const DexConsultPageScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
@@ -14,7 +18,11 @@ const DexConsultPageScreen = () => {
   const [currentStep, setCurrentStep] = useState('start');
   const [chatHistory, setChatHistory] = useState([]);
   const [csrfToken, setCsrfToken] = useState('');
-  const [userInput, setUserInput] = useState(''); // Store user input here
+  const [userInput, setUserInput] = useState(''); 
+
+  const [painScale, setPainScale] = useState(0);
+
+
 
   const [pdfFileName, setPdfFileName] = useState(null);  // To store the uploaded PDF file name
   const scrollViewRef = useRef([]);
@@ -75,7 +83,8 @@ const handleUserInputSubmit = () => {
           { type: 'user', text: userInput }
       ]);
       setUserInput(''); // Clear the input field
-      // Keyboard.dismiss();
+      // Keyboard.dismiss();  
+
 
       
       if (currentStep === 'new_condition') {
@@ -94,6 +103,7 @@ const handleUserInputSubmit = () => {
 };
 
   const renderStyledText = (text) => {
+
     const parts = [];
     let lastIndex = 0;
 
@@ -121,7 +131,7 @@ const handleUserInputSubmit = () => {
                 <Text
                     key={index}
                     style={part.bold ? styles.boldText : (part.link ? styles.linkText : styles.normalText)}
-                    onPress={() => part.link ? console.log('Link pressed!') : null}
+                    onPress={() => part.link ? console.log('LINK SKRTSKSRTSKRT!') : null}
                 >
                     {part.text}
                 </Text>
@@ -173,11 +183,14 @@ const handleOptionClick = async (option, index) => {
       const { prompts, options, navigation_url } = response.data;
 
       if (navigation_url) {
+
         if (navigation_url === "/hospital") {
             navigation.navigate('HospitalPageScreen');
         } else if (navigation_url === "/potential_condition") {
             navigation.navigate('PotentialConditionPageScreen', {
+              
                 onReturn: (addedConditions) => {
+
                     if (Array.isArray(addedConditions)) {
                         // Display the user's selection in the chat
                         setChatHistory(prevChatHistory => [
@@ -222,56 +235,79 @@ const handleOptionClick = async (option, index) => {
     }
   }
 };
+
+const handlePainScaleSubmit = () => {
+  // Add user input to chat history
+  setChatHistory(prevChatHistory => [
+    ...prevChatHistory,
+    { type: 'user', text: painScale.toString() }
+  ]);
+
+  // Proceed to the next step
+  setCurrentStep('finding_right_claim');
+  handleStepChange('finding_right_claim', chatFlow.finding_right_claim.prompt, chatFlow.finding_right_claim.options);
+};
+
 return (
   <ScrollView contentContainerStyle={styles.container} ref={scrollViewRef}>
-      <View style={styles.header}></View>
+    <View style={styles.header}></View>
 
-      {chatHistory.map((chat, index) => (
-          <Animatable.View
-              key={index}
-              animation="fadeIn"
-              duration={1000}
-              style={[
-                  styles.messageContainer,
-                  chat.type === 'user' ? styles.userMessage : styles.botMessage,
-              ]}
+    {chatHistory.map((chat, index) => (
+      <Animatable.View
+        key={index}
+        animation="fadeIn"
+        duration={1000}
+        style={[
+          styles.messageContainer,
+          chat.type === 'user' ? styles.userMessage : styles.botMessage,
+        ]}
+      >
+        {chat.isImagePlaceholder && chat.imageSource ? (
+          <Image source={chat.imageSource} style={styles.image} />
+        ) : chat.text && (
+          <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
+            {renderStyledText(chat.text)}
+          </Text>
+        )}
+
+        {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
+          <TouchableOpacity
+            key={idx}
+            style={styles.optionButton}
+            onPress={() => handleOptionClick(option, idx)}
           >
-              {chat.isImagePlaceholder && chat.imageSource ? (
-                  <Image source={chat.imageSource} style={styles.image} />
-              ) : chat.text && (
-                  <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
-                      {renderStyledText(chat.text)} 
-                  </Text>
-              )}
+            <Text style={styles.optionText}>{option.text}</Text>
+          </TouchableOpacity>
+        ))}
+      </Animatable.View>
+    ))}
 
-              {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
-                  <TouchableOpacity
-                      key={idx}
-                      style={styles.optionButton}
-                      onPress={() => handleOptionClick(option, idx)}
-                  >
-                      <Text style={styles.optionText}>{option.text}</Text>
-                  </TouchableOpacity>
-              ))}
-          </Animatable.View>
-      ))}
+    {/* Render input field for 'new_condition' or 'basic_assessment' */}
+    {(currentStep === 'new_condition' || currentStep === 'basic_assessment') && (
+      <View style={styles.inputContainer}>
+        <TextInput
+          ref={inputRef}
+          style={styles.input}
+          placeholder={currentStep === 'basic_assessment' ? "Describe your condition..." : "Type your condition here..."}
+          value={userInput}
+          onChangeText={setUserInput}
+          autoFocus={true}
+        />
+        <Button title="Submit" onPress={handleUserInputSubmit} />
+      </View>
+    )}
 
-      {/* Render input field for 'new_condition' or 'basic_assessment' */}
-      {(currentStep === 'new_condition' || currentStep === 'basic_assessment') && (
-          <View style={styles.inputContainer}>
-              <TextInput
-                  ref={inputRef}
-                  style={styles.input}
-                  placeholder={currentStep === 'basic_assessment' ? "Describe your condition..." : "Type your condition here..."}
-                  value={userInput}
-                  onChangeText={setUserInput}
-                  autoFocus={true} 
-              />
-              <Button title="Submit" onPress={handleUserInputSubmit} />
-          </View>
-      )}
+    {/* Render slider for 'scaling_pain' */}
+    {currentStep === 'scaling_pain' && (
+        <PainScaleSlider painScale={painScale} setPainScale={setPainScale} />
+
+    )}
   </ScrollView>
 );
+
+
+
+
 };
 
 const styles = StyleSheet.create({
@@ -389,6 +425,19 @@ const styles = StyleSheet.create({
   logo: {
     width: 24,
     height: 24,
+  },
+  sliderContainer: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  slider: {
+    width: 200,
+    height: 40,
+  },
+  painScaleText: {
+    fontSize: 16,
+    color: '#3182F6',
+    marginVertical: 10,
   },
 });
 
