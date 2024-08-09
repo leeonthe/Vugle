@@ -67,20 +67,31 @@ const DexConsultPageScreen = () => {
     });
 };
 
-  const handleUserInputSubmit = () => {
-    if (userInput.trim()) {
+const handleUserInputSubmit = () => {
+  if (userInput.trim()) {
       // Add user input to chat history
       setChatHistory(prevChatHistory => [
-        ...prevChatHistory,
-        { type: 'user', text: userInput }
+          ...prevChatHistory,
+          { type: 'user', text: userInput }
       ]);
       setUserInput(''); // Clear the input field
-      Keyboard.dismiss();
-      // Move to the next step
-      setCurrentStep('get_more_condition');
-      handleStepChange('get_more_condition', chatFlow.get_more_condition.prompt, chatFlow.get_more_condition.options);
-    }
-  };
+      // Keyboard.dismiss();
+
+      
+      if (currentStep === 'new_condition') {
+          // Continue the chat for 'new_condition' as before
+          setCurrentStep('get_more_condition');
+          handleStepChange('get_more_condition', chatFlow.get_more_condition.prompt, chatFlow.get_more_condition.options);
+      }
+
+      // Handle different steps after user input
+      if (currentStep === 'basic_assessment') {
+          // Transition to 'scaling_pain' after 'basic_assessment'
+          setCurrentStep('scaling_pain');
+          handleStepChange('scaling_pain', chatFlow.scaling_pain.prompt, chatFlow.scaling_pain.options);
+      } 
+  }
+};
 
   const renderStyledText = (text) => {
     const parts = [];
@@ -163,22 +174,35 @@ const handleOptionClick = async (option, index) => {
 
       if (navigation_url) {
         if (navigation_url === "/hospital") {
-          navigation.navigate('HospitalPageScreen');
+            navigation.navigate('HospitalPageScreen');
         } else if (navigation_url === "/potential_condition") {
-          navigation.navigate('PotentialConditionPageScreen', {
-            onReturn: (addedConditions) => {
-              // When returning from PotentialConditionPageScreen, continue the chat
-              // You can handle this in the handleStepChange function
-              setChatHistory(prevChatHistory => [
-                ...prevChatHistory,
-                { type: 'user', text: 'Selected Conditions: ' + addedConditions.join(', ') }
-              ]);
-              // Continue the chat with the next step
-              handleStepChange('basic_accessment', chatFlow.basic_accessment.prompt, chatFlow.basic_accessment.options);
-            }
-          });
+            navigation.navigate('PotentialConditionPageScreen', {
+                onReturn: (addedConditions) => {
+                    if (Array.isArray(addedConditions)) {
+                        // Display the user's selection in the chat
+                        setChatHistory(prevChatHistory => [
+                            ...prevChatHistory,
+                            { type: 'user', text: 'Selected Conditions: ' + addedConditions.join(', ') }
+                        ]);
+    
+                        // Ensure chatFlow and basic_assessment are defined before proceeding
+                        if (chatFlow && chatFlow.basic_assessment) {
+                          setCurrentStep('basic_assessment');
+
+                            // Continue the chat with the next step
+                            handleStepChange('basic_assessment', chatFlow.basic_assessment.prompt, chatFlow.basic_assessment.options);
+                            
+                        } else {
+                            console.error('basic_assessment is not defined in chatFlow');
+                        }
+                    } else {
+                        console.error('addedConditions is not an array');
+                    }
+                }
+            });
         }
-      } else if (prompts) {
+    }
+    else if (prompts) {
         prompts.forEach((text, idx) => {
           const isImagePlaceholder = text.includes('[[IMAGE]]');
           setChatHistory(prevChatHistory => [
@@ -198,57 +222,54 @@ const handleOptionClick = async (option, index) => {
     }
   }
 };
-
-
-
-
 return (
   <ScrollView contentContainerStyle={styles.container} ref={scrollViewRef}>
-    <View style={styles.header}></View>
+      <View style={styles.header}></View>
 
-    {chatHistory.map((chat, index) => (
-      <Animatable.View
-        key={index}
-        animation="fadeIn"
-        duration={1000}
-        style={[
-          styles.messageContainer,
-          chat.type === 'user' ? styles.userMessage : styles.botMessage,
-        ]}
-      >
-        {chat.isImagePlaceholder && chat.imageSource ? (
-          <Image source={chat.imageSource} style={styles.image} />
-        ) : chat.text && (
-          <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
-            {renderStyledText(chat.text)} 
-          </Text>
-        )}
-
-        {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
-          <TouchableOpacity
-            key={idx}
-            style={styles.optionButton}
-            onPress={() => handleOptionClick(option, idx)}
+      {chatHistory.map((chat, index) => (
+          <Animatable.View
+              key={index}
+              animation="fadeIn"
+              duration={1000}
+              style={[
+                  styles.messageContainer,
+                  chat.type === 'user' ? styles.userMessage : styles.botMessage,
+              ]}
           >
-            <Text style={styles.optionText}>{option.text}</Text>
-          </TouchableOpacity>
-        ))}
-      </Animatable.View>
-    ))}
+              {chat.isImagePlaceholder && chat.imageSource ? (
+                  <Image source={chat.imageSource} style={styles.image} />
+              ) : chat.text && (
+                  <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
+                      {renderStyledText(chat.text)} 
+                  </Text>
+              )}
 
-    {/* Render input field if the current step is 'new_condition' */}
-    {currentStep === 'new_condition' && (
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Type your condition here..."
-          value={userInput}
-          onChangeText={setUserInput}
-          autoFocus={true} 
-        />
-        <Button title="Submit" onPress={handleUserInputSubmit} />
-      </View>
-    )}
+              {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
+                  <TouchableOpacity
+                      key={idx}
+                      style={styles.optionButton}
+                      onPress={() => handleOptionClick(option, idx)}
+                  >
+                      <Text style={styles.optionText}>{option.text}</Text>
+                  </TouchableOpacity>
+              ))}
+          </Animatable.View>
+      ))}
+
+      {/* Render input field for 'new_condition' or 'basic_assessment' */}
+      {(currentStep === 'new_condition' || currentStep === 'basic_assessment') && (
+          <View style={styles.inputContainer}>
+              <TextInput
+                  ref={inputRef}
+                  style={styles.input}
+                  placeholder={currentStep === 'basic_assessment' ? "Describe your condition..." : "Type your condition here..."}
+                  value={userInput}
+                  onChangeText={setUserInput}
+                  autoFocus={true} 
+              />
+              <Button title="Submit" onPress={handleUserInputSubmit} />
+          </View>
+      )}
   </ScrollView>
 );
 };

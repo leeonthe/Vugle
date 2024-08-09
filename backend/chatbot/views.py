@@ -110,6 +110,7 @@ chatbot_flow = {
 
     "scaling_pain":{
         "prompt": "[[IMAGE]][BR][BOLD]How severe is your knee pain now?[CLOSE][NEWLINE]On a scale of (1 - 10)",
+        
     },
      "finding_right_claim": {
         "prompt": "[[IMAGE]][BR][BOLD]Finding the Right Claim📋[CLOSE][NEWLINE]Based on the severity and duration of your symptoms, we'll guide you to the appropriate claim.",
