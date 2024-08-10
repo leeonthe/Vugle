@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
 import { useNavigation } from '@react-navigation/native';
@@ -22,7 +23,6 @@ const LoginScreen = () => {
     // clearStoredTokens();
     const initiateOAuth = async () => {
       try {
-        await clearUserData();
         const response = await fetch(backendUrl, {
           method: 'GET',
         });
@@ -39,7 +39,6 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-
       const response = await fetch(backendUrl, {
         method: 'GET',
       });
@@ -47,7 +46,7 @@ const LoginScreen = () => {
       const { auth_url, state } = data;
       console.log('auth_url:', auth_url);
       await AsyncStorage.setItem('state', state);
-      setShowWebView(true);
+      setShowWebView(true); // Show WebView to handle OAuth flow
     } catch (error) {
       console.error('Failed to initiate OAuth flow', error);
     }
@@ -57,11 +56,8 @@ const LoginScreen = () => {
     const accessToken = event.nativeEvent.data;
     if (accessToken) {
       console.log("accessToken:", accessToken);
-      console.log("Logging with this ICN:", await AsyncStorage.getItem('icn'));
-
       await AsyncStorage.setItem('access_token', accessToken);
       setShowWebView(false); // Hide WebView after receiving the token
-      console.log("Navigating to UserStart!");
       navigation.navigate('UserStart', { tokenData: { access_token: accessToken } });
     } else {
       console.error('No access token received from WebView');
@@ -104,6 +100,7 @@ const LoginScreen = () => {
           <Text style={styles.link}>Terms of Service</Text>
           .
       </Text>
+    </View>
       
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>VA Continue with VA.gov</Text>
@@ -149,6 +146,7 @@ const styles = StyleSheet.create({
     wordWrap: 'break-word',
     marginBottom: 80,
   },
+  
   button: {
     position: 'absolute',
     bottom: 20,

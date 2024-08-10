@@ -3,9 +3,15 @@ import yaml
 import os
 from google.cloud import documentai_v1beta3 as documentai
 
-# Load config
-with open('dex_config/config.yaml', 'r') as f:
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(script_dir, '../dex_config/config.yaml')
+
+with open(config_path, 'r') as f:
     config = yaml.safe_load(f)
+
+# Load config
+# with open('dex_config/config.yaml', 'r') as f:
+#     config = yaml.safe_load(f)
 
 openai.api_key = config['openai_api_key']
 
@@ -53,7 +59,7 @@ def extract_relevant_text(document_text, query):
     relevant_text = query_gpt(prompt)
     return relevant_text
 
-def find_relevant_documents(query, documents_dir="dex_docs/sample_medical_records/"):
+def find_relevant_documents(query, documents_dir="../dex_docs/sample_medical_records/"):
     relevant_docs = []
     for filename in os.listdir(documents_dir):
         if filename.endswith((".pdf", ".jpg", ".jpeg", ".png")):
