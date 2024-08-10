@@ -1,6 +1,0 @@
-google-cloud-documentai
-langchain
-openai
-pdf2image
-opencv-python
-python-dotenv

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "vugle-health-431600",
+  "private_key_id": "5090401fca0b923edd6ebf9b1578695c84465d2f",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDUbcEYtqlYkov0\nU8H5WmbJydXpNnnbtS2bW+QcjjC2mq2VpggJG+OKpux5jB1r8Orp4Y0uYiLB0Zz1\nMGrIEf5nMdpYnu5lVE4q95aVzJ/qokWtmkI3msKXMrrA2hz67HteXtk5aWPYAAJn\nENcwzACj8+y3mgbn7ATggjDw/ln2Zc8IYzHY7uyK3pOtMD6Gw84HZkeKPSQU9hq1\nJwKv8oXeZTfNLBTwexpC/WL27o4Cnois2lrCfmyuK0S5IYESenwbVyKzGa8DzgUN\nvqvl/hXxpLZCtxGmliyMtiZnoS4r/DIgz4fRgLAEI8wamHAaJqWB4g5ALcLd6jkg\noiy2ybjBAgMBAAECggEAARM2c/U7XCsPBu3Zlcp4VLMZywlZ39vF3vsTEiCXbIUn\nNb0BCL1vDweTO3Y9u+Bx6pHCpiZxqJYdUOcC01UL+uJiCYAcaBTfebuGXpG03s9y\nwih9XKIC3sMEoO85padxZGPfKOQ4piIx4Or75npR0oKXLcKwyuxYhfkCsxAxIlxq\ngh1KUlzBgnx5+QTmar/Mh0j1wwvVQlf7ijxKGGnBL+rViMVGVrLJED2PLOMTNNH8\nTTutlDtmr7xxOLd2/eaJZIUF+AnQEqlzgPyidMVRWKEMRhE0x1eigK9VmpiDQ1YI\n8IdJY2p00zMbXjym4Q/50OSOvRNiOeqFt8KqzoFYRQKBgQD3xFh1dmbjuA8mG5m9\nDchDaIWNripVqCwG88q7zZqHmurR8zY11lg8rRlszAjJWdQrF0fVHfPuhxvdYDlD\nfMbiWfYKvJv93ZmgTVUt4HM0ivout69/ANSXzlW246/Y99yCqPwJOamR0f8wxejP\nMq1QtTEUhi+tgGwVf8SgXMBfNwKBgQDbfMzoZEXA2ooe+JnFaN05grbAi1dEIDBP\nRwYWfJL2inkFKNZl8N/lzHgYTKqFML81R193j7dS0pIjTQ6LQrRnSKXtNKpfvNPI\nf3gSrXfAQIpxlbj2Tv0iQwFGJW22D1vvWtXf0dmBQmeT3ISSdZuk6sNFIyDXYpND\nDm32elZzxwKBgFQfEtWWxKouNN6AYntAsazJUQbgijkY5xHZNgz7aqr92xo7VD2F\nL+Ix9z7sK1OJrzKOLfJawBZNQxWvdOHH/JKfbp0ImoHf+ifl+bSgzxyYzwaLkQcy\n1ftQr+NvfKXSyciG7UOIk10SCm2Z1Eh88UFEs4w/XvKudoP6JF06AIqTAoGBAIVi\n7tQ8O/fb2BzCUBEcjXUp7w5MoBgSx8kmDJkV0+podOuhycnh/O+Wt1VtIiQXX9xt\nJ6Ntf6ehuJYjejc/rosmJ1BktTXBd6NddAdFzITVtE0bBHELx+JOfjO3A1mlM+Xe\neiOvUFOxm2jMlvS67H/o/ArEMm0yxvP1jPZBmtB5AoGAdOznbGX81GwuDnXsolB5\nYFYA7sR0S+6Tgj8torXBfqxu4/RgysPjcyD5rIv2PKF9/ULuXoMNn0r16IPapbsq\nAkThPCezCs8+lTKm/DsI++wAy+G2KgQ28bPimgjHlhh7QbDNkq0cNnPGEpNT+474\n9u1KKR5Ec28Dq7NxBLtO+98=\n-----END PRIVATE KEY-----\n",
+  "client_email": "vugle-dex@vugle-health-431600.iam.gserviceaccount.com",
+  "client_id": "117106070094462284799",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/vugle-dex%40vugle-health-431600.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
