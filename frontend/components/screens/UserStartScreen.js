@@ -70,7 +70,6 @@ function UserStartScreen({ route }) {
 
       <View style={styles.infoContainer}>
         <Lock width={24} height={24} marginRight={10} />
-
         <Text style={styles.infoText}>We use 128-bit encryption for added security and do not share your data.</Text>
       </View>
 
@@ -149,11 +148,6 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 10,
     marginBottom: 20,
-  },
-  securityIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
   },
   infoText: {
     fontSize: 14,

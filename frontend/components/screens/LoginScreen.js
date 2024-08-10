@@ -85,12 +85,13 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ConnectRecord/>
+      <View style={styles.svgContainer}>
+        <ConnectRecord />
+      </View>
 
       <Text style={styles.title}>Connect your records with VA</Text>
       <Text style={styles.subtitle}>
-        US regulations require us to get consent for utilizing your STRs and EHR before we can proceed with our service.
-      </Text>
+      We utilize VA.gov for a faster and efficient information collection. Information will be stored securely and we will not share your data.      </Text>
       <View style={styles.continueContainer}>
         <Text style={styles.text}>
           By continuing, you agree to our{' '}
@@ -111,29 +112,39 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 0,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#ffffff',
+  },
+  svgContainer: {
+    paddingTop: 182, // Add paddingTop to the SVG
+    marginBottom: 36,
   },
   image: {
     width: 200,
     height: 200,
     resizeMode: 'contain',
-    marginBottom: 20,
+    marginBottom: 40,
+
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 40,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    width: '100%',
+    fontFamily: 'SF Pro',
+    fontSize: 14,
+    color: '#636467',
     textAlign: 'center',
     paddingHorizontal: 20,
-    marginBottom: 20,
+    fontWeight: '400',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+    marginBottom: 80,
   },
   
   button: {
@@ -154,15 +165,21 @@ const styles = StyleSheet.create({
   continueContainer: {
     width: '100%',
     textAlign: 'center',
+    color: '#636467',
+    paddingHorizontal: 40, 
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 30, 
+    lineHeight : 20,
   },
   text: {
     color: '#636467',
     fontSize: 12,
+    textAlign: 'center',
     fontFamily: 'SF Pro',
     fontWeight: '400',
     lineHeight: 18,
+    wordWrap: 'break-word',
   },
   link: {
     color: '#3182F6',

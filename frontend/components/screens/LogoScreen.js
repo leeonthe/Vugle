@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
-import LOGO from '../../assets/logo.svg';
+import LOGO from '../../assets/assets-userStart/logo.svg';
 function LogoScreen({ navigation }) {
   useEffect(() => {
     const timer = setTimeout(() => {
