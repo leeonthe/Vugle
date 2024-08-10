@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Button, Keyboard } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
+
+import PainScaleSlider from './PainScaleSlider';  
+
+
 
 const DexConsultPageScreen = () => {
   const route = useRoute();
@@ -12,9 +18,18 @@ const DexConsultPageScreen = () => {
   const [currentStep, setCurrentStep] = useState('start');
   const [chatHistory, setChatHistory] = useState([]);
   const [csrfToken, setCsrfToken] = useState('');
-  const scrollViewRef = useRef();
+  const [userInput, setUserInput] = useState(''); 
+
+  const [painScale, setPainScale] = useState(0);
+
+
+
+  const [pdfFileName, setPdfFileName] = useState(null);  // To store the uploaded PDF file name
+  const scrollViewRef = useRef([]);
   const messageHeights = useRef([]);
-  const userMessageIndices = useRef([]); // To track the indices of user messages
+  const userMessageIndices = useRef([]);
+  const inputRef = useRef(null); // Ref for the TextInput
+
 
   useEffect(() => {
     axios.get('http://localhost:8000/chatbot/')
@@ -25,26 +40,134 @@ const DexConsultPageScreen = () => {
       })
       .catch(error => console.error(error));
   }, []);
+  useEffect(() => {
+    if (currentStep === 'new_condition') {
+      inputRef.current?.focus(); // Focus the TextInput when 'new_condition' step is reached
+    }
+  }, [currentStep]);
 
   const handleStepChange = (step, prompt, options = []) => {
     if (!prompt) return;
-    const processedPrompt = prompt.replace('{user_name}', firstName);
-    const prompts = processedPrompt.split('\n');
-    prompts.forEach((text, index) => {
-      const isImagePlaceholder = text.includes('[[IMAGE]]');
-      setChatHistory(prevChatHistory => [
-        ...prevChatHistory,
-        {
-          type: 'bot',
-          text: isImagePlaceholder ? '' : text,
-          options: index === prompts.length - 1 ? options : [],
-          isImagePlaceholder
-        }
-      ]);
-    });
-  };
 
-  const handleOptionClick = async (option, index) => {
+    const processedPrompt = prompt
+        .replace('{user_name}', firstName)
+        .replace(/\[NEWLINE\]/g, '\n')  // Replace [NEWLINE] with actual new lines within the same container
+        .replace(/\[BOLD\](.*?)\[CLOSE\]/g, (_, match) => `<b>${match}</b>`)  // Convert to HTML-like bold tags for further processing
+        .replace(/\[LINK_START\](.*?)\[LINK_END\]/g, (_, match) => `<a href="#">${match}</a>`) // Convert to link tags for further processing
+        .replace(/\[IMAGE\]/g, 'IMAGE_PLACEHOLDER');  // Handle image placeholder
+
+    const messages = processedPrompt.split('[BR]');
+
+    messages.forEach((message, index) => {
+        const isLastMessage = index === messages.length - 1;
+        const isImagePlaceholder = message.includes('IMAGE_PLACEHOLDER');
+
+        setChatHistory(prevChatHistory => [
+            ...prevChatHistory,
+            {
+                type: 'bot',
+                text: isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim(),
+                imageSource: isImagePlaceholder ? require('../../../assets/vugle.png') : null,  // Set the image source
+                options: isLastMessage ? options : [],  // Only attach options to the last message
+                isImagePlaceholder
+            }
+        ]);
+    });
+};
+
+const handleUserInputSubmit = () => {
+  if (userInput.trim()) {
+      // Add user input to chat history
+      setChatHistory(prevChatHistory => [
+          ...prevChatHistory,
+          { type: 'user', text: userInput }
+      ]);
+      setUserInput(''); // Clear the input field
+      // Keyboard.dismiss();  
+
+
+      
+      if (currentStep === 'new_condition') {
+          // Continue the chat for 'new_condition' as before
+          setCurrentStep('get_more_condition');
+          handleStepChange('get_more_condition', chatFlow.get_more_condition.prompt, chatFlow.get_more_condition.options);
+      }
+
+      // Handle different steps after user input
+      if (currentStep === 'basic_assessment') {
+          // Transition to 'scaling_pain' after 'basic_assessment'
+          setCurrentStep('scaling_pain');
+          handleStepChange('scaling_pain', chatFlow.scaling_pain.prompt, chatFlow.scaling_pain.options);
+      } 
+  }
+};
+
+  const renderStyledText = (text) => {
+
+    const parts = [];
+    let lastIndex = 0;
+
+    // Combine regex for both bold and link processing
+    const combinedRegex = /<b>(.*?)<\/b>|<a href="#">(.*?)<\/a>/g;
+    let match;
+    while ((match = combinedRegex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            parts.push({ text: text.substring(lastIndex, match.index), bold: false, link: false });
+        }
+        if (match[1]) {  // Bold
+            parts.push({ text: match[1], bold: true, link: false });
+        } else if (match[2]) {  // Link
+            parts.push({ text: match[2], bold: false, link: true });
+        }
+        lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+        parts.push({ text: text.substring(lastIndex), bold: false, link: false });
+    }
+
+    return (
+        <Text>
+            {parts.map((part, index) => (
+                <Text
+                    key={index}
+                    style={part.bold ? styles.boldText : (part.link ? styles.linkText : styles.normalText)}
+                    onPress={() => part.link ? console.log('LINK SKRTSKSRTSKRT!') : null}
+                >
+                    {part.text}
+                </Text>
+            ))}
+        </Text>
+    );
+};
+
+
+
+  const handleFileUpload = async () => {
+    try {
+        const res = await DocumentPicker.getDocumentAsync({});
+       // if (res.type === "success") {
+            const fileName = res.name || (res.assets && res.assets.length > 0 && res.assets[0].name);
+
+            console.log('Selected file: ', fileName);  // Log the full file object
+            setPdfFileName(fileName);  // Store the PDF file name
+            setChatHistory(prevChatHistory => [
+                ...prevChatHistory,
+                { type: 'user', text: fileName, isPdf: true }
+            ]);
+            setCurrentStep('upload_dd214');
+            handleStepChange('upload_dd214', chatFlow.upload_dd214.prompt, chatFlow.upload_dd214.options);
+     //   } else{
+          console.log('No file selected');
+     //   }
+    } catch (err) {
+        console.log('DocumentPicker Error: ', err);
+    }
+};
+
+const handleOptionClick = async (option, index) => {
+  if (option.text === "Upload DD214") {
+    handleFileUpload();  // Trigger file upload
+  } else {
     const userMessageIndex = chatHistory.length;
     setChatHistory(prevChatHistory => [
       ...prevChatHistory,
@@ -58,9 +181,41 @@ const DexConsultPageScreen = () => {
         { headers: { 'X-CSRFToken': csrfToken } }
       );
       const { prompts, options, navigation_url } = response.data;
+
       if (navigation_url) {
-        navigation.navigate('HospitalPageScreen');
-      } else if (prompts) {
+
+        if (navigation_url === "/hospital") {
+            navigation.navigate('HospitalPageScreen');
+        } else if (navigation_url === "/potential_condition") {
+            navigation.navigate('PotentialConditionPageScreen', {
+              
+                onReturn: (addedConditions) => {
+
+                    if (Array.isArray(addedConditions)) {
+                        // Display the user's selection in the chat
+                        setChatHistory(prevChatHistory => [
+                            ...prevChatHistory,
+                            { type: 'user', text: 'Selected Conditions: ' + addedConditions.join(', ') }
+                        ]);
+    
+                        // Ensure chatFlow and basic_assessment are defined before proceeding
+                        if (chatFlow && chatFlow.basic_assessment) {
+                          setCurrentStep('basic_assessment');
+
+                            // Continue the chat with the next step
+                            handleStepChange('basic_assessment', chatFlow.basic_assessment.prompt, chatFlow.basic_assessment.options);
+                            
+                        } else {
+                            console.error('basic_assessment is not defined in chatFlow');
+                        }
+                    } else {
+                        console.error('addedConditions is not an array');
+                    }
+                }
+            });
+        }
+    }
+    else if (prompts) {
         prompts.forEach((text, idx) => {
           const isImagePlaceholder = text.includes('[[IMAGE]]');
           setChatHistory(prevChatHistory => [
@@ -78,57 +233,81 @@ const DexConsultPageScreen = () => {
     } catch (error) {
       console.error(error);
     }
-  };
+  }
+};
 
-  const measureView = (event, index) => {
-    const { height } = event.nativeEvent.layout;
-    messageHeights.current[index] = height;
-  };
+const handlePainScaleSubmit = () => {
+  // Add user input to chat history
+  setChatHistory(prevChatHistory => [
+    ...prevChatHistory,
+    { type: 'user', text: painScale.toString() }
+  ]);
 
-  return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      ref={scrollViewRef}
-    >
-      <View style={styles.header}></View>
+  // Proceed to the next step
+  setCurrentStep('finding_right_claim');
+  handleStepChange('finding_right_claim', chatFlow.finding_right_claim.prompt, chatFlow.finding_right_claim.options);
+};
 
-      {chatHistory.map((chat, index) => (
-        <Animatable.View
-          key={index}
-          animation="fadeIn"
-          duration={1000}
-          style={[
-            styles.messageContainer,
-            chat.type === 'user' ? styles.userMessage : styles.botMessage,
-          ]}
-          onLayout={(event) => measureView(event, index)}
-        >
-          {chat.isImagePlaceholder && (
-            <Image source={require('../../../assets/vugle.png')} style={styles.image} />
-          )}
-          {chat.text && (
-            <Text
-              style={[
-                styles.messageText,
-                chat.type === 'user' ? styles.userText : styles.botText,
-              ]}
-            >
-              {chat.text}
-            </Text>
-          )}
-          {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
-            <TouchableOpacity
-              key={idx}
-              style={styles.optionButton}
-              onPress={() => handleOptionClick(option, idx)}
-            >
-              <Text style={styles.optionText}>{option.text}</Text>
-            </TouchableOpacity>
-          ))}
-        </Animatable.View>
-      ))}
-    </ScrollView>
-  );
+return (
+  <ScrollView contentContainerStyle={styles.container} ref={scrollViewRef}>
+    <View style={styles.header}></View>
+
+    {chatHistory.map((chat, index) => (
+      <Animatable.View
+        key={index}
+        animation="fadeIn"
+        duration={1000}
+        style={[
+          styles.messageContainer,
+          chat.type === 'user' ? styles.userMessage : styles.botMessage,
+        ]}
+      >
+        {chat.isImagePlaceholder && chat.imageSource ? (
+          <Image source={chat.imageSource} style={styles.image} />
+        ) : chat.text && (
+          <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
+            {renderStyledText(chat.text)}
+          </Text>
+        )}
+
+        {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
+          <TouchableOpacity
+            key={idx}
+            style={styles.optionButton}
+            onPress={() => handleOptionClick(option, idx)}
+          >
+            <Text style={styles.optionText}>{option.text}</Text>
+          </TouchableOpacity>
+        ))}
+      </Animatable.View>
+    ))}
+
+    {/* Render input field for 'new_condition' or 'basic_assessment' */}
+    {(currentStep === 'new_condition' || currentStep === 'basic_assessment') && (
+      <View style={styles.inputContainer}>
+        <TextInput
+          ref={inputRef}
+          style={styles.input}
+          placeholder={currentStep === 'basic_assessment' ? "Describe your condition..." : "Type your condition here..."}
+          value={userInput}
+          onChangeText={setUserInput}
+          autoFocus={true}
+        />
+        <Button title="Submit" onPress={handleUserInputSubmit} />
+      </View>
+    )}
+
+    {/* Render slider for 'scaling_pain' */}
+    {currentStep === 'scaling_pain' && (
+        <PainScaleSlider painScale={painScale} setPainScale={setPainScale} />
+
+    )}
+  </ScrollView>
+);
+
+
+
+
 };
 
 const styles = StyleSheet.create({
@@ -177,39 +356,44 @@ const styles = StyleSheet.create({
   userText: {
     color: '#fff',
   },
+  boldText: {
+    fontWeight: 'bold',
+  },
+  linkText: {
+    color: '#3182F6',
+    textDecorationLine: 'underline',
+},
+  normalText: {
+    fontWeight: 'normal',
+  },
   image: {
     width: 24,
     height: 24,
     marginRight: 8,
   },
-  buttonContainer: {
-    marginTop: 16,
+  pdfContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  button: {
-    width: 357,
-    height: 52,
-    backgroundColor: '#191F28',
+    backgroundColor: '#F5F6F8',
+    padding: 8,
     borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
-  buttonText: {
-    color: 'white',
+  pdfIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
+  },
+  pdfText: {
+    color: '#323D4C',
     fontSize: 16,
-    fontFamily: 'SF Pro Display',
-    fontWeight: '500',
-    lineHeight: 16,
-  },
-  chatContainer: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: 16,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 28,
   },
   optionButton: {
     alignSelf: 'stretch',
-    paddingVertical: 8,  // Reduced padding to make the button smaller
-    paddingHorizontal: 16,  // Reduced padding to make the button smaller
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     backgroundColor: 'white',
     borderRadius: 8,
     justifyContent: 'center',
@@ -241,6 +425,19 @@ const styles = StyleSheet.create({
   logo: {
     width: 24,
     height: 24,
+  },
+  sliderContainer: {
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  slider: {
+    width: 200,
+    height: 40,
+  },
+  painScaleText: {
+    fontSize: 16,
+    color: '#3182F6',
+    marginVertical: 10,
   },
 });
 

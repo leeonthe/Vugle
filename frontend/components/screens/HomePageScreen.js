@@ -17,14 +17,14 @@ function HomePage() {
     const parsedDisabilityRating = JSON.parse(JSON.stringify(userInfo.disabilityRating));
     if (parsedDisabilityRating.data && parsedDisabilityRating.data.attributes) {
       combinedDisabilityRating = parsedDisabilityRating.data.attributes.combined_disability_rating;
-      veteranStatus = parsedDisabilityRating.data.id; // THIS IS ICN VALUE.
+      veteranStatus = parsedDisabilityRating.data.id; // THIS IS ICN VALUE. 
     }
   }
 
+  
   if (eligibleLetters.benefitInformation) {
-    monthlyCompensation = `${eligibleLetters.benefitInformation.monthlyAwardAmount?.value ?? 'NULL'}`;
+    monthlyCompensation = `${eligibleLetters.benefitInformation.monthlyAwardAmount.value}`;
   }
-
   if (userInfo.status) {
     const parsedStatus = JSON.parse(JSON.stringify(userInfo.status));
     if (parsedStatus.data && parsedStatus.data.attributes) {
@@ -37,7 +37,7 @@ function HomePage() {
       <View style={styles.header}>
         <Text style={styles.headerText}>Home</Text>
         <Image
-          source={require('../../assets/notification_icon.png')}
+          source={require('../../assets/notification_icon.png')} // Update with your notification icon path
           style={styles.notificationIcon}
         />
       </View>
@@ -96,11 +96,12 @@ function HomePage() {
           </TouchableOpacity>
         </View>
 
+        {/* New Section */}
         <View style={styles.infoCard}>
           <View style={styles.infoItem}>
             <View style={styles.infoLeft}>
               <Image
-                source={require('../../assets/disability_icon.png')}
+                source={require('../../assets/disability_icon.png')} // Update with your disability icon path
                 style={styles.infoIcon}
               />
               <View style={styles.infoTextContainer}>
@@ -115,12 +116,14 @@ function HomePage() {
           <View style={styles.infoItem}>
             <View style={styles.infoLeft}>
               <Image
-                source={require('../../assets/compensation_icon.png')}
+                source={require('../../assets/compensation_icon.png')} // Update with your compensation icon path
                 style={styles.infoIcon}
               />
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoTitle}>Monthly compensation</Text>
-                <Text style={styles.infoValue}>${monthlyCompensation}</Text>
+                <Text style={styles.infoValue}>{monthlyCompensation !== 'NULL' ? `$${monthlyCompensation}` : 'NULL'}</Text>
+
+
               </View>
             </View>
             <TouchableOpacity style={styles.infoRight} onPress={() => navigation.navigate('StatsCompPage')}>
@@ -128,7 +131,9 @@ function HomePage() {
             </TouchableOpacity>
           </View>
         </View>
+              
 
+        {/* Claims Status */}
         <View style={styles.claimsStatusContainer}>
           <View style={styles.claimsStatusHeader}>
             <Text style={styles.claimsStatusTitle}>Claims status</Text>
@@ -145,6 +150,7 @@ function HomePage() {
           </View>
         </View>
 
+        {/* My Documents */}
         <View style={styles.myDocumentsContainer}>
           <View style={styles.myDocumentsContent}>
             <View style={styles.myDocumentsRow}>
@@ -160,12 +166,14 @@ function HomePage() {
           </View>
         </View>
 
+        {/* Current Resources */}
         <View style={styles.currentResourcesContainer}>
           <View style={styles.currentResourcesHeader}>
             <Text style={styles.currentResourcesTitle}>Current resources</Text>
             <View style={styles.currentResourcesIcon} />
           </View>
           <View style={styles.currentResourcesContent}>
+            {/* GI Bill */}
             <View style={styles.resourceRow}>
               <View style={styles.resourceRowContent}>
                 <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
@@ -176,6 +184,7 @@ function HomePage() {
               </View>
               <View style={styles.resourceIconArrow} />
             </View>
+            {/* Housing Support */}
             <View style={styles.resourceRow}>
               <View style={styles.resourceRowContent}>
                 <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
@@ -186,6 +195,7 @@ function HomePage() {
               </View>
               <View style={styles.resourceIconArrow} />
             </View>
+            {/* Travel Reimbursement */}
             <View style={styles.resourceRow}>
               <View style={styles.resourceRowContent}>
                 <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
@@ -196,6 +206,7 @@ function HomePage() {
               </View>
               <View style={styles.resourceIconArrow} />
             </View>
+            {/* Explore More Benefits */}
             <View style={styles.exploreMoreContainer}>
               <View style={styles.exploreMoreContent}>
                 <View style={styles.exploreMoreIconContainer}>
@@ -249,7 +260,7 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     paddingHorizontal: 20,
-    paddingTop: 30, 
+    paddingTop: 30, //placing container: Earn additional $16,286 benefits annually
   },
   header: {
     flexDirection: 'row',
@@ -480,6 +491,8 @@ const styles = StyleSheet.create({
     fontWeight: '510',
     color: '#ADB3BA',
   },
+  // Add these styles to your StyleSheet
+
   claimsStatusContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -557,6 +570,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     wordWrap: 'break-word',
   },
+
+  // DOCUMENT STYLING
   myDocumentsContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -579,7 +594,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     position: 'relative',
-    marginRight: 16, 
+    marginRight: 16, // Add some space between icon and text
   },
   myDocumentsIconBlue: {
     width: 30.67,
@@ -614,6 +629,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     wordWrap: 'break-word',
   },
+
+  // CURRENT RESOURCES STYLING
+  
   currentResourcesContainer: {
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
@@ -661,7 +679,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', 
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8, 
+    paddingVertical: 8, // Add vertical padding for spacing
   },
   resourceRowContent: {
     flexDirection: 'row', 
@@ -671,12 +689,12 @@ const styles = StyleSheet.create({
   resourceIcon: {
     width: 20,
     height: 20,
-    marginRight: 16, 
+    marginRight: 16, // Add some space between icon and text
   },
   resourceTextContainer: {
     flexDirection: 'column',
     justifyContent: 'center',
-    flex: 1, 
+    flex: 1, // Allow the text container to stretch
   },
   resourceTitle: {
     color: '#6B7685',
@@ -711,10 +729,10 @@ const styles = StyleSheet.create({
   exploreMoreContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1, 
+    flex: 1, // Allow the content to stretch and fill the space
   },
   exploreMoreIconContainer: {
-    marginRight: 10, 
+    marginRight: 10, // Add some space between icon and text
   },
   exploreMoreIcon: {
     width: 16,

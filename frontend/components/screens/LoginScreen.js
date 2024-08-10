@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Image, TouchableOpacity, ActivityIndicator } fr
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { WebView } from 'react-native-webview';
 import { useNavigation } from '@react-navigation/native';
-
+import ConnectRecord from '../../assets/assets-userStart/connect_record.svg';
 const backendUrl = 'http://localhost:8000/api/oauth/login/';
 
 const LoginScreen = () => {
@@ -12,20 +12,14 @@ const LoginScreen = () => {
   const [showWebView, setShowWebView] = useState(false);
   const navigation = useNavigation();
 
+  // const clearStoredTokens = async () => {
+  //   await AsyncStorage.removeItem('access_token');
+  //   await AsyncStorage.removeItem('letters_access_token');
+  //   await AsyncStorage.removeItem('state');
+  // };
+  
   useEffect(() => {
-    const clearUserData = async () => {
-      try {
-        await AsyncStorage.removeItem('access_token');
-        await AsyncStorage.removeItem('letters_access_token');
-        console.log('User data cleared successfully on reload');
-        console.log('Current access_token:', await AsyncStorage.getItem('access_token'));
-        console.log("Current letters_access_token:", await AsyncStorage.getItem('letters_access_token'));
-        console.log("Currnet ICN:", await AsyncStorage.getItem('icn'));
-      } catch (error) {
-        console.error('Error clearing user data on reload', error);
-      }
-    };
-
+    // clearStoredTokens();
     const initiateOAuth = async () => {
       try {
         await clearUserData();
@@ -66,11 +60,14 @@ const LoginScreen = () => {
       console.log("Logging with this ICN:", await AsyncStorage.getItem('icn'));
 
       await AsyncStorage.setItem('access_token', accessToken);
-      setShowWebView(false);
+      setShowWebView(false); // Hide WebView after receiving the token
       console.log("Navigating to UserStart!");
       navigation.navigate('UserStart', { tokenData: { access_token: accessToken } });
+    } else {
+      console.error('No access token received from WebView');
     }
   };
+  
 
   if (loading) {
     return (
@@ -92,13 +89,24 @@ const LoginScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Image source={require('../../assets/logo.png')} style={styles.image} />
+      <View style={styles.svgContainer}>
+        <ConnectRecord />
+      </View>
+
       <Text style={styles.title}>Connect your records with VA</Text>
       <Text style={styles.subtitle}>
-        US regulations require us to get consent for utilizing your STRs and EHR before we can proceed with our service.
+      We utilize VA.gov for a faster and efficient information collection. Information will be stored securely and we will not share your data.      </Text>
+      <View style={styles.continueContainer}>
+        <Text style={styles.text}>
+          By continuing, you agree to our{' '}
+          <Text style={styles.link}>Privacy Policy</Text>
+          {' '}and{' '}
+          <Text style={styles.link}>Terms of Service</Text>
+          .
       </Text>
+      
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Continue with VA.gov</Text>
+        <Text style={styles.buttonText}>VA Continue with VA.gov</Text>
       </TouchableOpacity>
     </View>
   );
@@ -107,29 +115,39 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 0,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#ffffff',
+  },
+  svgContainer: {
+    paddingTop: 182, // Add paddingTop to the SVG
+    marginBottom: 36,
   },
   image: {
     width: 200,
     height: 200,
     resizeMode: 'contain',
-    marginBottom: 20,
+    marginBottom: 40,
+
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 40,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
+    width: '100%',
+    fontFamily: 'SF Pro',
+    fontSize: 14,
+    color: '#636467',
     textAlign: 'center',
     paddingHorizontal: 20,
-    marginBottom: 20,
+    fontWeight: '400',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+    marginBottom: 80,
   },
   button: {
     position: 'absolute',
@@ -142,8 +160,35 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+  },
+
+  continueContainer: {
+    width: '100%',
+    textAlign: 'center',
+    color: '#636467',
+    paddingHorizontal: 40, 
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 30, 
+    lineHeight : 20,
+  },
+  text: {
+    color: '#636467',
+    fontSize: 12,
+    textAlign: 'center',
+    fontFamily: 'SF Pro',
+    fontWeight: '400',
+    lineHeight: 18,
+    wordWrap: 'break-word',
+  },
+  link: {
+    color: '#3182F6',
+    fontSize: 12,
+    fontFamily: 'SF Pro',
+    fontWeight: '400',
+    lineHeight: 18,
   },
 });
 
