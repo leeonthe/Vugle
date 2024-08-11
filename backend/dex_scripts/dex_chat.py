@@ -9,10 +9,6 @@ config_path = os.path.join(script_dir, '../dex_config/config.yaml')
 with open(config_path, 'r') as f:
     config = yaml.safe_load(f)
 
-# Load config
-# with open('dex_config/config.yaml', 'r') as f:
-#     config = yaml.safe_load(f)
-
 openai.api_key = config['openai_api_key']
 
 def analyze_document(file_path):
@@ -45,7 +41,7 @@ def analyze_document(file_path):
 
 def query_gpt(prompt):
     response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
+        model="gpt-4",
         messages=[
             {"role": "system", "content": "You are a helpful assistant, analyzing medical and military history documents."},
             {"role": "user", "content": prompt}
@@ -72,27 +68,10 @@ def find_relevant_documents(query, documents_dir="../dex_docs/sample_medical_rec
                 relevant_docs.append((filename, relevant_text))
     return relevant_docs
 
-if __name__ == "__main__":
-    print("Welcome! Dex will help you find relevant medical documents and answer your questions about them.")
-    print("You can also ask general questions. Type 'stop' to end the session.")
-    
-    while True:
-        user_query = input("Please enter your query: ")
-        
-        if user_query.lower() in ["stop"]:
-            print("Ending Dex.")
-            break
-        
-        relevant_docs = find_relevant_documents(user_query)
-        
-        if relevant_docs:
-            for doc, relevant_text in relevant_docs:
-                print(f"Relevant document found: {doc}")
-                chatbot_response = query_gpt(f"Based on the following extracted content, {relevant_text}, {user_query}")
-                print(f"Response to query from document '{doc}':")
-                print(chatbot_response)
-        else:
-            print("No relevant documents found. Answering as a general query.")
-            general_response = query_gpt(user_query)
-            print("Chatbot Response:")
-            print(general_response)
+def generate_potential_conditions(user_input):
+    prompt = f"Given the user's condition: '{user_input}', what other conditions might be related or could be of concern?"
+    potential_conditions = query_gpt(prompt)
+    return potential_conditions.split('\n')
+
+def clear_session_data(session):
+    session.flush()

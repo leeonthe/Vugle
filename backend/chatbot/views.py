@@ -3,6 +3,7 @@ from django.views import View
 from django.middleware.csrf import get_token
 import json
 import logging
+from dex_chat import analyze_document, generate_potential_conditions, clear_session_data
 
 logger = logging.getLogger(__name__)
 image = "static/vugle.png"
@@ -43,6 +44,7 @@ chatbot_flow = {
             
         ]
     },
+    # NOT COVER YET
     "existing_condition": {
         "prompt": "[[IMAGE]][BR]Do you think your current circumstance falls under the right claim?",
         "options": [
@@ -56,12 +58,15 @@ chatbot_flow = {
             }
         ]
     },
+    # NOT COVER YET
     "both_condition": {
         "prompt": "[[IMAGE]]\nWhich claims would you like to submit? Select all that apply.",
         "options": [
             # USER INPUT
         ]
     },
+
+
     "get_more_condition": {
         "prompt": "[[IMAGE]][BR][BOLD]Any other conditions?[CLOSE][NEWLINE]It’s okay if they are not severe. Any conditions or symptoms that are troubling you can help us improve your chance.",
         "options": [
@@ -89,7 +94,6 @@ chatbot_flow = {
     },
     
 
-    # TODO: Create navigate_potential_condition
     "potential_condition_linking":{
         "prompt": "[[IMAGE]][BR][BOLD]Potential affected conditions[CLOSE][NEWLINE]Based on your health records and the condition you’ve mentioned, we’ve listed potential conditions that you might also be experiencing.[LINK_START]Why it’s important[LINK_END]",
         "options": [
@@ -112,6 +116,9 @@ chatbot_flow = {
         "prompt": "[[IMAGE]][BR][BOLD]How severe is your knee pain now?[CLOSE][NEWLINE]On a scale of (1 - 10)",
 
     },
+
+    # TODO: add: Assessment completed! 🙌 Thanks for your time, Robert!
+    # TODO: add: Reviewing DD214, etc
      "finding_right_claim": {
         "prompt": "[[IMAGE]][BR][BOLD]Finding the Right Claim📋[CLOSE][NEWLINE]Based on the severity and duration of your symptoms, we'll guide you to the appropriate claim.",
         "options": [
@@ -119,11 +126,39 @@ chatbot_flow = {
         ]
     },
 
-    "hospital_linking": {
-        "prompt": "[[IMAGE]]\nGot it. Click the link below to test hospital linking.",
+    # TODO: Text styling
+    "service_connect": {
+        "prompt": "[[IMAGE]][BR]Secondary Service-Connected Claim Your condition might be affected by your existing condition ‘Lower back pain’ for which you’ve received a 70% disability rating.",
+        "options": [
+        {
+            "text": "Start Filing",
+            "next": "check_if_user_been_to_private_clinics"
+        }
+            
+        ]
+    },
+
+    # TODO: Text styling
+    "check_if_user_been_to_private_clinics": {
+        "prompt": "Have you been to any private clinics? We couldn’t find any VA medical records about your conditions. Have you attended any private clinics for your condition?",
         "options": [
             {
-                "text": "TEST LINKING HOSIPITAL",
+                "text": "Yes",
+                "next": "hospital_linking"
+            },
+            {
+                "text": "No",
+                "next": "end"   
+            }
+        ]
+    },
+
+#   TODO: Text styling + 
+    "hospital_linking": {
+        "prompt": "[[IMAGE]]List of VA medicals near by youHere you go! Some centers offer virtual option as well. Please check the availability for each centers carefully.",
+        "options": [
+            {
+                "text": "View medical centers",
                 "next": "navigate_hospital"
             }
         ]
@@ -141,21 +176,19 @@ chatbot_flow = {
     },
     "end": {
         "prompt": "[[IMAGE]]\nThank you for your responses. We will guide you further."
-    }
+    },
 }
-
+    
 def handle_step_change(prompt, user_name):
     if not prompt:
         return []
 
-    # Replace placeholders with markdown-style formatting
     processed_prompt = prompt.replace('{user_name}', user_name)
-    processed_prompt = processed_prompt.replace('[BOLD]', '**')  # Start bold
-    processed_prompt = processed_prompt.replace('[CLOSE]', '**')  # End bold
-    processed_prompt = processed_prompt.replace('[NEWLINE]', '\n')  # For new lines
-    processed_prompt = processed_prompt.replace('[LINK_START]', '[').replace('[LINK_END]', ']()')  # For link text
+    processed_prompt = processed_prompt.replace('[BOLD]', '**')  
+    processed_prompt = processed_prompt.replace('[CLOSE]', '**')  
+    processed_prompt = processed_prompt.replace('[NEWLINE]', '\n')  
+    processed_prompt = processed_prompt.replace('[LINK_START]', '[').replace('[LINK_END]', ']()')
 
-    # Split into separate messages
     return processed_prompt.split('\n')
 
 
@@ -172,7 +205,7 @@ class ChatbotView(View):
             data = json.loads(request.body)
             user_response = data.get('response')
             current_step = data.get('current_step')
-            user_name = data.get('user_name', 'User')  # Assuming user_name is passed from the frontend
+            user_name = data.get('user_name', 'User')
 
             logger.debug(f'POST data: {data}')
             logger.debug(f'Current step: {current_step}')
@@ -181,11 +214,45 @@ class ChatbotView(View):
             if current_step is None or user_response is None:
                 return JsonResponse({'error': 'Invalid request'}, status=400)
 
-            next_step = chatbot_flow[current_step]['options'][int(user_response)]['next']
-            next_prompt = chatbot_flow[next_step]['prompt']
+            # Handle specific steps with additional processing
+            if current_step == "start":
+                # Handle document upload and analysis
+                document_path = request.FILES.get('dd214')
+                if document_path:
+                    document_text = analyze_document(document_path)
+                    request.session['dd214_text'] = document_text
+                    next_step = "upload_dd214"
+                else:
+                    return JsonResponse({'error': 'Document not provided'}, status=400)
 
+            elif current_step == "new_condition":
+                # Handle user input for new conditions
+                request.session['user_condition'] = user_response
+                potential_conditions = generate_potential_conditions(user_response)
+                request.session['potential_conditions'] = potential_conditions
+                next_step = "get_more_condition"
+
+            elif current_step == "potential_condition_linking":
+                # Handle the potential conditions and prepare the navigation
+                next_step = "navigate_potential_condition"
+
+            elif current_step == "basic_assessment":
+                # Process how long the condition has been troubling the user
+                request.session['condition_duration'] = user_response
+                next_step = "scaling_pain"
+
+            elif current_step == "reset":
+                # Handle resetting the session data
+                clear_session_data(request.session)
+                return JsonResponse({"status": "success", "message": "Session data cleared."})
+
+            else:
+                next_step = chatbot_flow[current_step]['options'][int(user_response)]['next']
+
+            next_prompt = chatbot_flow[next_step]['prompt']
             processed_prompts = handle_step_change(next_prompt, user_name)
             navigation_url = chatbot_flow[next_step].get('navigation_url', None)
+            
             return JsonResponse({
                 "image": chatbot_flow[next_step].get('image', None), 
                 "prompts": processed_prompts, 

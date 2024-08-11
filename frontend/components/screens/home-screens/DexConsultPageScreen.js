@@ -4,8 +4,6 @@ import * as Animatable from 'react-native-animatable';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker';
-
 import PainScaleSlider from './PainScaleSlider';  
 
 
