@@ -34,10 +34,16 @@ const DexConsultPageScreen = () => {
 
   useEffect(() => {
     if (currentStep === 'new_condition') {
-
       inputRef.current?.focus();
     }
   }, [currentStep]);
+
+  // Set the onReturn callback in navigation options
+  useEffect(() => {
+    navigation.setOptions({
+      onReturn: handlePotentialConditionsReturn,
+    });
+  }, [navigation]);
 
   const handleStepChange = (step, prompt, options = []) => {
     if (!prompt) return;
@@ -59,7 +65,6 @@ const DexConsultPageScreen = () => {
             ...prevChatHistory,
             {
                 type: 'bot',
-                // text: isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim(),
                 text: renderStyledText(isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim()), // Apply renderStyledText to all messages
                 imageSource: isImagePlaceholder ? require('../../../assets/vugle.png') : null,
                 options: isLastMessage ? options : [],
@@ -69,15 +74,12 @@ const DexConsultPageScreen = () => {
     });
 };
 
-
   const handleUserInputSubmit = async () => {
     if (userInput.trim()) {
       setChatHistory(prevChatHistory => [
         ...prevChatHistory,
         { type: 'user', text: userInput }
       ]);
-      
-
 
       try {
         const response = await axios.post('http://localhost:8000/chatbot/', {
@@ -88,7 +90,6 @@ const DexConsultPageScreen = () => {
         });
 
         if (currentStep === 'new_condition') {
-
           setCurrentStep('get_more_condition');
           handleStepChange('get_more_condition', chatFlow.get_more_condition.prompt, chatFlow.get_more_condition.options);
         } else if (currentStep === 'basic_assessment') {
@@ -107,13 +108,10 @@ const DexConsultPageScreen = () => {
     try {
         const res = await DocumentPicker.getDocumentAsync({});
 
-        console.log("Document Picker Result:", res); // Log the result from DocumentPicker
-
         if (!res.canceled && res.assets && res.assets.length > 0) {
             const file = res.assets[0]; // Get the first file from the assets array
             const fileName = file.name;
             console.log("Selected file:", fileName);
-            console.log("File URI:", file.uri);
 
             const formData = new FormData();
             formData.append('dd214', {
@@ -122,8 +120,6 @@ const DexConsultPageScreen = () => {
                 type: file.mimeType || 'application/pdf',  // Use the mimeType provided by the picker
             });
 
-            console.log("Form Data:", formData); // Log the form data to see if it was constructed properly
-
             const response = await axios.post('http://localhost:8000/chatbot/', formData, {
                 headers: {
                     'X-CSRFToken': csrfToken,
@@ -131,8 +127,6 @@ const DexConsultPageScreen = () => {
                 },
                 params: { current_step: 'start' }
             });
-
-            console.log("Server Response:", response.data); // Log the server response
 
             setPdfFileName(fileName);
             setChatHistory(prevChatHistory => [
@@ -152,67 +146,62 @@ const DexConsultPageScreen = () => {
     }
 };
 
-
 const handleOptionClick = async (option, index) => {
   if (option.text === "Upload DD214") {
       handleFileUpload();  // Trigger file upload
   } else {
     const userMessageIndex = chatHistory.length;
-      setChatHistory(prevChatHistory => [
-          ...prevChatHistory,
-          { type: 'user', text: option.text }
-      ]);
-      userMessageIndices.current.push(userMessageIndex);
+    setChatHistory(prevChatHistory => [
+        ...prevChatHistory,
+        { type: 'user', text: option.text }
+    ]);
+    userMessageIndices.current.push(userMessageIndex);
 
-      try {
-          const response = await axios.post('http://localhost:8000/chatbot/', {
-              response: index,
-              current_step: currentStep
-          }, {
-              headers: { 'X-CSRFToken': csrfToken }
-          });
-          
-          
-          console.log("Server Response:", response.data);
-          
-          const { prompts, options, navigation_url, potential_conditions } = response.data;
-          
-          if (navigation_url) {
-              if (navigation_url === "/potential_condition") {
+    try {
+        const response = await axios.post('http://localhost:8000/chatbot/', {
+            response: index,
+            current_step: currentStep
+        }, {
+            headers: { 'X-CSRFToken': csrfToken }
+        });
+        
+        const { prompts, options, navigation_url, potential_conditions } = response.data;
+        
+        if (navigation_url) {
+            if (navigation_url === "/potential_condition") {
+                const formattedConditions = potential_conditions.map(cond => {
+                    const [name, risk, description] = cond.split('\n').map(line => line.split(': ')[1]);
+                    return { name, risk, description, riskColor: risk === 'High risk' ? 'red' : risk === 'Medium risk' ? 'orange' : 'green' };
+                });
 
-                
-                  const formattedConditions = potential_conditions.map(cond => {
-                      const [name, risk, description] = cond.split('\n').map(line => line.split(': ')[1]);
-                      return { name, risk, description, riskColor: risk === 'High risk' ? 'red' : risk === 'Medium risk' ? 'orange' : 'green' };
-                  });
-                  
-                  navigation.navigate('PotentialConditionPageScreen', {
-                    
-                      potentialConditions: formattedConditions, // Pass structured data to PotentialConditionPageScreen
-                      onReturn: handlePotentialConditionsReturn  // Handle return conditions
-                  });
-              } else if (navigation_url === "/hospital") {
-                  navigation.navigate('HospitalPageScreen');
-              }
-          } else if (prompts) {
-              prompts.forEach((text, idx) => {
-                  const isImagePlaceholder = text.includes('[[IMAGE]]');
-                  setChatHistory(prevChatHistory => [
-                      ...prevChatHistory,
-                      {
-                          type: 'bot',
-                          text: isImagePlaceholder ? '' : text,  // Use centralized text processing
-                          options: idx === prompts.length - 1 ? options : [],
-                          isImagePlaceholder
-                      }
-                  ]);
-              });
-          }
-          
-          setCurrentStep(option.next);
-      } catch (error) {
-          console.error("Error during option click:", error);
-      }
+                // Navigate and pass the onReturn callback
+                navigation.navigate('PotentialConditionPageScreen', {
+                  potentialConditions: formattedConditions,
+                  onReturn: handlePotentialConditionsReturn,
+                });
+
+            } else if (navigation_url === "/hospital") {
+                navigation.navigate('HospitalPageScreen');
+            }
+        } else if (prompts) {
+            prompts.forEach((text, idx) => {
+                const isImagePlaceholder = text.includes('[[IMAGE]]');
+                setChatHistory(prevChatHistory => [
+                    ...prevChatHistory,
+                    {
+                        type: 'bot',
+                        text: isImagePlaceholder ? '' : text,  // Use centralized text processing
+                        options: idx === prompts.length - 1 ? options : [],
+                        isImagePlaceholder
+                    }
+                ]);
+            });
+        }
+        
+        setCurrentStep(option.next);
+    } catch (error) {
+        console.error("Error during option click:", error);
+    }
   }
 };
 
@@ -232,115 +221,109 @@ const handlePotentialConditionsReturn = (addedConditions) => {
     }
   }
 };
-  const handlePainScaleSubmit = () => {
-    setChatHistory(prevChatHistory => [
-      ...prevChatHistory,
-      { type: 'user', text: painScale.toString() }
-    ]);
 
-    setCurrentStep('finding_right_claim');
-    handleStepChange('finding_right_claim', chatFlow.finding_right_claim.prompt, chatFlow.finding_right_claim.options);
-  };
+const handlePainScaleSubmit = () => {
+  setChatHistory(prevChatHistory => [
+    ...prevChatHistory,
+    { type: 'user', text: painScale.toString() }
+  ]);
 
-  const renderStyledText = (text) => {
-    const parts = [];
-    let lastIndex = 0;
-    
-    // Combine regex for both bold and link processing
-    const combinedRegex = /<b>(.*?)<\/b>|<a href="#">(.*?)<\/a>/g;
-    let match;
-    while ((match = combinedRegex.exec(text)) !== null) {
-        if (match.index > lastIndex) {
-            parts.push({ text: text.substring(lastIndex, match.index), bold: false, link: false });
-        }
-        if (match[1]) {  // Bold
-            parts.push({ text: match[1], bold: true, link: false });
-        } else if (match[2]) {  // Link
-            parts.push({ text: match[2], bold: false, link: true });
-        }
-        lastIndex = match.index + match[0].length;
-    }
-    if (lastIndex < text.length) {
-        parts.push({ text: text.substring(lastIndex), bold: false, link: false });
-    }
-
-    return (
-        <Text>
-            {parts.map((part, index) => (
-                <Text
-                    key={index}
-                    style={part.bold ? styles.boldText : (part.link ? styles.linkText : styles.normalText)}
-                    onPress={() => part.link ? console.log('LINK SKRTSKSRTSKRT!') : null}
-                >
-                    {part.text}
-                </Text>
-            ))}
-        </Text>
-    );
+  setCurrentStep('finding_right_claim');
+  handleStepChange('finding_right_claim', chatFlow.finding_right_claim.prompt, chatFlow.finding_right_claim.options);
 };
 
+const renderStyledText = (text) => {
+  const parts = [];
+  let lastIndex = 0;
+
+  // Combine regex for both bold and link processing
+  const combinedRegex = /<b>(.*?)<\/b>|<a href="#">(.*?)<\/a>/g;
+  let match;
+  while ((match = combinedRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+          parts.push({ text: text.substring(lastIndex, match.index), bold: false, link: false });
+      }
+      if (match[1]) {  // Bold
+          parts.push({ text: match[1], bold: true, link: false });
+      } else if (match[2]) {  // Link
+          parts.push({ text: match[2], bold: false, link: true });
+      }
+      lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+      parts.push({ text: text.substring(lastIndex), bold: false, link: false });
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.container} ref={scrollViewRef}>
-      <View style={styles.header}></View>
-
-      {chatHistory.map((chat, index) => (
-
-        
-        <Animatable.View
-          key={index}
-          animation="fadeIn"
-          duration={1000}
-          style={[
-            styles.messageContainer,
-            chat.type === 'user' ? styles.userMessage : styles.botMessage,
-          ]}
-        >
-          {chat.isImagePlaceholder && chat.imageSource ? (
-
-            <View style={styles.logoBackground}>
-              <Image source={require('../../../assets/vugle.png')} style={styles.logo} />
-            </View>
-
-
-
-          ) : chat.text && (
-            <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
-              {chat.text}
-            </Text>
-          )}
-
-          {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
-            <TouchableOpacity
-              key={idx}
-              style={styles.optionButton}
-              onPress={() => handleOptionClick(option, idx)}
-            >
-              <Text style={styles.optionText}>{option.text}</Text>
-            </TouchableOpacity>
+      <Text>
+          {parts.map((part, index) => (
+              <Text
+                  key={index}
+                  style={part.bold ? styles.boldText : (part.link ? styles.linkText : styles.normalText)}
+                  onPress={() => part.link ? console.log('LINK Clicked!') : null}
+              >
+                  {part.text}
+              </Text>
           ))}
-        </Animatable.View>
-      ))}
-
-      {(currentStep === 'new_condition' || currentStep === 'basic_assessment') && (
-        <View style={styles.inputContainer}>
-          <TextInput
-            ref={inputRef}
-            style={styles.input}
-            placeholder={currentStep === 'basic_assessment' ? "Describe your condition..." : "Type your condition here..."}
-            value={userInput}
-            onChangeText={setUserInput}
-            autoFocus={true}
-          />
-          <Button title="Submit" onPress={handleUserInputSubmit} />
-        </View>
-      )}
-
-      {currentStep === 'scaling_pain' && (
-        <PainScaleSlider painScale={painScale} setPainScale={setPainScale} />
-      )}
-    </ScrollView>
+      </Text>
   );
+};
+
+return (
+  <ScrollView contentContainerStyle={styles.container} ref={scrollViewRef}>
+    <View style={styles.header}></View>
+
+    {chatHistory.map((chat, index) => (
+      <Animatable.View
+        key={index}
+        animation="fadeIn"
+        duration={1000}
+        style={[
+          styles.messageContainer,
+          chat.type === 'user' ? styles.userMessage : styles.botMessage,
+        ]}
+      >
+        {chat.isImagePlaceholder && chat.imageSource ? (
+          <View style={styles.logoBackground}>
+            <Image source={require('../../../assets/vugle.png')} style={styles.logo} />
+          </View>
+        ) : chat.text && (
+          <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
+            {chat.text}
+          </Text>
+        )}
+
+        {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
+          <TouchableOpacity
+            key={idx}
+            style={styles.optionButton}
+            onPress={() => handleOptionClick(option, idx)}
+          >
+            <Text style={styles.optionText}>{option.text}</Text>
+          </TouchableOpacity>
+        ))}
+      </Animatable.View>
+    ))}
+
+    {(currentStep === 'new_condition' || currentStep === 'basic_assessment') && (
+      <View style={styles.inputContainer}>
+        <TextInput
+          ref={inputRef}
+          style={styles.input}
+          placeholder={currentStep === 'basic_assessment' ? "Describe your condition..." : "Type your condition here..."}
+          value={userInput}
+          onChangeText={setUserInput}
+          autoFocus={true}
+        />
+        <Button title="Submit" onPress={handleUserInputSubmit} />
+      </View>
+    )}
+
+    {currentStep === 'scaling_pain' && (
+      <PainScaleSlider painScale={painScale} setPainScale={setPainScale} />
+    )}
+  </ScrollView>
+);
 };
 
 

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 
 const PotentialConditionPageScreen = () => {
   const route = useRoute();
-  const { potentialConditions } = route.params;  // Destructure potentialConditions from route.params
   const navigation = useNavigation();
+  const { potentialConditions, onReturn } = route.params;  // Receive onReturn directly as a prop
   const [selectedConditions, setSelectedConditions] = useState({});
 
   const toggleCondition = (conditionName) => {
@@ -17,11 +17,9 @@ const PotentialConditionPageScreen = () => {
 
   const handleContinue = () => {
     const addedConditions = Object.keys(selectedConditions).filter(key => selectedConditions[key]);
-
-    if (route.params.onReturn) {
-      route.params.onReturn(addedConditions);
+    if (onReturn) {
+      onReturn(addedConditions);  // Pass the selected conditions back
     }
-
     navigation.goBack();
   };
 
@@ -63,14 +61,12 @@ const PotentialConditionPageScreen = () => {
         </View>
       ))}
 
-
       <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
         <Text style={styles.continueButtonText}>Continue</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
@@ -164,7 +160,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addedButton: {
-    backgroundColor: '#237AF2', // Green color when added
+    backgroundColor: '#237AF2',
   },
   addButtonText: {
     color: 'white',
@@ -173,38 +169,6 @@ const styles = StyleSheet.create({
     fontWeight: '510',
     lineHeight: 22.65,
     marginRight: 4,
-  },
-  addIcon: {
-    width: 10,
-    height: 10,
-    position: 'relative',
-  },
-  addHorizontal: {
-    width: 10,
-    height: 1.25,
-    backgroundColor: 'white',
-    position: 'absolute',
-    top: 4.38,
-  },
-  addVertical: {
-    width: 1.25,
-    height: 10,
-    backgroundColor: 'white',
-    position: 'absolute',
-    left: 4.38,
-  },
-  checkIcon: {
-    width: 10,
-    height: 10,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkIconPart: {
-    width: 7,
-    height: 1.5,
-    backgroundColor: '#237AF2', // Green color for check
   },
   continueButton: {
     backgroundColor: '#237AF2',

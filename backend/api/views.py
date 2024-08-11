@@ -16,6 +16,7 @@ from django.views import View
 from urllib.parse import urlencode
 import logging
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.middleware.csrf import get_token
 
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,12 @@ logger = logging.getLogger(__name__)
 # In a production setting, you might use a database or more secure storage
 TEMP_STORAGE = {}
 
+
+class GetCSRFTokenView(View):
+    def get(self, request):
+        csrf_token = get_token(request)
+        return JsonResponse({'csrf_token': csrf_token})
+    
 class OAuthLoginView(View):
     def get(self, request):
         code_verifier = self._generate_code_verifier()
@@ -122,7 +129,19 @@ class OAuthCallbackView(View):
             logger.error(f"Token exchange failed: {response.status_code}, {response.text}")
             return HttpResponseBadRequest("Token exchange failed")
         
-    
+class SaveVeteranDataView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            # Process the data as required, for example, save it to the database
+            # or use it to generate a response.
+            print('Received Veteran Data:', data)
+
+            # Assuming you process the data successfully
+            return JsonResponse({'status': 'success', 'message': 'Veteran data processed successfully.'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)    
+
 class GenerateJWTView(View):
     CLIENT_ID = '0oaxj51zcfaczzOaw2p7'
     PRIVATE_KEY_PATH = Path(__file__).resolve().parent.parent.parent / 'private.pem'

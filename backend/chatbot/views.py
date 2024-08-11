@@ -112,11 +112,12 @@ chatbot_flow = {
         "options": [
             # USER INPUT
         ]
+        # move to scaling_pain
     },
 
     "scaling_pain":{
         "prompt": "[[IMAGE]][BR][BOLD]How severe is your knee pain now?[CLOSE][NEWLINE]On a scale of (1 - 10)",
-
+        # move to finding_right_claim
     },
 
     # TODO: add: Assessment completed! 🙌 Thanks for your time, Robert!
@@ -254,12 +255,24 @@ class ChatbotView(View):
                     next_step = "navigate_potential_condition"
 
                 elif current_step == "basic_assessment":
-                    request.session['condition_duration'] = user_response
+                    request.session['condition_duration'] = user_response #save user response
                     next_step = "scaling_pain"
+                
+                elif current_step == "scaling_pain":
+                    request.session['pain_severity'] = user_response
+                    next_step = "finding_right_claim"
+                elif current_step == "finding_right_claim":
+                    
+                    next_step = "service_connect"
 
+
+
+                    
                 elif current_step == "reset":
                     clear_session_data(request.session)
                     return JsonResponse({"status": "success", "message": "Session data cleared."})
+
+               
 
                 else:
                     next_step = chatbot_flow[current_step]['options'][int(user_response)]['next']

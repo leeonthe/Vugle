@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import axios from 'axios';
 
 const API_BASE_URL = 'https://sandbox-api.va.gov/services/veteran_verification/v2';
 const API_LETTER_URL = 'https://sandbox-api.va.gov/services/va-letter-generator/v1';
@@ -93,54 +93,92 @@ export const VeteranDataProvider = ({ children }) => {
  const [error, setError] = useState(null);
 
 
- useEffect(() => {
-   const fetchAllData = async () => {
-     setLoading(true);
-     const token = await AsyncStorage.getItem('access_token');
-     if (!token) {
-       setError('Access token not found');
-       setLoading(false);
-       return;
-     }
+ const sendVeteranDataToBackend = async (veteranData) => {
+  const csrfToken = await AsyncStorage.getItem('csrf_token');
+
+  try {
+    const response = await axios.post('http://localhost:8000/api/save-veteran-data/', veteranData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken, // Include the CSRF token in the headers
+      },
+    });
+
+    // Check if the response is JSON
+    if (response.headers['content-type'].includes('application/json')) {
+      console.log('Data successfully sent to the backend:', response.data);
+    } else {
+      console.error('Unexpected content-type, expected JSON but got:', response.headers['content-type']);
+    }
+  } catch (error) {
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Backend error:', error.response.data);
+      console.error('Backend response status:', error.response.status);
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('No response received from backend:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error in setting up the request:', error.message);
+    }
+  }
+};
 
 
-     try {
-       const [disabilityRating, serviceHistory, status] = await Promise.all([
-         fetchVeteranData(token, endpoints.disabilityRating),
-         fetchVeteranData(token, endpoints.serviceHistory),
-         fetchVeteranData(token, endpoints.status),
-       ]);
+useEffect(() => {
+  const fetchAllData = async () => {
+    setLoading(true);
+    const token = await AsyncStorage.getItem('access_token');
+    if (!token) {
+      setError('Access token not found');
+      setLoading(false);
+      return;
+    }
 
+    try {
+      const [disabilityRating, serviceHistory, status] = await Promise.all([
+        fetchVeteranData(token, endpoints.disabilityRating),
+        fetchVeteranData(token, endpoints.serviceHistory),
+        fetchVeteranData(token, endpoints.status),
+      ]);
 
-       // Set userInfo and extract disabilityRatingId
-       setUserInfo({ disabilityRating, serviceHistory, status });
-       if (disabilityRating && disabilityRating.data && disabilityRating.data.id) {
-         const icn = disabilityRating.data.id;
-         setDisabilityRatingId(icn);
+      // Set userInfo and extract disabilityRatingId
+      setUserInfo({ disabilityRating, serviceHistory, status });
+      if (disabilityRating && disabilityRating.data && disabilityRating.data.id) {
+        const icn = disabilityRating.data.id;
+        setDisabilityRatingId(icn);
         
-         let lettersAccessToken = await AsyncStorage.getItem('letters_access_token');
-         if (!lettersAccessToken) {
-           lettersAccessToken = await fetchLetterAccessToken();
-         }
+        let lettersAccessToken = await AsyncStorage.getItem('letters_access_token');
+        if (!lettersAccessToken) {
+          lettersAccessToken = await fetchLetterAccessToken();
+        }
 
+        // Fetch eligible letters
+        const letters = await fetchEligibleLetters(lettersAccessToken, icn);
+        setEligibleLetters(letters);
 
-         // Fetch eligible letters
-         const letters = await fetchEligibleLetters(lettersAccessToken, icn);
-         console.log("LETTER: ", letters);
-         setEligibleLetters(letters);
-       }
+        // Combine all fetched data into a single object
+        const veteranData = {
+          disabilityRating,
+          serviceHistory,
+          status,
+          letters
+        };
 
+        // Send the combined data to the backend
+        await sendVeteranDataToBackend(veteranData);
+      }
 
-       console.log('UserInfo', { disabilityRating, serviceHistory, status });
-     } catch (error) {
-       setError(`Error: ${error.message}`);
-     }
-     setLoading(false);
-   };
+    } catch (error) {
+      setError(`Error: ${error.message}`);
+    }
+    setLoading(false);
+  };
 
-
-   fetchAllData();
- }, []);
+  fetchAllData();
+}, []);
 
 
  return (

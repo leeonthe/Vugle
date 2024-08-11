@@ -11,9 +11,6 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('api/v1.0/app/', include('appSettings.urls')),
     path('chatbot/', include('chatbot.urls')),
-    # path('ai/', include('ai.urls')),
+
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
-    # path('ai_dex/', Ai_dexView.as_view(), name='ai_dex'),
-    # path('ai_dex/', include('ai_dex.urls')),
-    # path('user_records/', include('documents.urls')),
 ]
