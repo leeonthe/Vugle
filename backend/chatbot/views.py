@@ -1,9 +1,11 @@
 from django.http import JsonResponse
 from django.views import View
 from django.middleware.csrf import get_token
-import json
-import logging
-from dex_chat import analyze_document, generate_potential_conditions, clear_session_data
+import json, logging
+
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from dex_scripts.dex_chat import analyze_document, generate_potential_conditions, clear_session_data,  config_path
 
 logger = logging.getLogger(__name__)
 image = "static/vugle.png"
@@ -191,6 +193,16 @@ def handle_step_change(prompt, user_name):
 
     return processed_prompt.split('\n')
 
+def handle_uploaded_file(file):
+    logger.debug(f'Handling file upload: {file.name}')
+    try:
+        file_name = file.name
+        path = default_storage.save(file_name, ContentFile(file.read()))
+        logger.debug(f'File saved to: {path}')
+        return path
+    except Exception as e:
+        logger.error(f'Error handling file upload: {e}')
+        raise e
 
 class ChatbotView(View):
     def get(self, request):
@@ -201,53 +213,51 @@ class ChatbotView(View):
         return JsonResponse(response)
 
     def post(self, request):
+        print("Config Path:", config_path)
+        
         try:
-            data = json.loads(request.body)
-            user_response = data.get('response')
-            current_step = data.get('current_step')
-            user_name = data.get('user_name', 'User')
-
-            logger.debug(f'POST data: {data}')
-            logger.debug(f'Current step: {current_step}')
-            logger.debug(f'User response: {user_response}')
-
-            if current_step is None or user_response is None:
-                return JsonResponse({'error': 'Invalid request'}, status=400)
-
-            # Handle specific steps with additional processing
-            if current_step == "start":
-                # Handle document upload and analysis
-                document_path = request.FILES.get('dd214')
-                if document_path:
-                    document_text = analyze_document(document_path)
-                    request.session['dd214_text'] = document_text
-                    next_step = "upload_dd214"
-                else:
-                    return JsonResponse({'error': 'Document not provided'}, status=400)
-
-            elif current_step == "new_condition":
-                # Handle user input for new conditions
-                request.session['user_condition'] = user_response
-                potential_conditions = generate_potential_conditions(user_response)
-                request.session['potential_conditions'] = potential_conditions
-                next_step = "get_more_condition"
-
-            elif current_step == "potential_condition_linking":
-                # Handle the potential conditions and prepare the navigation
-                next_step = "navigate_potential_condition"
-
-            elif current_step == "basic_assessment":
-                # Process how long the condition has been troubling the user
-                request.session['condition_duration'] = user_response
-                next_step = "scaling_pain"
-
-            elif current_step == "reset":
-                # Handle resetting the session data
-                clear_session_data(request.session)
-                return JsonResponse({"status": "success", "message": "Session data cleared."})
-
+            user_name = 'User'
+            # Check if we have a file upload in the request
+            if request.FILES.get('dd214'):
+                file = request.FILES['dd214']
+                logger.debug(f'Received file: {file.name}')
+                file_path = handle_uploaded_file(file)  # Save the uploaded file
+                document_text = analyze_document(file_path)  # Analyze the document
+                request.session['dd214_text'] = document_text  # Store the analysis in session
+                next_step = "upload_dd214"
             else:
-                next_step = chatbot_flow[current_step]['options'][int(user_response)]['next']
+                # Handle non-file related logic
+                data = json.loads(request.body)
+                user_response = data.get('response')
+                current_step = data.get('current_step')
+                user_name = data.get('user_name', 'User')
+
+                logger.debug(f'POST data: {data}')
+                logger.debug(f'Current step: {current_step}')
+                logger.debug(f'User response: {user_response}')
+
+                if current_step is None or user_response is None:
+                    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+                if current_step == "new_condition":
+                    request.session['user_condition'] = user_response
+                    potential_conditions = generate_potential_conditions(user_response)
+                    request.session['potential_conditions'] = potential_conditions
+                    next_step = "get_more_condition"
+
+                elif current_step == "potential_condition_linking":
+                    next_step = "navigate_potential_condition"
+
+                elif current_step == "basic_assessment":
+                    request.session['condition_duration'] = user_response
+                    next_step = "scaling_pain"
+
+                elif current_step == "reset":
+                    clear_session_data(request.session)
+                    return JsonResponse({"status": "success", "message": "Session data cleared."})
+
+                else:
+                    next_step = chatbot_flow[current_step]['options'][int(user_response)]['next']
 
             next_prompt = chatbot_flow[next_step]['prompt']
             processed_prompts = handle_step_change(next_prompt, user_name)

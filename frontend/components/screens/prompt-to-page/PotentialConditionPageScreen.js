@@ -1,32 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
-const conditions = [
-  {
-    name: 'Ankle Pain',
-    risk: 'High risk',
-    description: 'Pain or discomfort in the ankle, swelling, bruising, instability, and difficulty bearing weight on the affected foot.',
-    riskColor: '#F22323',
-  },
-  {
-    name: 'Opposite Knee Pain',
-    risk: 'High risk',
-    description: 'Pain in the other knee, swelling, stiffness, reduced range of motion, and difficulty in performing daily activities or walking.',
-    riskColor: '#F22323',
-  },
-  {
-    name: 'IT Band Syndrome',
-    risk: 'Medium risk',
-    description: 'Pain on the outside of the knee or thigh, a snapping sensation on the outer knee, swelling or thickening of the IT band, and discomfort during activities such as walking.',
-    riskColor: '#FFA500',
-  }
-];
-
 const PotentialConditionPageScreen = () => {
   const [selectedConditions, setSelectedConditions] = useState({});
+  const [conditions, setConditions] = useState([]);
   const navigation = useNavigation();
   const route = useRoute();
+
+  useEffect(() => {
+    if (route.params && route.params.potentialConditions) {
+      setConditions(route.params.potentialConditions);
+    }
+  }, [route.params]);
 
   const toggleCondition = (conditionName) => {
     setSelectedConditions((prevSelected) => ({
@@ -38,12 +24,10 @@ const PotentialConditionPageScreen = () => {
   const handleContinue = () => {
     const addedConditions = Object.keys(selectedConditions).filter(key => selectedConditions[key]);
 
-    // Call the onReturn callback passed via route parameters
     if (route.params && route.params.onReturn) {
       route.params.onReturn(addedConditions);
     }
 
-    // Navigate back
     navigation.goBack();
   };
 
@@ -103,6 +87,7 @@ const PotentialConditionPageScreen = () => {
     </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

@@ -6,8 +6,6 @@ import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
 import PainScaleSlider from './PainScaleSlider';  
 
-
-
 const DexConsultPageScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
@@ -17,17 +15,12 @@ const DexConsultPageScreen = () => {
   const [chatHistory, setChatHistory] = useState([]);
   const [csrfToken, setCsrfToken] = useState('');
   const [userInput, setUserInput] = useState(''); 
-
   const [painScale, setPainScale] = useState(0);
-
-
-
-  const [pdfFileName, setPdfFileName] = useState(null);  // To store the uploaded PDF file name
+  const [pdfFileName, setPdfFileName] = useState(null);
   const scrollViewRef = useRef([]);
   const messageHeights = useRef([]);
   const userMessageIndices = useRef([]);
-  const inputRef = useRef(null); // Ref for the TextInput
-
+  const inputRef = useRef(null);
 
   useEffect(() => {
     axios.get('http://localhost:8000/chatbot/')
@@ -38,9 +31,10 @@ const DexConsultPageScreen = () => {
       })
       .catch(error => console.error(error));
   }, []);
+
   useEffect(() => {
     if (currentStep === 'new_condition') {
-      inputRef.current?.focus(); // Focus the TextInput when 'new_condition' step is reached
+      inputRef.current?.focus();
     }
   }, [currentStep]);
 
@@ -49,10 +43,10 @@ const DexConsultPageScreen = () => {
 
     const processedPrompt = prompt
         .replace('{user_name}', firstName)
-        .replace(/\[NEWLINE\]/g, '\n')  // Replace [NEWLINE] with actual new lines within the same container
-        .replace(/\[BOLD\](.*?)\[CLOSE\]/g, (_, match) => `<b>${match}</b>`)  // Convert to HTML-like bold tags for further processing
-        .replace(/\[LINK_START\](.*?)\[LINK_END\]/g, (_, match) => `<a href="#">${match}</a>`) // Convert to link tags for further processing
-        .replace(/\[IMAGE\]/g, 'IMAGE_PLACEHOLDER');  // Handle image placeholder
+        .replace(/\[NEWLINE\]/g, '\n')
+        .replace(/\[BOLD\](.*?)\[CLOSE\]/g, (_, match) => `<b>${match}</b>`)
+        .replace(/\[LINK_START\](.*?)\[LINK_END\]/g, (_, match) => `<a href="#">${match}</a>`)
+        .replace(/\[IMAGE\]/g, 'IMAGE_PLACEHOLDER');
 
     const messages = processedPrompt.split('[BR]');
 
@@ -65,43 +59,170 @@ const DexConsultPageScreen = () => {
             {
                 type: 'bot',
                 text: isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim(),
-                imageSource: isImagePlaceholder ? require('../../../assets/vugle.png') : null,  // Set the image source
-                options: isLastMessage ? options : [],  // Only attach options to the last message
+                imageSource: isImagePlaceholder ? require('../../../assets/vugle.png') : null,
+                options: isLastMessage ? options : [],
                 isImagePlaceholder
             }
         ]);
     });
-};
+  };
 
-const handleUserInputSubmit = () => {
-  if (userInput.trim()) {
-      // Add user input to chat history
+  const handleUserInputSubmit = async () => {
+    if (userInput.trim()) {
       setChatHistory(prevChatHistory => [
-          ...prevChatHistory,
-          { type: 'user', text: userInput }
+        ...prevChatHistory,
+        { type: 'user', text: userInput }
       ]);
-      setUserInput(''); // Clear the input field
-      // Keyboard.dismiss();  
 
+      try {
+        const response = await axios.post('http://localhost:8000/chatbot/', {
+          response: userInput,
+          current_step: currentStep
+        }, {
+          headers: { 'X-CSRFToken': csrfToken }
+        });
 
-      
-      if (currentStep === 'new_condition') {
-          // Continue the chat for 'new_condition' as before
+        if (currentStep === 'new_condition') {
           setCurrentStep('get_more_condition');
-          handleStepChange('get_more_condition', chatFlow.get_more_condition.prompt, chatFlow.get_more_condition.options);
+          handleStepChange('get_more_condition', response.data.prompts[0], response.data.options);
+        } else if (currentStep === 'basic_assessment') {
+          setCurrentStep('scaling_pain');
+          handleStepChange('scaling_pain', response.data.prompts[0], response.data.options);
+        }
+      } catch (error) {
+        console.error(error);
       }
 
-      // Handle different steps after user input
-      if (currentStep === 'basic_assessment') {
-          // Transition to 'scaling_pain' after 'basic_assessment'
-          setCurrentStep('scaling_pain');
-          handleStepChange('scaling_pain', chatFlow.scaling_pain.prompt, chatFlow.scaling_pain.options);
-      } 
-  }
+      setUserInput('');
+    }
+  };
+
+  const handleFileUpload = async () => {
+    try {
+        const res = await DocumentPicker.getDocumentAsync({});
+
+        console.log("Document Picker Result:", res); // Log the result from DocumentPicker
+
+        if (!res.canceled && res.assets && res.assets.length > 0) {
+            const file = res.assets[0]; // Get the first file from the assets array
+            const fileName = file.name;
+            console.log("Selected file:", fileName);
+            console.log("File URI:", file.uri);
+
+            const formData = new FormData();
+            formData.append('dd214', {
+                uri: file.uri,
+                name: fileName,
+                type: file.mimeType || 'application/pdf',  // Use the mimeType provided by the picker
+            });
+
+            console.log("Form Data:", formData); // Log the form data to see if it was constructed properly
+
+            const response = await axios.post('http://localhost:8000/chatbot/', formData, {
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'multipart/form-data'
+                },
+                params: { current_step: 'start' }
+            });
+
+            console.log("Server Response:", response.data); // Log the server response
+
+            setPdfFileName(fileName);
+            setChatHistory(prevChatHistory => [
+                ...prevChatHistory,
+                { type: 'user', text: fileName, isPdf: true }
+            ]);
+            setCurrentStep('upload_dd214');
+            handleStepChange('upload_dd214', response.data.prompts[0], response.data.options);
+        } else {
+            console.log("Document Picker cancelled");
+        }
+    } catch (err) {
+        console.error('DocumentPicker Error:', err);
+        if (err.response) {
+            console.error('Backend response:', err.response.data);
+        }
+    }
 };
 
-  const renderStyledText = (text) => {
 
+
+  const handleOptionClick = async (option, index) => {
+    if (option.text === "Upload DD214") {
+      handleFileUpload();
+    } else {
+      setChatHistory(prevChatHistory => [
+        ...prevChatHistory,
+        { type: 'user', text: option.text }
+      ]);
+
+      try {
+        const response = await axios.post('http://localhost:8000/chatbot/', {
+          response: index,
+          current_step: currentStep
+        }, {
+          headers: { 'X-CSRFToken': csrfToken }
+        });
+
+        const { prompts, options, navigation_url } = response.data;
+
+        if (navigation_url) {
+          if (navigation_url === "/hospital") {
+            navigation.navigate('HospitalPageScreen');
+          } else if (navigation_url === "/potential_condition") {
+            navigation.navigate('PotentialConditionPageScreen', {
+              onReturn: (addedConditions) => {
+                if (Array.isArray(addedConditions)) {
+                  setChatHistory(prevChatHistory => [
+                    ...prevChatHistory,
+                    { type: 'user', text: 'Selected Conditions: ' + addedConditions.join(', ') }
+                  ]);
+
+                  if (chatFlow && chatFlow.basic_assessment) {
+                    setCurrentStep('basic_assessment');
+                    handleStepChange('basic_assessment', chatFlow.basic_assessment.prompt, chatFlow.basic_assessment.options);
+                  } else {
+                    console.error('basic_assessment is not defined in chatFlow');
+                  }
+                } else {
+                  console.error('addedConditions is not an array');
+                }
+              }
+            });
+          }
+        } else if (prompts) {
+          prompts.forEach((text, idx) => {
+            const isImagePlaceholder = text.includes('[[IMAGE]]');
+            setChatHistory(prevChatHistory => [
+              ...prevChatHistory,
+              {
+                type: 'bot',
+                text: isImagePlaceholder ? '' : text,
+                options: idx === prompts.length - 1 ? options : [],
+                isImagePlaceholder
+              }
+            ]);
+          });
+        }
+        setCurrentStep(option.next);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  };
+
+  const handlePainScaleSubmit = () => {
+    setChatHistory(prevChatHistory => [
+      ...prevChatHistory,
+      { type: 'user', text: painScale.toString() }
+    ]);
+
+    setCurrentStep('finding_right_claim');
+    handleStepChange('finding_right_claim', chatFlow.finding_right_claim.prompt, chatFlow.finding_right_claim.options);
+  };
+
+  const renderStyledText = (text) => {
     const parts = [];
     let lastIndex = 0;
 
@@ -139,174 +260,61 @@ const handleUserInputSubmit = () => {
 };
 
 
+  return (
+    <ScrollView contentContainerStyle={styles.container} ref={scrollViewRef}>
+      <View style={styles.header}></View>
 
-  const handleFileUpload = async () => {
-    try {
-        const res = await DocumentPicker.getDocumentAsync({});
-       // if (res.type === "success") {
-            const fileName = res.name || (res.assets && res.assets.length > 0 && res.assets[0].name);
+      {chatHistory.map((chat, index) => (
+        <Animatable.View
+          key={index}
+          animation="fadeIn"
+          duration={1000}
+          style={[
+            styles.messageContainer,
+            chat.type === 'user' ? styles.userMessage : styles.botMessage,
+          ]}
+        >
+          {chat.isImagePlaceholder && chat.imageSource ? (
+            <Image source={chat.imageSource} style={styles.image} />
+          ) : chat.text && (
+            <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
+              {renderStyledText(chat.text)}
+            </Text>
+          )}
 
-            console.log('Selected file: ', fileName);  // Log the full file object
-            setPdfFileName(fileName);  // Store the PDF file name
-            setChatHistory(prevChatHistory => [
-                ...prevChatHistory,
-                { type: 'user', text: fileName, isPdf: true }
-            ]);
-            setCurrentStep('upload_dd214');
-            handleStepChange('upload_dd214', chatFlow.upload_dd214.prompt, chatFlow.upload_dd214.options);
-     //   } else{
-          console.log('No file selected');
-     //   }
-    } catch (err) {
-        console.log('DocumentPicker Error: ', err);
-    }
-};
+          {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
+            <TouchableOpacity
+              key={idx}
+              style={styles.optionButton}
+              onPress={() => handleOptionClick(option, idx)}
+            >
+              <Text style={styles.optionText}>{option.text}</Text>
+            </TouchableOpacity>
+          ))}
+        </Animatable.View>
+      ))}
 
-const handleOptionClick = async (option, index) => {
-  if (option.text === "Upload DD214") {
-    handleFileUpload();  // Trigger file upload
-  } else {
-    const userMessageIndex = chatHistory.length;
-    setChatHistory(prevChatHistory => [
-      ...prevChatHistory,
-      { type: 'user', text: option.text }
-    ]);
-    userMessageIndices.current.push(userMessageIndex);
+      {(currentStep === 'new_condition' || currentStep === 'basic_assessment') && (
+        <View style={styles.inputContainer}>
+          <TextInput
+            ref={inputRef}
+            style={styles.input}
+            placeholder={currentStep === 'basic_assessment' ? "Describe your condition..." : "Type your condition here..."}
+            value={userInput}
+            onChangeText={setUserInput}
+            autoFocus={true}
+          />
+          <Button title="Submit" onPress={handleUserInputSubmit} />
+        </View>
+      )}
 
-    try {
-      const response = await axios.post('http://localhost:8000/chatbot/', 
-        { response: index, current_step: currentStep }, 
-        { headers: { 'X-CSRFToken': csrfToken } }
-      );
-      const { prompts, options, navigation_url } = response.data;
-
-      if (navigation_url) {
-
-        if (navigation_url === "/hospital") {
-            navigation.navigate('HospitalPageScreen');
-        } else if (navigation_url === "/potential_condition") {
-            navigation.navigate('PotentialConditionPageScreen', {
-              
-                onReturn: (addedConditions) => {
-
-                    if (Array.isArray(addedConditions)) {
-                        // Display the user's selection in the chat
-                        setChatHistory(prevChatHistory => [
-                            ...prevChatHistory,
-                            { type: 'user', text: 'Selected Conditions: ' + addedConditions.join(', ') }
-                        ]);
-    
-                        // Ensure chatFlow and basic_assessment are defined before proceeding
-                        if (chatFlow && chatFlow.basic_assessment) {
-                          setCurrentStep('basic_assessment');
-
-                            // Continue the chat with the next step
-                            handleStepChange('basic_assessment', chatFlow.basic_assessment.prompt, chatFlow.basic_assessment.options);
-                            
-                        } else {
-                            console.error('basic_assessment is not defined in chatFlow');
-                        }
-                    } else {
-                        console.error('addedConditions is not an array');
-                    }
-                }
-            });
-        }
-    }
-    else if (prompts) {
-        prompts.forEach((text, idx) => {
-          const isImagePlaceholder = text.includes('[[IMAGE]]');
-          setChatHistory(prevChatHistory => [
-            ...prevChatHistory,
-            {
-              type: 'bot',
-              text: isImagePlaceholder ? '' : text,
-              options: idx === prompts.length - 1 ? options : [],
-              isImagePlaceholder
-            }
-          ]);
-        });
-      }
-      setCurrentStep(option.next);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-};
-
-const handlePainScaleSubmit = () => {
-  // Add user input to chat history
-  setChatHistory(prevChatHistory => [
-    ...prevChatHistory,
-    { type: 'user', text: painScale.toString() }
-  ]);
-
-  // Proceed to the next step
-  setCurrentStep('finding_right_claim');
-  handleStepChange('finding_right_claim', chatFlow.finding_right_claim.prompt, chatFlow.finding_right_claim.options);
-};
-
-return (
-  <ScrollView contentContainerStyle={styles.container} ref={scrollViewRef}>
-    <View style={styles.header}></View>
-
-    {chatHistory.map((chat, index) => (
-      <Animatable.View
-        key={index}
-        animation="fadeIn"
-        duration={1000}
-        style={[
-          styles.messageContainer,
-          chat.type === 'user' ? styles.userMessage : styles.botMessage,
-        ]}
-      >
-        {chat.isImagePlaceholder && chat.imageSource ? (
-          <Image source={chat.imageSource} style={styles.image} />
-        ) : chat.text && (
-          <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
-            {renderStyledText(chat.text)}
-          </Text>
-        )}
-
-        {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
-          <TouchableOpacity
-            key={idx}
-            style={styles.optionButton}
-            onPress={() => handleOptionClick(option, idx)}
-          >
-            <Text style={styles.optionText}>{option.text}</Text>
-          </TouchableOpacity>
-        ))}
-      </Animatable.View>
-    ))}
-
-    {/* Render input field for 'new_condition' or 'basic_assessment' */}
-    {(currentStep === 'new_condition' || currentStep === 'basic_assessment') && (
-      <View style={styles.inputContainer}>
-        <TextInput
-          ref={inputRef}
-          style={styles.input}
-          placeholder={currentStep === 'basic_assessment' ? "Describe your condition..." : "Type your condition here..."}
-          value={userInput}
-          onChangeText={setUserInput}
-          autoFocus={true}
-        />
-        <Button title="Submit" onPress={handleUserInputSubmit} />
-      </View>
-    )}
-
-    {/* Render slider for 'scaling_pain' */}
-    {currentStep === 'scaling_pain' && (
+      {currentStep === 'scaling_pain' && (
         <PainScaleSlider painScale={painScale} setPainScale={setPainScale} />
-
-    )}
-  </ScrollView>
-);
-
-
-
-
+      )}
+    </ScrollView>
+  );
 };
+
 
 const styles = StyleSheet.create({
   header: {
