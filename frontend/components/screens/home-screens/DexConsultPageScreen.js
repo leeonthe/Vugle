@@ -34,6 +34,7 @@ const DexConsultPageScreen = () => {
 
   useEffect(() => {
     if (currentStep === 'new_condition') {
+
       inputRef.current?.focus();
     }
   }, [currentStep]);
@@ -58,14 +59,16 @@ const DexConsultPageScreen = () => {
             ...prevChatHistory,
             {
                 type: 'bot',
-                text: isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim(),
+                // text: isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim(),
+                text: renderStyledText(isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim()), // Apply renderStyledText to all messages
                 imageSource: isImagePlaceholder ? require('../../../assets/vugle.png') : null,
                 options: isLastMessage ? options : [],
                 isImagePlaceholder
             }
         ]);
     });
-  };
+};
+
 
   const handleUserInputSubmit = async () => {
     if (userInput.trim()) {
@@ -73,6 +76,8 @@ const DexConsultPageScreen = () => {
         ...prevChatHistory,
         { type: 'user', text: userInput }
       ]);
+      
+
 
       try {
         const response = await axios.post('http://localhost:8000/chatbot/', {
@@ -83,11 +88,12 @@ const DexConsultPageScreen = () => {
         });
 
         if (currentStep === 'new_condition') {
+
           setCurrentStep('get_more_condition');
-          handleStepChange('get_more_condition', response.data.prompts[0], response.data.options);
+          handleStepChange('get_more_condition', chatFlow.get_more_condition.prompt, chatFlow.get_more_condition.options);
         } else if (currentStep === 'basic_assessment') {
           setCurrentStep('scaling_pain');
-          handleStepChange('scaling_pain', response.data.prompts[0], response.data.options);
+          handleStepChange('scaling_pain', chatFlow.scaling_pain.prompt, chatFlow.scaling_pain.options);
         }
       } catch (error) {
         console.error(error);
@@ -134,7 +140,7 @@ const DexConsultPageScreen = () => {
                 { type: 'user', text: fileName, isPdf: true }
             ]);
             setCurrentStep('upload_dd214');
-            handleStepChange('upload_dd214', response.data.prompts[0], response.data.options);
+            handleStepChange('upload_dd214', chatFlow.upload_dd214.prompt, chatFlow.upload_dd214.options);
         } else {
             console.log("Document Picker cancelled");
         }
@@ -149,60 +155,67 @@ const DexConsultPageScreen = () => {
 
 const handleOptionClick = async (option, index) => {
   if (option.text === "Upload DD214") {
-    handleFileUpload();  // Trigger file upload
+      handleFileUpload();  // Trigger file upload
   } else {
-    setChatHistory(prevChatHistory => [
-      ...prevChatHistory,
-      { type: 'user', text: option.text }
-    ]);
+    const userMessageIndex = chatHistory.length;
+      setChatHistory(prevChatHistory => [
+          ...prevChatHistory,
+          { type: 'user', text: option.text }
+      ]);
+      userMessageIndices.current.push(userMessageIndex);
 
-    try {
-      const response = await axios.post('http://localhost:8000/chatbot/', {
-        response: index,
-        current_step: currentStep
-      }, {
-        headers: { 'X-CSRFToken': csrfToken }
-      });
-      
-      console.log("Server Response:", response.data);
-      
-      const { prompts, options, navigation_url, potential_conditions } = response.data;
-
-      if (navigation_url) {
-        if (navigation_url === "/potential_condition") {
-          const formattedConditions = potential_conditions.map(cond => {
-            const [name, risk, description] = cond.split('\n').map(line => line.split(': ')[1]);
-            return { name, risk, description, riskColor: risk === 'High risk' ? 'red' : risk === 'Medium risk' ? 'orange' : 'green' };
+      try {
+          const response = await axios.post('http://localhost:8000/chatbot/', {
+              response: index,
+              current_step: currentStep
+          }, {
+              headers: { 'X-CSRFToken': csrfToken }
           });
           
-          navigation.navigate('PotentialConditionPageScreen', {
-            potentialConditions: formattedConditions, // Pass structured data to PotentialConditionPageScreen
-            onReturn: handlePotentialConditionsReturn  // Handle return conditions
-          });
-        } else if (navigation_url === "/hospital") {
-          navigation.navigate('HospitalPageScreen');
-        }
-      } else if (prompts) {
-        prompts.forEach((text, idx) => {
-          const isImagePlaceholder = text.includes('[[IMAGE]]');
-          setChatHistory(prevChatHistory => [
-            ...prevChatHistory,
-            {
-              type: 'bot',
-              text: isImagePlaceholder ? '' : text,
-              options: idx === prompts.length - 1 ? options : [],
-              isImagePlaceholder
-            }
-          ]);
-        });
-      }
+          
+          console.log("Server Response:", response.data);
+          
+          const { prompts, options, navigation_url, potential_conditions } = response.data;
+          
+          if (navigation_url) {
+              if (navigation_url === "/potential_condition") {
 
-      setCurrentStep(option.next);
-    } catch (error) {
-      console.error("Error during option click:", error);
-    }
+                
+                  const formattedConditions = potential_conditions.map(cond => {
+                      const [name, risk, description] = cond.split('\n').map(line => line.split(': ')[1]);
+                      return { name, risk, description, riskColor: risk === 'High risk' ? 'red' : risk === 'Medium risk' ? 'orange' : 'green' };
+                  });
+                  
+                  navigation.navigate('PotentialConditionPageScreen', {
+                    
+                      potentialConditions: formattedConditions, // Pass structured data to PotentialConditionPageScreen
+                      onReturn: handlePotentialConditionsReturn  // Handle return conditions
+                  });
+              } else if (navigation_url === "/hospital") {
+                  navigation.navigate('HospitalPageScreen');
+              }
+          } else if (prompts) {
+              prompts.forEach((text, idx) => {
+                  const isImagePlaceholder = text.includes('[[IMAGE]]');
+                  setChatHistory(prevChatHistory => [
+                      ...prevChatHistory,
+                      {
+                          type: 'bot',
+                          text: isImagePlaceholder ? '' : text,  // Use centralized text processing
+                          options: idx === prompts.length - 1 ? options : [],
+                          isImagePlaceholder
+                      }
+                  ]);
+              });
+          }
+          
+          setCurrentStep(option.next);
+      } catch (error) {
+          console.error("Error during option click:", error);
+      }
   }
 };
+
 
 const handlePotentialConditionsReturn = (addedConditions) => {
   if (addedConditions && addedConditions.length > 0) {
@@ -285,7 +298,7 @@ const handlePotentialConditionsReturn = (addedConditions) => {
             <Image source={chat.imageSource} style={styles.image} />
           ) : chat.text && (
             <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
-              {renderStyledText(chat.text)}
+              {chat.text}
             </Text>
           )}
 
@@ -375,7 +388,7 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#3182F6',
     textDecorationLine: 'underline',
-},
+  },
   normalText: {
     fontWeight: 'normal',
   },

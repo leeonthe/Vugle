@@ -41,7 +41,7 @@ chatbot_flow = {
     },
 
     "new_condition": {
-        "prompt": "[[IMAGE]][BR]Tell us your condition(s)[CLOSE][NEWLINEWhich conditions / symptoms would you like to submit claim for?",
+        "prompt": "[[IMAGE]][BR][BOLD]Tell us your condition(s)[CLOSE][NEWLINE]Which conditions / symptoms would you like to submit claim for?",
         "options": [
             
         ]
@@ -186,10 +186,10 @@ def handle_step_change(prompt, user_name):
         return []
 
     processed_prompt = prompt.replace('{user_name}', user_name)
-    processed_prompt = processed_prompt.replace('[BOLD]', '**')  
-    processed_prompt = processed_prompt.replace('[CLOSE]', '**')  
-    processed_prompt = processed_prompt.replace('[NEWLINE]', '\n')  
-    processed_prompt = processed_prompt.replace('[LINK_START]', '[').replace('[LINK_END]', ']()')
+    processed_prompt = processed_prompt.replace('[BOLD]', '**')  # Start bold
+    processed_prompt = processed_prompt.replace('[CLOSE]', '**')  # End bold
+    processed_prompt = processed_prompt.replace('[NEWLINE]', '\n')  # For new lines
+    processed_prompt = processed_prompt.replace('[LINK_START]', '[').replace('[LINK_END]', ']()')  # For link text
 
     return processed_prompt.split('\n')
 
