@@ -96,9 +96,8 @@ const LoginScreen = () => {
      </View>
 
 
-     <Text style={styles.title}>Connect your records with VA</Text>
-     <Text style={styles.subtitle}>
-     We utilize VA.gov for a faster and efficient information collection. Information will be stored securely and we will not share your data.      </Text>
+     <Text style={styles.title}>Connect your records</Text>
+     <Text style={styles.subtitle}>We utilize VA.gov for a faster and efficient information collection. Information will be stored securely and we will not share your data.</Text>
      <View style={styles.continueContainer}>
        <Text style={styles.text}>
          By continuing, you agree to our{' '}
@@ -109,9 +108,15 @@ const LoginScreen = () => {
      </Text>
    </View>
     
+
      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-       <Text style={styles.buttonText}>VA Continue with VA.gov</Text>
+      <View style={styles.buttonContent}>
+
+         <Text style={styles.buttonText}>VA Continue with VA.gov</Text>
+       </View>
+
      </TouchableOpacity>
+
    </View>
  );
 };
@@ -126,23 +131,21 @@ const styles = StyleSheet.create({
    backgroundColor: '#ffffff',
  },
  svgContainer: {
-   paddingTop: 182, // Add paddingTop to the SVG
-   marginBottom: 36,
+   paddingTop: 120, // Add paddingTop to the SVG
+   marginBottom: 50,
  },
- image: {
-   width: 200,
-   height: 200,
-   resizeMode: 'contain',
-   marginBottom: 40,
-
-
- },
+ 
  title: {
-   fontSize: 24,
+   color: '#0B0B0E',
+   fontFamily: 'SF Pro Display',
+   width: '100%',
    fontWeight: 'bold',
+   fontSize: 24,
    textAlign: 'center',
-   marginBottom: 40,
+   marginBottom: 16,
+   wordWrap: 'break-word',
  },
+ 
  subtitle: {
    width: '100%',
    fontFamily: 'SF Pro',
@@ -150,11 +153,15 @@ const styles = StyleSheet.create({
    color: '#636467',
    textAlign: 'center',
    paddingHorizontal: 20,
+   paddingLeft: 42,
+   paddingRight: 42,
    fontWeight: '400',
    lineHeight: 22,
    wordWrap: 'break-word',
-   marginBottom: 80,
+   marginBottom: 70,
  },
+ 
+ 
   button: {
    position: 'absolute',
    bottom: 20,
@@ -163,7 +170,9 @@ const styles = StyleSheet.create({
    paddingVertical: 15,
    borderRadius: 10,
    alignItems: 'center',
+
  },
+
  buttonText: {
    color: '#fff',
    fontSize: 16,
@@ -178,7 +187,7 @@ const styles = StyleSheet.create({
    paddingHorizontal: 40,
    alignItems: 'center',
    justifyContent: 'center',
-   marginTop: 30,
+   marginTop: 110,
    lineHeight : 20,
  },
  text: {

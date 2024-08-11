@@ -11,18 +11,23 @@ function OnboardingScreen({ navigation }) {
         style={styles.wrapper}
         showsButtons={false}
         dot={<View style={styles.dot} />}
-        activeDot={<View style={styles.activeDot} />}
+        activeDot={<View style={styles.activeDot} />
+      
+      
+      
+      }
       >
         <View style={styles.slide}>
-          <Image source={require('../../assets/logo.png')} style={styles.image} />
+          <Image source={require('../../assets/assets-userStart/max_benefits.png')} style={styles.image} />
           <Text style={styles.title}>Maximize your benefits</Text>
           <Text style={styles.subtitle}>AI-based claims and appeals.</Text>
           <Text style={styles.subtitle}> Faster & efficient processes. </Text>
         </View>
         <View style={styles.slide}>
           <Image source={require('../../assets/logo.png')} style={styles.image} />
-          <Text style={styles.title}>Another Slide</Text>
-          <Text style={styles.subtitle}>Description for another slide.</Text>
+          <Text style={styles.title}>Benefits at a glance</Text>
+          <Text style={styles.subtitle}>Explore tons of benefits you might love. </Text>
+          <Text style={styles.subtitle}>No need to check eligibility all the time.</Text>
         </View>
         <View style={styles.slide}>
           <Image source={require('../../assets/logo.png')} style={styles.image} />
@@ -59,18 +64,25 @@ const styles = StyleSheet.create({
     width: width * 0.8,
     height: height * 0.4,
     resizeMode: 'contain',
+    marginBottom: 15,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
+    color: 'black',
     fontWeight: 'bold',
+    fontFamily: 'SF Pro Display',
+    fontWeight: '600',
+    lineHeight: 22,
     textAlign: 'center',
     marginVertical: 10,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    paddingHorizontal: 20,
+    color: '#8F8F8F',
+    fontSize: 14,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 22,
+    wordWrap: 'break-word'
   },
   dot: {
     backgroundColor: 'rgba(0,0,0,.2)',
@@ -78,6 +90,7 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     margin: 3,
+
   },
   activeDot: {
     backgroundColor: '#007AFF',

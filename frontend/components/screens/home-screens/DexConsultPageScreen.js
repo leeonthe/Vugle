@@ -245,7 +245,7 @@ const handlePotentialConditionsReturn = (addedConditions) => {
   const renderStyledText = (text) => {
     const parts = [];
     let lastIndex = 0;
-
+    
     // Combine regex for both bold and link processing
     const combinedRegex = /<b>(.*?)<\/b>|<a href="#">(.*?)<\/a>/g;
     let match;
@@ -285,6 +285,8 @@ const handlePotentialConditionsReturn = (addedConditions) => {
       <View style={styles.header}></View>
 
       {chatHistory.map((chat, index) => (
+
+        
         <Animatable.View
           key={index}
           animation="fadeIn"
@@ -295,7 +297,13 @@ const handlePotentialConditionsReturn = (addedConditions) => {
           ]}
         >
           {chat.isImagePlaceholder && chat.imageSource ? (
-            <Image source={chat.imageSource} style={styles.image} />
+
+            <View style={styles.logoBackground}>
+              <Image source={require('../../../assets/vugle.png')} style={styles.logo} />
+            </View>
+
+
+
           ) : chat.text && (
             <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
               {chat.text}
