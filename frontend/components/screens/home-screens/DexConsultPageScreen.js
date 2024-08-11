@@ -147,71 +147,78 @@ const DexConsultPageScreen = () => {
 };
 
 
+const handleOptionClick = async (option, index) => {
+  if (option.text === "Upload DD214") {
+    handleFileUpload();  // Trigger file upload
+  } else {
+    setChatHistory(prevChatHistory => [
+      ...prevChatHistory,
+      { type: 'user', text: option.text }
+    ]);
 
-  const handleOptionClick = async (option, index) => {
-    if (option.text === "Upload DD214") {
-      handleFileUpload();
-    } else {
-      setChatHistory(prevChatHistory => [
-        ...prevChatHistory,
-        { type: 'user', text: option.text }
-      ]);
+    try {
+      const response = await axios.post('http://localhost:8000/chatbot/', {
+        response: index,
+        current_step: currentStep
+      }, {
+        headers: { 'X-CSRFToken': csrfToken }
+      });
+      
+      console.log("Server Response:", response.data);
+      
+      const { prompts, options, navigation_url, potential_conditions } = response.data;
 
-      try {
-        const response = await axios.post('http://localhost:8000/chatbot/', {
-          response: index,
-          current_step: currentStep
-        }, {
-          headers: { 'X-CSRFToken': csrfToken }
-        });
-
-        const { prompts, options, navigation_url } = response.data;
-
-        if (navigation_url) {
-          if (navigation_url === "/hospital") {
-            navigation.navigate('HospitalPageScreen');
-          } else if (navigation_url === "/potential_condition") {
-            navigation.navigate('PotentialConditionPageScreen', {
-              onReturn: (addedConditions) => {
-                if (Array.isArray(addedConditions)) {
-                  setChatHistory(prevChatHistory => [
-                    ...prevChatHistory,
-                    { type: 'user', text: 'Selected Conditions: ' + addedConditions.join(', ') }
-                  ]);
-
-                  if (chatFlow && chatFlow.basic_assessment) {
-                    setCurrentStep('basic_assessment');
-                    handleStepChange('basic_assessment', chatFlow.basic_assessment.prompt, chatFlow.basic_assessment.options);
-                  } else {
-                    console.error('basic_assessment is not defined in chatFlow');
-                  }
-                } else {
-                  console.error('addedConditions is not an array');
-                }
-              }
-            });
-          }
-        } else if (prompts) {
-          prompts.forEach((text, idx) => {
-            const isImagePlaceholder = text.includes('[[IMAGE]]');
-            setChatHistory(prevChatHistory => [
-              ...prevChatHistory,
-              {
-                type: 'bot',
-                text: isImagePlaceholder ? '' : text,
-                options: idx === prompts.length - 1 ? options : [],
-                isImagePlaceholder
-              }
-            ]);
+      if (navigation_url) {
+        if (navigation_url === "/potential_condition") {
+          const formattedConditions = potential_conditions.map(cond => {
+            const [name, risk, description] = cond.split('\n').map(line => line.split(': ')[1]);
+            return { name, risk, description, riskColor: risk === 'High risk' ? 'red' : risk === 'Medium risk' ? 'orange' : 'green' };
           });
+          
+          navigation.navigate('PotentialConditionPageScreen', {
+            potentialConditions: formattedConditions, // Pass structured data to PotentialConditionPageScreen
+            onReturn: handlePotentialConditionsReturn  // Handle return conditions
+          });
+        } else if (navigation_url === "/hospital") {
+          navigation.navigate('HospitalPageScreen');
         }
-        setCurrentStep(option.next);
-      } catch (error) {
-        console.error(error);
+      } else if (prompts) {
+        prompts.forEach((text, idx) => {
+          const isImagePlaceholder = text.includes('[[IMAGE]]');
+          setChatHistory(prevChatHistory => [
+            ...prevChatHistory,
+            {
+              type: 'bot',
+              text: isImagePlaceholder ? '' : text,
+              options: idx === prompts.length - 1 ? options : [],
+              isImagePlaceholder
+            }
+          ]);
+        });
       }
-    }
-  };
 
+      setCurrentStep(option.next);
+    } catch (error) {
+      console.error("Error during option click:", error);
+    }
+  }
+};
+
+const handlePotentialConditionsReturn = (addedConditions) => {
+  if (addedConditions && addedConditions.length > 0) {
+    // Update chat history with the added conditions
+    setChatHistory(prevChatHistory => [
+      ...prevChatHistory,
+      { type: 'user', text: 'Selected Conditions: ' + addedConditions.join(', ') }
+    ]);
+
+    // Move to the next step after adding the conditions
+    if (chatFlow && chatFlow.basic_assessment) {
+      setCurrentStep('basic_assessment');
+      handleStepChange('basic_assessment', chatFlow.basic_assessment.prompt, chatFlow.basic_assessment.options);
+    }
+  }
+};
   const handlePainScaleSubmit = () => {
     setChatHistory(prevChatHistory => [
       ...prevChatHistory,

@@ -217,6 +217,7 @@ class ChatbotView(View):
         
         try:
             user_name = 'User'
+            potential_conditions = []
             # Check if we have a file upload in the request
             if request.FILES.get('dd214'):
                 file = request.FILES['dd214']
@@ -236,16 +237,20 @@ class ChatbotView(View):
                 logger.debug(f'Current step: {current_step}')
                 logger.debug(f'User response: {user_response}')
 
+                potential_conditions = ""
+
                 if current_step is None or user_response is None:
                     return JsonResponse({'error': 'Invalid request'}, status=400)
 
                 if current_step == "new_condition":
                     request.session['user_condition'] = user_response
                     potential_conditions = generate_potential_conditions(user_response)
+                    print("[GPT] Potential Conditions:", potential_conditions)
                     request.session['potential_conditions'] = potential_conditions
                     next_step = "get_more_condition"
 
                 elif current_step == "potential_condition_linking":
+                    potential_conditions = request.session.get('potential_conditions', [])
                     next_step = "navigate_potential_condition"
 
                 elif current_step == "basic_assessment":
@@ -267,7 +272,8 @@ class ChatbotView(View):
                 "image": chatbot_flow[next_step].get('image', None), 
                 "prompts": processed_prompts, 
                 "options": chatbot_flow[next_step].get('options', []), 
-                "navigation_url": navigation_url
+                "navigation_url": navigation_url,
+                "potential_conditions": potential_conditions  # Send potential conditions to frontend
             })
 
         except KeyError as e:

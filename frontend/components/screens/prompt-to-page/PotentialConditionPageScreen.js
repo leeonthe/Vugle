@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 
 const PotentialConditionPageScreen = () => {
-  const [selectedConditions, setSelectedConditions] = useState({});
-  const [conditions, setConditions] = useState([]);
-  const navigation = useNavigation();
   const route = useRoute();
-
-  useEffect(() => {
-    if (route.params && route.params.potentialConditions) {
-      setConditions(route.params.potentialConditions);
-    }
-  }, [route.params]);
+  const { potentialConditions } = route.params;  // Destructure potentialConditions from route.params
+  const navigation = useNavigation();
+  const [selectedConditions, setSelectedConditions] = useState({});
 
   const toggleCondition = (conditionName) => {
     setSelectedConditions((prevSelected) => ({
@@ -24,7 +18,7 @@ const PotentialConditionPageScreen = () => {
   const handleContinue = () => {
     const addedConditions = Object.keys(selectedConditions).filter(key => selectedConditions[key]);
 
-    if (route.params && route.params.onReturn) {
+    if (route.params.onReturn) {
       route.params.onReturn(addedConditions);
     }
 
@@ -40,7 +34,7 @@ const PotentialConditionPageScreen = () => {
         </Text>
       </View>
 
-      {conditions.map((condition, index) => (
+      {potentialConditions.map((condition, index) => (
         <View key={index} style={styles.conditionContainer}>
           <View style={styles.conditionHeader}>
             <View style={styles.iconPlaceholder} />
@@ -64,22 +58,11 @@ const PotentialConditionPageScreen = () => {
               <Text style={styles.addButtonText}>
                 {selectedConditions[condition.name] ? 'Added' : 'Add'}
               </Text>
-              {selectedConditions[condition.name] && (
-                <View style={styles.checkIcon}>
-                  <View style={styles.checkIconPart} />
-                  <View style={styles.checkIconPart} style={{ transform: [{ rotate: '45deg' }] }} />
-                </View>
-              )}
-              {!selectedConditions[condition.name] && (
-                <View style={styles.addIcon}>
-                  <View style={styles.addHorizontal} />
-                  <View style={styles.addVertical} />
-                </View>
-              )}
             </TouchableOpacity>
           </View>
         </View>
       ))}
+
 
       <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
         <Text style={styles.continueButtonText}>Continue</Text>

@@ -87,9 +87,18 @@ def find_relevant_documents(query, documents_dir="../dex_docs/sample_medical_rec
     return relevant_docs
 
 def generate_potential_conditions(user_input):
-    prompt = f"Given the user's condition: '{user_input}', what other conditions might be related or could be of concern?"
+    prompt = f"""
+    Given the user's condition: '{user_input}', list related conditions in the following format:
+    
+    Condition Name: <name>
+    Risk Level: <High/Medium/Low risk>
+    Description: <short description>
+    
+    Separate each condition with a blank line.
+    """
     potential_conditions = query_gpt(prompt)
-    return potential_conditions.split('\n')
+    return potential_conditions.split('\n\n')
+
 
 def clear_session_data(session):
     session.flush()
