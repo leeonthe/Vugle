@@ -83,11 +83,8 @@ chatbot_flow = {
             {
                 "text": "Not that I can think of",
                 "next": "potential_condition_linking"
-            },
-            {
-                "text": "RETUNRN TEST",
-                "next": "new_condition"
             }
+            
         ]
     },
     "add_more_condition": {
@@ -101,7 +98,7 @@ chatbot_flow = {
     
 
     "potential_condition_linking":{
-        "prompt": "[[IMAGE]][BR][BOLD]Potential affected conditions[CLOSE][NEWLINE]Based on your health records and the condition you’ve mentioned, we’ve listed potential conditions that you might also be experiencing.[LINK_START]Why it’s important[LINK_END]",
+        "prompt": "[[IMAGE]][BR][BOLD]Potential affected conditions[CLOSE][NEWLINE]Based on your health records and the condition you’ve mentioned, we’ve listed potential conditions that you might also be experiencing.[NEWLINE][LINK_START]Why it’s important[LINK_END]",
         "options": [
             {
                 "text": "Let's check",
@@ -127,7 +124,7 @@ chatbot_flow = {
     # TODO: add: Assessment completed! 🙌 Thanks for your time, Robert!
     # TODO: add: Reviewing DD214, etc
      "finding_right_claim": {
-        "prompt": "[[IMAGE]][BR][BOLD]We’re finding right claim for your condition based on your files[CLOSE]"+
+        "prompt": "[[IMAGE]][BR][BOLD]Assessment completed! 🙌[CLOSE][NEWLINE]Thanks for your time, {user_name}"+
         
         "[BR][BOLD]We’re finding right claim for your condition based on your files[CLOSE][NEWLINE]We will now review your documents to determine which type of claim is best suited for you."
         
@@ -135,7 +132,11 @@ chatbot_flow = {
         
         ,
         "options": [
+            {
+            "text": "Start",
+            "next": "service_connect",
             # Define options or further steps here...
+            }
         ]
     },
 
@@ -192,17 +193,31 @@ chatbot_flow = {
     },
 }
     
+
+def apply_styling(prompt, user_name):
+    """
+    Apply styling to the prompt text.
+    Replaces placeholders with actual HTML tags or other required format.
+    """
+    processed_prompt = prompt.replace('{user_name}', user_name)
+    processed_prompt = processed_prompt.replace('[BOLD]', '<b>')  # Start bold
+    processed_prompt = processed_prompt.replace('[CLOSE]', '</b>')  # End bold
+    processed_prompt = processed_prompt.replace('[NEWLINE]', '\n')  # For new lines within a paragraph
+    processed_prompt = processed_prompt.replace('[LINK_START]', '<a href="#">').replace('[LINK_END]', '</a>')  # For link text
+    processed_prompt = processed_prompt.replace('[IMAGE]', '<img src="IMAGE_PLACEHOLDER" alt="Image">')  # Replace image placeholder
+
+    return processed_prompt
+
 def handle_step_change(prompt, user_name):
     if not prompt:
         return []
 
-    processed_prompt = prompt.replace('{user_name}', user_name)
-    processed_prompt = processed_prompt.replace('[BOLD]', '**')  # Start bold
-    processed_prompt = processed_prompt.replace('[CLOSE]', '**')  # End bold
-    processed_prompt = processed_prompt.replace('[NEWLINE]', '\n')  # For new lines
-    processed_prompt = processed_prompt.replace('[LINK_START]', '[').replace('[LINK_END]', ']()')  # For link text
+    # Apply the styling
+    styled_prompt = apply_styling(prompt, user_name)
 
-    return processed_prompt.split('\n')
+    # Split by [BR] to create new message containers
+    message_containers = styled_prompt.split('[BR]')
+    return message_containers
 
 def handle_uploaded_file(file):
     logger.debug(f'Handling file upload: {file.name}')
@@ -232,23 +247,21 @@ class ChatbotView(View):
 
             # Check if we have a file upload in the request
             if request.FILES.get('dd214'):
-                # Simulate loading by immediately responding with a loading message
                 if request.GET.get('current_step') == 'upload_dd214':
-                    # Return loading message
                     loading_prompt = chatbot_flow['loading']['prompt']
+                    processed_prompts = handle_step_change(loading_prompt, user_name)
                     return JsonResponse({
-                        "prompts": [loading_prompt],
+                        "prompts": processed_prompts,
                         "options": chatbot_flow['loading']['options'],
                     })
 
                 file = request.FILES['dd214']
                 logger.debug(f'Received file: {file.name}')
-                file_path = handle_uploaded_file(file)  # Save the uploaded file
-                document_text = analyze_document(file_path)  # Analyze the document
-                request.session['dd214_text'] = document_text  # Store the analysis in session
+                file_path = handle_uploaded_file(file)
+                document_text = analyze_document(file_path)
+                request.session['dd214_text'] = document_text
                 next_step = "upload_dd214"
 
-                # Process the next step after the file is uploaded
                 next_prompt = chatbot_flow[next_step]['prompt']
                 processed_prompts = handle_step_change(next_prompt, user_name)
                 navigation_url = chatbot_flow[next_step].get('navigation_url', None)
@@ -258,7 +271,7 @@ class ChatbotView(View):
                     "prompts": processed_prompts, 
                     "options": chatbot_flow[next_step].get('options', []), 
                     "navigation_url": navigation_url,
-                    "potential_conditions": potential_conditions  # Send potential conditions to frontend
+                    "potential_conditions": potential_conditions
                 })
 
             # Handle non-file related logic
@@ -273,16 +286,12 @@ class ChatbotView(View):
 
             # Check if we're in the loading step
             if current_step == 'loading':
-                # Return the loading prompt
-                print("LOADING CALLED")
                 loading_prompt = chatbot_flow['loading']['prompt']
+                processed_prompts = handle_step_change(loading_prompt, user_name)
                 return JsonResponse({
-                    "prompts": [loading_prompt],
+                    "prompts": processed_prompts,
                     "options": chatbot_flow['loading']['options'],
                 })
-
-            # Handle other non-file-related steps
-            potential_conditions = ""
 
             if current_step is None or user_response is None:
                 return JsonResponse({'error': 'Invalid request'}, status=400)
@@ -290,7 +299,6 @@ class ChatbotView(View):
             if current_step == "new_condition":
                 request.session['user_condition'] = user_response
                 potential_conditions = generate_potential_conditions(user_response)
-                print("[GPT] Potential Conditions:", potential_conditions)
                 request.session['potential_conditions'] = potential_conditions
                 next_step = "get_more_condition"
 
@@ -299,7 +307,7 @@ class ChatbotView(View):
                 next_step = "navigate_potential_condition"
 
             elif current_step == "basic_assessment":
-                request.session['condition_duration'] = user_response #save user response
+                request.session['condition_duration'] = user_response
                 next_step = "scaling_pain"
             
             elif current_step == "scaling_pain":
@@ -307,6 +315,10 @@ class ChatbotView(View):
                 next_step = "finding_right_claim"
             elif current_step == "finding_right_claim":
                 next_step = "service_connect"
+            elif current_step == "service_connect":
+                next_step = "check_if_user_been_to_private_clinics"
+            elif current_step == "check_if_user_been_to_private_clinics":
+                next_step = "hospital_linking"
             elif current_step == "reset":
                 clear_session_data(request.session)
                 return JsonResponse({"status": "success", "message": "Session data cleared."})
@@ -322,7 +334,7 @@ class ChatbotView(View):
                 "prompts": processed_prompts, 
                 "options": chatbot_flow[next_step].get('options', []), 
                 "navigation_url": navigation_url,
-                "potential_conditions": potential_conditions  # Send potential conditions to frontend
+                "potential_conditions": potential_conditions
             })
 
         except KeyError as e:
@@ -331,4 +343,3 @@ class ChatbotView(View):
         except Exception as e:
             logger.error(f'Unexpected error: {e}')
             return JsonResponse({'error': 'Internal server error'}, status=500)
-

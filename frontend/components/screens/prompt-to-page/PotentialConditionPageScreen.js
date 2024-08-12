@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const PotentialConditionPageScreen = () => {
   const route = useRoute();
@@ -53,9 +54,17 @@ const PotentialConditionPageScreen = () => {
               ]}
               onPress={() => toggleCondition(condition.name)}
             >
-              <Text style={styles.addButtonText}>
-                {selectedConditions[condition.name] ? 'Added' : 'Add'}
-              </Text>
+              {selectedConditions[condition.name] ? (
+                <>
+                  <Icon name="check" size={16} color="white" style={styles.icon} />
+                  <Text style={styles.addButtonText}>Added</Text>
+                </>
+              ) : (
+                <>
+                  <Icon name="add" size={16} color="white" style={styles.icon} />
+                  <Text style={styles.addButtonText}>Add</Text>
+                </>
+              )}
             </TouchableOpacity>
           </View>
         </View>
@@ -71,18 +80,26 @@ const PotentialConditionPageScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FD',
+    backgroundColor: '#FFFFFF',
     padding: 20,
   },
   header: {
-    marginBottom: 16,
+    marginTop: 60,
+    backgroundColor: '#F7F9FD',
+    padding: 20,
+    marginBottom: 35,
+    borderRadius: 8, 
+    flexDirection: 'column', 
+    justifyContent: 'center', alignItems: 'flex-start', gap: 16, display: 'inline-flex'
   },
   title: {
     color: '#191F28',
     fontSize: 20,
     fontFamily: 'SF Pro',
-    fontWeight: '590',
-    lineHeight: 28,
+    fontWeight: 'bold',
+    lineHeight: 25,
+    wordWrap: 'break-word',
+    marginBottom: 16,
   },
   subtitle: {
     color: '#6B7685',
@@ -90,6 +107,8 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro',
     fontWeight: '400',
     lineHeight: 21,
+
+    wordWrap: 'break-word',
   },
   conditionContainer: {
     backgroundColor: 'white',
@@ -176,12 +195,16 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 50,
   },
   continueButtonText: {
     color: 'white',
     fontSize: 16,
     fontFamily: 'SF Pro',
     fontWeight: '500',
+  },
+  icon: {
+    marginRight: 4,  // Adds space between the icon and the text
   },
 });
 

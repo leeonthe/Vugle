@@ -13,7 +13,7 @@ import NotificationIcon from '../../assets/assets-home/notification_icon.svg';
 import ExploreIcon from '../../assets/assets-home/explore_icon.svg';
 
 import Document from '../../assets/assets-home/document-icon.svg';
-
+import CloseIcon from '../../assets/assets-home/closeIcon.svg';
 import Home from '../../assets/assets-home/home-icon.svg';
 import Explore from '../../assets/assets-home/explore_icon.svg';
 import Consult from '../../assets/assets-home/consult-icon.svg';
@@ -60,11 +60,9 @@ function HomePage() {
                 <Text style={styles.cardHeaderHighlight}>$16,286 </Text>
                 benefits annually
               </Text>
-              <View style={styles.closeIcon}>
-                <Svg width="11" height="11">
-                  <Rect width="11" height="11" fill="#878F9A" />
-                </Svg>
-              </View>
+              
+              <CloseIcon />
+              
             </View>
             <View style={styles.averageIncrease}>
               <Text style={styles.averageIncreaseText}>
@@ -185,9 +183,10 @@ function HomePage() {
             {/* GI Bill */}
             <View style={styles.resourceRow}>
               <View style={styles.resourceRowContent}>
-                <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
-                <View style={styles.resourceTextContainer}>
+              <Image style={styles.resourceIcon} source={require('../../assets/assets-home/giBill.png')} />
+              <View style={styles.resourceTextContainer}>
                   <Text style={styles.resourceTitle}>GI Bill 2024</Text>
+
                   <Text style={styles.resourceAmount}>$2,680</Text>
                 </View>
               </View>
@@ -196,9 +195,9 @@ function HomePage() {
             {/* Housing Support */}
             <View style={styles.resourceRow}>
               <View style={styles.resourceRowContent}>
-                <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
+                <Image style={styles.resourceIcon} source={require('../../assets/assets-home/HomeLoan.png')} />
                 <View style={styles.resourceTextContainer}>
-                  <Text style={styles.resourceTitle}>Housing support</Text>
+                  <Text style={styles.resourceTitle}>VA Home Loan Guaranty</Text>
                   <Text style={styles.resourceAmount}>$1,808</Text>
                 </View>
               </View>
@@ -207,10 +206,10 @@ function HomePage() {
             {/* Travel Reimbursement */}
             <View style={styles.resourceRow}>
               <View style={styles.resourceRowContent}>
-                <Image style={styles.resourceIcon} source={{ uri: 'https://via.placeholder.com/20x20' }} />
-                <View style={styles.resourceTextContainer}>
+              <Image style={styles.resourceIcon} source={require('../../assets/assets-home/Reimburse.png')} />
+              <View style={styles.resourceTextContainer}>
                   <Text style={styles.resourceTitle}>Travel reimbursement</Text>
-                  <Text style={styles.resourceAmount}>$41.5 cents / mile</Text>
+                  <Text style={styles.resourceAmount}>$586</Text>
                 </View>
               </View>
               <View style={styles.resourceIconArrow} />
@@ -234,14 +233,15 @@ function HomePage() {
           <Home style={styles.navIcon} />
           <Text style={styles.navText}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ExplorePageScreen')}>
-          <Explore style={styles.navIcon} />
-          <Text style={styles.navTextInactive}>Explore</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ConsultPageScreen')}>
           <Consult style={styles.navIcon} />
           <Text style={styles.navTextInactive}>Consult</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ExplorePageScreen')}>
+          <Explore style={styles.navIcon} />
+          <Text style={styles.navTextInactive}>Benefits</Text>
+        </TouchableOpacity>
+        
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('LoanPageScreen')}>
           <Loan style={styles.navIcon} />
           <Text style={styles.navTextInactive}>Loan</Text>
@@ -308,10 +308,7 @@ const styles = StyleSheet.create({
   cardHeaderHighlight: {
     color: '#237AF2',
   },
-  closeIcon: {
-    width: 11,
-    height: 11,
-  },
+ 
   averageIncrease: {
     backgroundColor: '#F2F7FE',
     borderRadius: 8,
@@ -423,21 +420,25 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     marginRight: 16,
+    // backgroundColor: '#red',
   },
   infoTextContainer: {
     justifyContent: 'center',
   },
   infoTitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#6B7685',
-    fontWeight: '510',
+    fontFamily: 'SF Pro',
+    fontWeight: '400',
     lineHeight: 22,
+    wordWrap: 'break-word',
   },
   infoValue: {
     fontSize: 16,
     color: '#191F28',
     fontWeight: '590',
     lineHeight: 22,
+    wordWrap: 'break-word',
   },
   infoRight: {
     backgroundColor: '#F3F4F6',
@@ -455,7 +456,7 @@ const styles = StyleSheet.create({
   },
   bottomNavigation: {
     width: '100%',
-    paddingVertical: 8,
+    paddingVertical: 20,
     backgroundColor: 'white',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -470,6 +471,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 1,
     elevation: 2,
+    marginTop: 8,
   },
   navItem: {
     alignItems: 'center',
@@ -701,7 +703,7 @@ myDocumentsTextContainer: {
   },
   resourceAmount: {
     color: '#191F28',
-    fontSize: 13,
+    fontSize: 16,
     fontFamily: 'SF Pro',
     fontWeight: '590',
     lineHeight: 22,

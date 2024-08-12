@@ -33,7 +33,7 @@ const PainScaleSlider = ({ painScale, setPainScale, onSubmit }) => {
             onValueChange={setPainScale}
             minimumTrackTintColor="transparent"
             maximumTrackTintColor="transparent"
-            thumbTintColor="#79CFC1"
+            thumbTintColor={getPainScaleColor(painScale)}
           />
         </View>
 

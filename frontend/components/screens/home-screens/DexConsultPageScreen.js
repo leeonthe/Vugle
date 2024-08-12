@@ -176,6 +176,8 @@ const handleUserInputSubmit = async () => {
         headers: { 'X-CSRFToken': csrfToken }
       });
 
+      console.log("Response received:", response.data);  // Log the entire response
+
       setTimeout(() => {
         if (currentStep === 'new_condition') {
           setCurrentStep('get_more_condition');
@@ -183,16 +185,23 @@ const handleUserInputSubmit = async () => {
         } else if (currentStep === 'basic_assessment') {
           setCurrentStep('scaling_pain');
           handleStepChange('scaling_pain', chatFlow.scaling_pain.prompt, chatFlow.scaling_pain.options);
+        } else if (currentStep === 'finding_right_claim') {
+          setCurrentStep('service_connect');
+          console.log("Navigating to service_connect");
+          console.log("Service Connect Prompt:", chatFlow.service_connect.prompt);  // Debugging line
+          console.log("Service Connect Options:", chatFlow.service_connect.options);  // Debugging line
+          handleStepChange('service_connect', chatFlow.service_connect.prompt, chatFlow.service_connect.options);
         }
       }, 800); // Ensure loading message is displayed for at least 800ms
     } catch (error) {
-      console.error(error);
+      console.error("Error occurred during submission:", error);  // More descriptive error log
       updateLoadingMessage('Error: Unable to fetch response.');
     } finally {
       setUserInput('');
     }
   }
 };
+
 
   const handleFileUpload = async () => {
     try {
