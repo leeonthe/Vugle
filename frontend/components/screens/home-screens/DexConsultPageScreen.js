@@ -5,6 +5,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import * as DocumentPicker from 'expo-document-picker';
 import PainScaleSlider from './PainScaleSlider';  
+import Logo from '../../../assets/logo.svg'
 
 const DexConsultPageScreen = () => {
   const route = useRoute();
@@ -66,7 +67,7 @@ const DexConsultPageScreen = () => {
             {
                 type: 'bot',
                 text: renderStyledText(isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim()), // Apply renderStyledText to all messages
-                imageSource: isImagePlaceholder ? require('../../../assets/vugle.png') : null,
+                imageSource: isImagePlaceholder ? <Logo/> : null,
                 options: isLastMessage ? options : [],
                 isImagePlaceholder
             }
@@ -296,7 +297,7 @@ return (
       >
         {chat.isImagePlaceholder && chat.imageSource ? (
           <View style={styles.logoBackground}>
-            <Image source={require('../../../assets/vugle.png')} style={styles.logo} />
+            <Logo style={styles.logo} />
           </View>
         ) : chat.text && (
           <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
@@ -353,7 +354,7 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: 6,
     backgroundColor: '#F5F6F8',
     borderRadius: 16,
     justifyContent: 'center',
@@ -376,7 +377,8 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro',
     fontWeight: '510',
     lineHeight: 28,
-    marginBottom: 16,
+    marginTop: 4,
+    marginBottom: 12,
   },
   botText: {
     color: '#323D4C',
