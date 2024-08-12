@@ -127,7 +127,13 @@ chatbot_flow = {
     # TODO: add: Assessment completed! 🙌 Thanks for your time, Robert!
     # TODO: add: Reviewing DD214, etc
      "finding_right_claim": {
-        "prompt": "[[IMAGE]][BR][BOLD]Finding the Right Claim📋[CLOSE][NEWLINE]Based on the severity and duration of your symptoms, we'll guide you to the appropriate claim.",
+        "prompt": "[[IMAGE]][BR][BOLD]We’re finding right claim for your condition based on your files[CLOSE]"+
+        
+        "[BR][BOLD]We’re finding right claim for your condition based on your files[CLOSE][NEWLINE]We will now review your documents to determine which type of claim is best suited for you."
+        
+        +"[BR]DD214[NEWLINE]STRs[NEWLINE]Medical records[NEWLINE]Service records[NEWLINE]Previous Claims"
+        
+        ,
         "options": [
             # Define options or further steps here...
         ]
@@ -135,7 +141,7 @@ chatbot_flow = {
 
     # TODO: Text styling
     "service_connect": {
-        "prompt": "[[IMAGE]][BR]Secondary Service-Connected Claim Your condition might be affected by your existing condition ‘Lower back pain’ for which you’ve received a 70% disability rating.",
+        "prompt": "[[IMAGE]][BR][BOLD]Secondary Service-Connected Claim[CLOSE][NEWLINE]Your condition might be affected by your existing condition ‘Lower back pain’ for which you’ve received a 70% disability rating.[NEWLINE][LINK_START]What is this claim?[LINK_END]",
         "options": [
         {
             "text": "Start Filing",
@@ -147,22 +153,22 @@ chatbot_flow = {
 
     # TODO: Text styling
     "check_if_user_been_to_private_clinics": {
-        "prompt": "Have you been to any private clinics? We couldn’t find any VA medical records about your conditions. Have you attended any private clinics for your condition?",
+        "prompt": "[[IMAGE]][BR][BOLD]Have you been to any private clinics?[CLOSE][NEWLINE]We couldn’t find any VA medical records about your conditions. Have you attended any private clinics for your condition?",
         "options": [
             {
-                "text": "Yes",
+                "text": "Yes, I have",
                 "next": "hospital_linking"
             },
             {
-                "text": "No",
-                "next": "end"   
+                "text": "No, I haven't",
+                "next": "hospital_linking"   
             }
         ]
     },
 
 #   TODO: Text styling + 
     "hospital_linking": {
-        "prompt": "[[IMAGE]]List of VA medicals near by youHere you go! Some centers offer virtual option as well. Please check the availability for each centers carefully.",
+        "prompt": "[[IMAGE]][BR][BOLD]List of VA medicals near by you[CLOSE][NEWLINE]Here you go! Some centers offer virtual option as well. Please check the availability for each centers carefully.",
         "options": [
             {
                 "text": "View medical centers",

@@ -464,6 +464,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   messageContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     padding: 16,
     marginLeft: 10,
     paddingHorizontal: 10,
@@ -474,17 +476,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 8,
     maxWidth: '80%',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
     display: 'inline-flex',
 
 
-    // width: '100%',
-    // flexDirection: 'row',
-    // flexWrap: 'wrap',
-    // marginBottom: 45,
-    // marginTop: -20,
-    // marginLeft: 10,
   },
   botMessage: {
     alignSelf: 'flex-start',
@@ -563,13 +557,6 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     textAlign: 'center',
   },
-  logoContainer: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    // marginBottom: 16,
-    marginBottom: 10,
-    marginLeft: 10,
-  },
   logoBackground: {
     width: 36,
     height: 36,
@@ -579,6 +566,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  logoContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    // marginBottom: 16,
+    marginBottom: 10,
+    marginLeft: 10,
+  },
+
   logo: {
     width: 24,
     height: 24,
