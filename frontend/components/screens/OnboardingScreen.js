@@ -12,9 +12,6 @@ function OnboardingScreen({ navigation }) {
         showsButtons={false}
         dot={<View style={styles.dot} />}
         activeDot={<View style={styles.activeDot} />
-      
-      
-      
       }
       >
         <View style={styles.slide}>
@@ -103,7 +100,7 @@ const styles = StyleSheet.create({
     width: '90%',
     backgroundColor: '#007AFF',
     paddingVertical: 15,
-    borderRadius: 25,
+    borderRadius: 8,
     alignItems: 'center',
     marginBottom: 30,
   },

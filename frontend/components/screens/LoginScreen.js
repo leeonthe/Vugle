@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
    backgroundColor: '#ffffff',
  },
  svgContainer: {
-   paddingTop: 120, // Add paddingTop to the SVG
+   paddingTop: 150, // Add paddingTop to the SVG
    marginBottom: 50,
  },
  
@@ -160,24 +160,37 @@ const styles = StyleSheet.create({
    wordWrap: 'break-word',
    marginBottom: 70,
  },
+ button: {
+  width: '90%',
+  backgroundColor: '#162E52',
+  paddingVertical: 15,
+  borderRadius: 8,
+  alignItems: 'center',
+  // marginBottom: 30,
+},
+buttonText: {
+  color: '#fff',
+  fontSize: 18,
+  fontWeight: 'bold',
+},
  
- 
-  button: {
-   position: 'absolute',
-   bottom: 20,
-   width: '100%',
-   backgroundColor: '#162E52',
-   paddingVertical: 15,
-   borderRadius: 10,
-   alignItems: 'center',
+  // button: {
+//    position: 'absolute',
+//    bottom: 20,
+//    width: '100%',
+//    backgroundColor: '#162E52',
+//    paddingVertical: 15,
+//    borderRadius: 10,
+//    alignItems: 'center',
+//   //  marginBottom: 20,
 
- },
+//  },
 
- buttonText: {
-   color: '#fff',
-   fontSize: 16,
-   fontWeight: 'bold',
- },
+//  buttonText: {
+//    color: '#fff',
+//    fontSize: 16,
+//    fontWeight: 'bold',
+//  },
 
 
  continueContainer: {
@@ -198,6 +211,7 @@ const styles = StyleSheet.create({
    fontWeight: '400',
    lineHeight: 18,
    wordWrap: 'break-word',
+   marginBottom: 20,
  },
  link: {
    color: '#3182F6',

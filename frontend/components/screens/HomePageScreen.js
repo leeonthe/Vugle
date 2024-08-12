@@ -4,8 +4,20 @@ import { useNavigation } from '@react-navigation/native';
 import Svg, { Rect } from 'react-native-svg';
 import { useVeteranData } from '../../APIHandler';
 
-import DocumentsIcon from '../../assets/documents_icon.svg';
 
+
+// SVG for home 
+import DisabilityIcon from '../../assets/assets-home/disability_icon.svg';
+import CompensationIcon from '../../assets/assets-home/monthly_compensation.svg';
+import NotificationIcon from '../../assets/assets-home/notification_icon.svg';
+import ExploreIcon from '../../assets/assets-home/explore_icon.svg';
+
+import Document from '../../assets/assets-home/document-icon.svg';
+
+import Home from '../../assets/assets-home/home-icon.svg';
+import Explore from '../../assets/assets-home/explore_icon.svg';
+import Consult from '../../assets/assets-home/consult-icon.svg';
+import Loan from '../../assets/assets-home/loan-icon.svg';
 function HomePage() {
   const { userInfo, eligibleLetters, statusInfo, loading, error } = useVeteranData();
   const navigation = useNavigation();
@@ -36,10 +48,8 @@ function HomePage() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerText}>Home</Text>
-        <Image
-          source={require('../../assets/notification_icon.png')} // Update with your notification icon path
-          style={styles.notificationIcon}
-        />
+        <NotificationIcon style={styles.notificationIcon} />
+
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.card}>
@@ -100,10 +110,9 @@ function HomePage() {
         <View style={styles.infoCard}>
           <View style={styles.infoItem}>
             <View style={styles.infoLeft}>
-              <Image
-                source={require('../../assets/disability_icon.png')} // Update with your disability icon path
-                style={styles.infoIcon}
-              />
+             {/* SVG HERE */}
+              <DisabilityIcon style={styles.infoIcon} />
+
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoTitle}>Disability rating</Text>
                 <Text style={styles.infoValue}>{combinedDisabilityRating}%</Text>
@@ -115,10 +124,7 @@ function HomePage() {
           </View>
           <View style={styles.infoItem}>
             <View style={styles.infoLeft}>
-              <Image
-                source={require('../../assets/compensation_icon.png')} // Update with your compensation icon path
-                style={styles.infoIcon}
-              />
+              <CompensationIcon style={styles.infoIcon} />  
               <View style={styles.infoTextContainer}>
                 <Text style={styles.infoTitle}>Monthly compensation</Text>
                 <Text style={styles.infoValue}>{monthlyCompensation !== 'NULL' ? `$${monthlyCompensation}` : 'NULL'}</Text>
@@ -141,10 +147,12 @@ function HomePage() {
           </View>
           <View style={styles.claimsStatusContent}>
             <View style={styles.claimsStatusRow}>
-              <View style={styles.claimsStatusIconGreen} />
+              <View style={styles.claimStatusIconContainer}>
+                <Text>💌</Text> 
+              </View>
               <View style={styles.claimsStatusTextContainer}>
-                <Text style={styles.claimsStatusTextGray}>4 claims completed</Text>
-                <Text style={styles.claimsStatusTextBlack}>Last update from Sep 2019</Text>
+                <Text style={styles.claimsStatusTextGray}>Aug 4 Sunday</Text>
+                <Text style={styles.claimsStatusTextBlack}>VA received your medical evidence</Text>
               </View>
             </View>
           </View>
@@ -154,14 +162,15 @@ function HomePage() {
         <View style={styles.myDocumentsContainer}>
           <View style={styles.myDocumentsContent}>
             <View style={styles.myDocumentsRow}>
-              <View style={styles.myDocumentsIconContainer}>
-                <View style={styles.myDocumentsIconBlue} />
-                <View style={styles.myDocumentsIconLightBlue} />
-              </View>
               <View style={styles.myDocumentsTextContainer}>
+                
                 <Text style={styles.myDocumentsTitle}>My documents</Text>
-                <Text style={styles.myDocumentsSubtitle}>All your health records in one place</Text>
+                <Text style={styles.myDocumentsSubtitle}>Sevice treatment records</Text>
+                <Text style={styles.myDocumentsSubtitle}>Medical records</Text>
+                
               </View>
+            <Document style={styles.myDocumentsIcon} />
+
             </View>
           </View>
         </View>
@@ -221,31 +230,20 @@ function HomePage() {
       </ScrollView>
       <View style={styles.bottomNavigation}>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('HomePage')}>
-          <Image
-            source={require('../../assets/home_icon.png')}
-            style={styles.navIcon}
-          />
+
+          <Home style={styles.navIcon} />
           <Text style={styles.navText}>Home</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ExplorePageScreen')}>
-          <Image
-            source={require('../../assets/explore_icon.png')}
-            style={styles.navIcon}
-          />
+          <Explore style={styles.navIcon} />
           <Text style={styles.navTextInactive}>Explore</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('ConsultPageScreen')}>
-          <Image
-            source={require('../../assets/consult_icon.png')}
-            style={styles.navIcon}
-          />
+          <Consult style={styles.navIcon} />
           <Text style={styles.navTextInactive}>Consult</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('LoanPageScreen')}>
-          <Image
-            source={require('../../assets/loan_icon.png')}
-            style={styles.navIcon}
-          />
+          <Loan style={styles.navIcon} />
           <Text style={styles.navTextInactive}>Loan</Text>
         </TouchableOpacity>
       </View>
@@ -553,10 +551,16 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'flex-start',
+
+  },
+  claimStatusIconContainer: {
+    marginRight: 8, 
+    marginBottom: 20,
+    marginRight: -5,
   },
   claimsStatusTextGray: {
     color: '#6B7685',
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'SF Pro',
     fontWeight: '510',
     lineHeight: 22,
@@ -564,7 +568,7 @@ const styles = StyleSheet.create({
   },
   claimsStatusTextBlack: {
     color: '#323D4C',
-    fontSize: 13,
+    fontSize: 14,
     fontFamily: 'SF Pro',
     fontWeight: '510',
     lineHeight: 20,
@@ -589,45 +593,36 @@ const styles = StyleSheet.create({
   myDocumentsRow: {
     flexDirection: 'row', 
     alignItems: 'center',
+     justifyContent: 'space-between',
   },
-  myDocumentsIconContainer: {
-    width: 32,
-    height: 32,
-    position: 'relative',
-    marginRight: 16, // Add some space between icon and text
-  },
-  myDocumentsIconBlue: {
-    width: 30.67,
-    height: 24,
-    position: 'absolute',
-    backgroundColor: '#376CFB',
-  },
-  myDocumentsIconLightBlue: {
-    width: 28.38,
-    height: 16,
-    position: 'absolute',
-    backgroundColor: '#4294FF',
-  },
-  myDocumentsTextContainer: {
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-  },
+
+myDocumentsTextContainer: {
+  flexDirection: 'column',
+  justifyContent: 'center',  // Align text in the center vertically if needed
+  marginLeft: 10,  // Add some space between the icon and the text
+},
+  myDocumentsIcon: {
+  
+},
   myDocumentsTitle: {
     color: 'black',
     fontSize: 16,
     fontFamily: 'SF Pro',
-    fontWeight: '510',
-    lineHeight: 22,
+    fontWeight: '590',
+    lineHeight: 20,
     wordWrap: 'break-word',
+    marginBottom: 10,
   },
   myDocumentsSubtitle: {
     color: '#ADB3BA',
     fontSize: 12,
     fontFamily: 'SF Pro',
     fontWeight: '510',
-    lineHeight: 22,
+    lineHeight: 15,
     wordWrap: 'break-word',
+  },
+  myDocumentsIcon:{
+
   },
 
   // CURRENT RESOURCES STYLING

@@ -67,7 +67,7 @@ const DexConsultPageScreen = () => {
             {
                 type: 'bot',
                 text: renderStyledText(isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim()), // Apply renderStyledText to all messages
-                imageSource: isImagePlaceholder ? <Logo/> : null,
+                imageSource: isImagePlaceholder ? <Logo style={[styles.logo, styles.logoContainer, styles.logoBackground]}/> : null,
                 options: isLastMessage ? options : [],
                 isImagePlaceholder
             }
@@ -297,7 +297,9 @@ return (
       >
         {chat.isImagePlaceholder && chat.imageSource ? (
           <View style={styles.logoBackground}>
-            <Logo style={styles.logo} />
+            <View style={styles.logoBackground}>
+              <Logo style={styles.logo} />
+            </View>
           </View>
         ) : chat.text && (
           <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
@@ -353,8 +355,10 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   messageContainer: {
+    // padding: 16,
+    marginLeft: 10,
     paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingVertical: 8,
     backgroundColor: '#F5F6F8',
     borderRadius: 16,
     justifyContent: 'center',
@@ -363,9 +367,11 @@ const styles = StyleSheet.create({
     maxWidth: '80%',
     flexDirection: 'column',
     alignItems: 'flex-start',
+    display: 'inline-flex',
   },
   botMessage: {
     alignSelf: 'flex-start',
+
   },
   userMessage: {
     alignSelf: 'flex-end',
@@ -379,6 +385,8 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     marginTop: 4,
     marginBottom: 12,
+    wordWrap: 'break-word',
+    marginLeft: 4,
   },
   botText: {
     color: '#323D4C',

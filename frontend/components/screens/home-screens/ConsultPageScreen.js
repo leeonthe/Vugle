@@ -16,7 +16,7 @@ const ConsultPageScreen = () => {
   };
 
   const navigateToHomePage = () => {
-    navigation.navigate('../../../HomePageScreen'); // Navigate to HomePageScreen
+    navigation.navigate('HomePage'); // Navigate to HomePageScreen
   };
   if (loading) {
     return (
