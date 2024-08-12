@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Button, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput, Button } from 'react-native';
 import * as Animatable from 'react-native-animatable';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
@@ -222,14 +222,25 @@ const handlePotentialConditionsReturn = (addedConditions) => {
   }
 };
 
-const handlePainScaleSubmit = () => {
+const handlePainScaleSubmit = async () => {
   setChatHistory(prevChatHistory => [
     ...prevChatHistory,
     { type: 'user', text: painScale.toString() }
   ]);
 
-  setCurrentStep('finding_right_claim');
-  handleStepChange('finding_right_claim', chatFlow.finding_right_claim.prompt, chatFlow.finding_right_claim.options);
+  try {
+    const response = await axios.post('http://localhost:8000/chatbot/', {
+      response: painScale,
+      current_step: 'scaling_pain'
+    }, {
+      headers: { 'X-CSRFToken': csrfToken }
+    });
+
+    setCurrentStep('finding_right_claim');
+    handleStepChange('finding_right_claim', chatFlow.finding_right_claim.prompt, chatFlow.finding_right_claim.options);
+  } catch (error) {
+    console.error("Error during pain scale submission:", error);
+  }
 };
 
 const renderStyledText = (text) => {
@@ -320,7 +331,7 @@ return (
     )}
 
     {currentStep === 'scaling_pain' && (
-      <PainScaleSlider painScale={painScale} setPainScale={setPainScale} />
+      <PainScaleSlider painScale={painScale} setPainScale={setPainScale} onSubmit={handlePainScaleSubmit} />
     )}
   </ScrollView>
 );

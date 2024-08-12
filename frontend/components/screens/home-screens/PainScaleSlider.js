@@ -4,7 +4,6 @@ import Slider from '@react-native-community/slider';
 
 const PainScaleSlider = ({ painScale, setPainScale, onSubmit }) => {
 
-  // Function to determine the color based on the painScale value
   const getPainScaleColor = (value) => {
     if (value <= 2) return '#72D8CA'; // Light green for low pain
     if (value <= 4) return '#79CFC1'; // Green for slightly higher pain
@@ -16,8 +15,6 @@ const PainScaleSlider = ({ painScale, setPainScale, onSubmit }) => {
   return (
     <View style={styles.container}>
       <View style={styles.sliderWrapper}>
-        {/* <Text style={styles.label}>How severe is your knee pain now?</Text> */}
-
         <View style={styles.sliderContainer}>
           <View style={styles.segmentedBarWrapper}>
             <View style={[styles.segment, { backgroundColor: '#72D8CA' }]} />
@@ -94,12 +91,7 @@ const styles = StyleSheet.create({
     fontFamily: 'SF Pro',
     fontWeight: '510',
     textAlign: 'center',
-    width: '100%', // Center the text across the width of the slider
-  },
-  label: {
-    textAlign: 'center',
-    fontSize: 16,
-    marginBottom: 10,
+    width: '100%',
   },
   labelWrapper: {
     width: '100%',
