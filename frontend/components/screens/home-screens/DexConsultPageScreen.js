@@ -62,7 +62,7 @@ const DexConsultPageScreen = () => {
       const updatedChatHistory = prevChatHistory.filter((chat, index) => chat.text !== '...');
       return updatedChatHistory;
     });
-    
+
     messages.forEach((message, index) => {
         const isLastMessage = index === messages.length - 1;
         const isImagePlaceholder = message.includes('IMAGE_PLACEHOLDER');
@@ -152,6 +152,8 @@ const handleUserInputSubmit = async () => {
             const fileName = file.name;
             console.log("Selected file:", fileName);
 
+            await displayLoadingMessage();
+            
             const formData = new FormData();
             formData.append('dd214', {
                 uri: file.uri,

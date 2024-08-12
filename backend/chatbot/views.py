@@ -226,6 +226,15 @@ class ChatbotView(View):
 
             # Check if we have a file upload in the request
             if request.FILES.get('dd214'):
+                # Simulate loading by immediately responding with a loading message
+                if request.GET.get('current_step') == 'upload_dd214':
+                    # Return loading message
+                    loading_prompt = chatbot_flow['loading']['prompt']
+                    return JsonResponse({
+                        "prompts": [loading_prompt],
+                        "options": chatbot_flow['loading']['options'],
+                    })
+
                 file = request.FILES['dd214']
                 logger.debug(f'Received file: {file.name}')
                 file_path = handle_uploaded_file(file)  # Save the uploaded file
