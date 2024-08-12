@@ -45,32 +45,32 @@ const ConsultPageScreen = () => {
       </View>
 
       <View style={styles.header}></View>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>Meet </Text>
-        <Text style={styles.titleHighlight}>Dex,</Text>
-        <Text style={styles.title}>Your AI compensation buddy.</Text>
-      </View>
-      
-      <Animatable.View animation="fadeIn" duration={1000} style={styles.logoContainer}>
-        <View style={styles.logoBackground}>
-          <Logo style={styles.logo} />
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Meet </Text>
+          <Text style={styles.titleHighlight}>Dex,</Text>
+          <Text style={styles.title}>Your AI compensation buddy.</Text>
         </View>
-      </Animatable.View>
-      
-      <View style={styles.chatContainer}>
-        <Animatable.View animation="fadeIn" duration={1000} delay={1000} style={styles.messageContainer}>
-          <Text style={styles.messageText}>Hello, {firstName} 👋</Text>
+        
+        <Animatable.View animation="fadeIn" duration={1000} style={styles.logoContainer}>
+          <View style={styles.logoBackground}>
+            <Logo style={styles.logo} />
+          </View>
         </Animatable.View>
         
-        <Animatable.View animation="fadeIn" duration={1000} delay={2000} style={styles.messageContainer}>
-          <Text style={styles.messageText}>
-          I will help you understand your condition, evaluate the best approach, and file out your application.          </Text>
-        </Animatable.View>
-        
-        <Animatable.View animation="fadeIn" duration={1000} delay={3000} style={styles.messageContainer}>
-          <Text style={styles.messageText}>
-          After that, I will guide you through the rest of the claim process!          </Text>
-        </Animatable.View>
+        <View style={styles.chatContainer}>
+          <Animatable.View animation="fadeIn" duration={1000} delay={1000} style={styles.messageContainer}>
+            <Text style={styles.messageText}>Hello, {firstName} 👋</Text>
+          </Animatable.View>
+          
+          <Animatable.View animation="fadeIn" duration={1000} delay={2000} style={styles.messageContainer}>
+            <Text style={styles.messageText}>
+            I will help you understand your condition, evaluate the best approach, and file out your application.          </Text>
+          </Animatable.View>
+          
+          <Animatable.View animation="fadeIn" duration={1000} delay={3000} style={styles.messageContainer}>
+            <Text style={styles.messageText}>
+            After that, I will guide you through the rest of the claim process!          </Text>
+          </Animatable.View>
       </View>
       
       {showInitialButton && (
@@ -105,8 +105,8 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginBottom: 48,
-    marginTop: 1,
+    marginBottom: 45,
+    marginTop: -20,
     marginLeft: 10,
   },
   title: {
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontFamily: 'SF Pro Display',
     fontWeight: '600',
-    lineHeight: 36,
+    lineHeight: 38,
   },
   titleHighlight: {
     color: '#3182F6',
