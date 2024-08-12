@@ -58,6 +58,11 @@ const DexConsultPageScreen = () => {
 
     const messages = processedPrompt.split('[BR]');
 
+    setChatHistory(prevChatHistory => {
+      const updatedChatHistory = prevChatHistory.filter((chat, index) => chat.text !== '...');
+      return updatedChatHistory;
+    });
+    
     messages.forEach((message, index) => {
         const isLastMessage = index === messages.length - 1;
         const isImagePlaceholder = message.includes('IMAGE_PLACEHOLDER');
@@ -66,30 +71,62 @@ const DexConsultPageScreen = () => {
             ...prevChatHistory,
             {
                 type: 'bot',
-                text: renderStyledText(isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim()), // Apply renderStyledText to all messages
+                text: renderStyledText(isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim()),
                 imageSource: isImagePlaceholder ? <Logo style={[styles.logo, styles.logoContainer, styles.logoBackground]}/> : null,
                 options: isLastMessage ? options : [],
                 isImagePlaceholder
             }
         ]);
     });
+  };
+
+
+  const displayLoadingMessage = async () => {
+    try {
+      const response = await axios.post('http://localhost:8000/chatbot/', {
+        response: 'loading',
+        current_step: 'loading'
+      }, {
+        headers: { 'X-CSRFToken': csrfToken }
+      });
+
+      const loadingPrompt = response.data.prompts[0]; // Assuming only one prompt in the loading state
+      handleStepChange('loading', loadingPrompt, []);
+    } catch (error) {
+      console.error('Error displaying loading message:', error);
+    }
+  };
+
+const updateLoadingMessage = (newText) => {
+  setChatHistory(prevChatHistory => {
+    const updatedChatHistory = [...prevChatHistory];
+    updatedChatHistory[updatedChatHistory.length - 1] = {
+      ...updatedChatHistory[updatedChatHistory.length - 1],
+      text: newText
+    };
+    return updatedChatHistory;
+  });
 };
 
-  const handleUserInputSubmit = async () => {
-    if (userInput.trim()) {
-      setChatHistory(prevChatHistory => [
-        ...prevChatHistory,
-        { type: 'user', text: userInput }
-      ]);
+const handleUserInputSubmit = async () => {
+  if (userInput.trim()) {
+    console.log("User Input Submitted:", userInput);
+    setChatHistory(prevChatHistory => [
+      ...prevChatHistory,
+      { type: 'user', text: userInput }
+    ]);
 
-      try {
-        const response = await axios.post('http://localhost:8000/chatbot/', {
-          response: userInput,
-          current_step: currentStep
-        }, {
-          headers: { 'X-CSRFToken': csrfToken }
-        });
+    await displayLoadingMessage();  // Show the loading message from the backend
 
+    try {
+      const response = await axios.post('http://localhost:8000/chatbot/', {
+        response: userInput,
+        current_step: currentStep
+      }, {
+        headers: { 'X-CSRFToken': csrfToken }
+      });
+
+      setTimeout(() => {
         if (currentStep === 'new_condition') {
           setCurrentStep('get_more_condition');
           handleStepChange('get_more_condition', chatFlow.get_more_condition.prompt, chatFlow.get_more_condition.options);
@@ -97,14 +134,15 @@ const DexConsultPageScreen = () => {
           setCurrentStep('scaling_pain');
           handleStepChange('scaling_pain', chatFlow.scaling_pain.prompt, chatFlow.scaling_pain.options);
         }
-      } catch (error) {
-        console.error(error);
-      }
-
+      }, 800); // Ensure loading message is displayed for at least 800ms
+    } catch (error) {
+      console.error(error);
+      updateLoadingMessage('Error: Unable to fetch response.');
+    } finally {
       setUserInput('');
     }
-  };
-
+  }
+};
   const handleFileUpload = async () => {
     try {
         const res = await DocumentPicker.getDocumentAsync({});
@@ -147,61 +185,69 @@ const DexConsultPageScreen = () => {
     }
 };
 
+
+
+
+
+
 const handleOptionClick = async (option, index) => {
+  console.log("User Selected Option:", option.text);
   if (option.text === "Upload DD214") {
-      handleFileUpload();  // Trigger file upload
+    handleFileUpload();  // Trigger file upload
   } else {
-    const userMessageIndex = chatHistory.length;
     setChatHistory(prevChatHistory => [
-        ...prevChatHistory,
-        { type: 'user', text: option.text }
+      ...prevChatHistory,
+      { type: 'user', text: option.text }
     ]);
-    userMessageIndices.current.push(userMessageIndex);
+
+    await displayLoadingMessage();  // Show the loading message from the backend
 
     try {
-        const response = await axios.post('http://localhost:8000/chatbot/', {
-            response: index,
-            current_step: currentStep
-        }, {
-            headers: { 'X-CSRFToken': csrfToken }
-        });
-        
-        const { prompts, options, navigation_url, potential_conditions } = response.data;
-        
+      const response = await axios.post('http://localhost:8000/chatbot/', {
+        response: index,
+        current_step: currentStep
+      }, {
+        headers: { 'X-CSRFToken': csrfToken }
+      });
+      
+      const { prompts, options, navigation_url, potential_conditions } = response.data;
+
+      setTimeout(() => {
         if (navigation_url) {
-            if (navigation_url === "/potential_condition") {
-                const formattedConditions = potential_conditions.map(cond => {
-                    const [name, risk, description] = cond.split('\n').map(line => line.split(': ')[1]);
-                    return { name, risk, description, riskColor: risk === 'High risk' ? 'red' : risk === 'Medium risk' ? 'orange' : 'green' };
-                });
-
-                // Navigate and pass the onReturn callback
-                navigation.navigate('PotentialConditionPageScreen', {
-                  potentialConditions: formattedConditions,
-                  onReturn: handlePotentialConditionsReturn,
-                });
-
-            } else if (navigation_url === "/hospital") {
-                navigation.navigate('HospitalPageScreen');
-            }
-        } else if (prompts) {
-            prompts.forEach((text, idx) => {
-                const isImagePlaceholder = text.includes('[[IMAGE]]');
-                setChatHistory(prevChatHistory => [
-                    ...prevChatHistory,
-                    {
-                        type: 'bot',
-                        text: isImagePlaceholder ? '' : text,  // Use centralized text processing
-                        options: idx === prompts.length - 1 ? options : [],
-                        isImagePlaceholder
-                    }
-                ]);
+          if (navigation_url === "/potential_condition") {
+            const formattedConditions = potential_conditions.map(cond => {
+              const [name, risk, description] = cond.split('\n').map(line => line.split(': ')[1]);
+              return { name, risk, description, riskColor: risk === 'High risk' ? 'red' : risk === 'Medium risk' ? 'orange' : 'green' };
             });
+
+            navigation.navigate('PotentialConditionPageScreen', {
+              potentialConditions: formattedConditions,
+              onReturn: handlePotentialConditionsReturn,
+            });
+
+          } else if (navigation_url === "/hospital") {
+            navigation.navigate('HospitalPageScreen');
+          }
+        } else if (prompts) {
+          prompts.forEach((text, idx) => {
+            const isImagePlaceholder = text.includes('[[IMAGE]]');
+            setChatHistory(prevChatHistory => [
+              ...prevChatHistory,
+              {
+                type: 'bot',
+                text: isImagePlaceholder ? '' : text,
+                options: idx === prompts.length - 1 ? options : [],
+                isImagePlaceholder
+              }
+            ]);
+          });
         }
         
         setCurrentStep(option.next);
+      }, 800); // Ensure loading message is displayed for at least 800ms
     } catch (error) {
-        console.error("Error during option click:", error);
+      console.error("Error during option click:", error);
+      updateLoadingMessage('Error: Unable to fetch response.');
     }
   }
 };
