@@ -7,6 +7,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import PainScaleSlider from './PainScaleSlider';  
 import Logo from '../../../assets/logo.svg'
 
+
 const DexConsultPageScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
@@ -46,67 +47,116 @@ const DexConsultPageScreen = () => {
     });
   }, [navigation]);
 
-  const handleStepChange = (step, prompt, options = []) => {
-    if (!prompt) return;
+  const ExpandingDot = ({ delay }) => {
+    return (
+        <Animatable.Text
+            animation={{
+                0: { scale: 1 },
+                0.5: { scale: 1.5 },
+                1: { scale: 1 }
+            }}
+            iterationCount="infinite"
+            direction="alternate"
+            delay={delay}
+            style={styles.dot}
+        >
+            .
+        </Animatable.Text>
+    );
+};
 
-    const processedPrompt = prompt
-        .replace('{user_name}', firstName)
-        .replace(/\[NEWLINE\]/g, '\n')
-        .replace(/\[BOLD\](.*?)\[CLOSE\]/g, (_, match) => `<b>${match}</b>`)
-        .replace(/\[LINK_START\](.*?)\[LINK_END\]/g, (_, match) => `<a href="#">${match}</a>`)
-        .replace(/\[IMAGE\]/g, 'IMAGE_PLACEHOLDER');
+const LoadingAnimation = () => {
+  return (
+      <View style={styles.loadingContainer}>
+          <ExpandingDot delay={0} />
+          <ExpandingDot delay={200} />
+          <ExpandingDot delay={400} />
+      </View>
+  );
+};
 
-    const messages = processedPrompt.split('[BR]');
+const handleStepChange = (step, prompt, options = []) => {
+  if (!prompt) return;
 
-    setChatHistory(prevChatHistory => {
-      const updatedChatHistory = prevChatHistory.filter((chat, index) => chat.text !== '...');
-      return updatedChatHistory;
+  const processedPrompt = prompt
+      .replace('{user_name}', firstName)
+      .replace(/\[NEWLINE\]/g, '\n')
+      .replace(/\[BOLD\](.*?)\[CLOSE\]/g, (_, match) => `<b>${match}</b>`)
+      .replace(/\[LINK_START\](.*?)\[LINK_END\]/g, (_, match) => `<a href="#">${match}</a>`)
+      .replace(/\[IMAGE\]/g, 'IMAGE_PLACEHOLDER');
+
+  const messages = processedPrompt.split('[BR]');
+
+  // Ensure that only one loading message exists at a time
+  setChatHistory(prevChatHistory => 
+    prevChatHistory.filter(chat => chat.type !== 'loading')
+  );
+
+  // Append the new messages
+  messages.forEach((message, index) => {
+    const isLastMessage = index === messages.length - 1;
+    const isImagePlaceholder = message.includes('IMAGE_PLACEHOLDER');
+
+    setChatHistory(prevChatHistory => [
+        ...prevChatHistory,
+        {
+            type: 'bot',
+            text: renderStyledText(isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim()),
+            imageSource: isImagePlaceholder ? <Logo style={[styles.logoContainer, styles.logoBackground, styles.logo]}/> : null,
+            options: isLastMessage ? options : [],
+            isImagePlaceholder,
+            animation: null  // Clear any animation when the actual response arrives
+        }
+    ]);
+  });
+};
+
+const displayLoadingMessage = () => {
+  setChatHistory(prevChatHistory => {
+    // Remove any existing loading messages
+    const updatedChatHistory = prevChatHistory.filter(chat => chat.type !== 'loading');
+
+    // Add the logo in one message container
+    updatedChatHistory.push({
+      type: 'loading',
+      text: '',  // No text for the logo container
+      imageSource: <Logo style={[styles.logoContainer, styles.logoBackground, styles.logo]} />,
+      options: [],
+      isImagePlaceholder: true,
+      animation: null  // No animation for the logo
     });
 
-    messages.forEach((message, index) => {
-        const isLastMessage = index === messages.length - 1;
-        const isImagePlaceholder = message.includes('IMAGE_PLACEHOLDER');
-
-        setChatHistory(prevChatHistory => [
-            ...prevChatHistory,
-            {
-                type: 'bot',
-                text: renderStyledText(isImagePlaceholder ? message.replace('[IMAGE]', '') : message.trim()),
-                imageSource: isImagePlaceholder ? <Logo style={[styles.logo, styles.logoContainer, styles.logoBackground]}/> : null,
-                options: isLastMessage ? options : [],
-                isImagePlaceholder
-            }
-        ]);
+    // Add the loading animation (e.g., "...")
+    updatedChatHistory.push({
+      type: 'loading',
+      text: '',  // No text since we're using the LoadingAnimation component
+      imageSource: null,  // No image for the loading dots
+      options: [],
+      isImagePlaceholder: false,
+      animation: <LoadingAnimation /> // Include the animated dots
     });
-  };
+
+    return updatedChatHistory;
+  });
+};
 
 
-  const displayLoadingMessage = async () => {
-    try {
-      const response = await axios.post('http://localhost:8000/chatbot/', {
-        response: 'loading',
-        current_step: 'loading'
-      }, {
-        headers: { 'X-CSRFToken': csrfToken }
-      });
 
-      const loadingPrompt = response.data.prompts[0]; // Assuming only one prompt in the loading state
-      handleStepChange('loading', loadingPrompt, []);
-    } catch (error) {
-      console.error('Error displaying loading message:', error);
-    }
-  };
+
+
 
 const updateLoadingMessage = (newText) => {
   setChatHistory(prevChatHistory => {
     const updatedChatHistory = [...prevChatHistory];
     updatedChatHistory[updatedChatHistory.length - 1] = {
       ...updatedChatHistory[updatedChatHistory.length - 1],
-      text: newText
+      text: newText,
+      animation: null  // Clear animation if the text is updated
     };
     return updatedChatHistory;
   });
 };
+
 
 const handleUserInputSubmit = async () => {
   if (userInput.trim()) {
@@ -143,6 +193,7 @@ const handleUserInputSubmit = async () => {
     }
   }
 };
+
   const handleFileUpload = async () => {
     try {
         const res = await DocumentPicker.getDocumentAsync({});
@@ -188,10 +239,6 @@ const handleUserInputSubmit = async () => {
 };
 
 
-
-
-
-
 const handleOptionClick = async (option, index) => {
   console.log("User Selected Option:", option.text);
   if (option.text === "Upload DD214") {
@@ -211,9 +258,9 @@ const handleOptionClick = async (option, index) => {
       }, {
         headers: { 'X-CSRFToken': csrfToken }
       });
-      
+    
       const { prompts, options, navigation_url, potential_conditions } = response.data;
-
+    
       setTimeout(() => {
         if (navigation_url) {
           if (navigation_url === "/potential_condition") {
@@ -221,27 +268,19 @@ const handleOptionClick = async (option, index) => {
               const [name, risk, description] = cond.split('\n').map(line => line.split(': ')[1]);
               return { name, risk, description, riskColor: risk === 'High risk' ? 'red' : risk === 'Medium risk' ? 'orange' : 'green' };
             });
-
+    
             navigation.navigate('PotentialConditionPageScreen', {
               potentialConditions: formattedConditions,
               onReturn: handlePotentialConditionsReturn,
             });
-
+    
           } else if (navigation_url === "/hospital") {
             navigation.navigate('HospitalPageScreen');
           }
         } else if (prompts) {
           prompts.forEach((text, idx) => {
             const isImagePlaceholder = text.includes('[[IMAGE]]');
-            setChatHistory(prevChatHistory => [
-              ...prevChatHistory,
-              {
-                type: 'bot',
-                text: isImagePlaceholder ? '' : text,
-                options: idx === prompts.length - 1 ? options : [],
-                isImagePlaceholder
-              }
-            ]);
+            handleStepChange('bot_response', text, idx === prompts.length - 1 ? options : []);
           });
         }
         
@@ -251,6 +290,7 @@ const handleOptionClick = async (option, index) => {
       console.error("Error during option click:", error);
       updateLoadingMessage('Error: Unable to fetch response.');
     }
+    
   }
 };
 
@@ -344,16 +384,22 @@ return (
         ]}
       >
         {chat.isImagePlaceholder && chat.imageSource ? (
-          <View style={styles.logoBackground}>
+          // <View style={styles.logoBackground}>
             <View style={styles.logoBackground}>
               <Logo style={styles.logo} />
-            </View>
+            {/* </View> */}
           </View>
         ) : chat.text && (
           <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
             {chat.text}
           </Text>
         )}
+
+        {chat.animation ? (
+          <View style={styles.loadingAnimationContainer}>
+            {chat.animation}
+          </View>
+        ) : null}
 
         {chat.options && chat.options.length > 0 && chat.options.map((option, idx) => (
           <TouchableOpacity
@@ -390,6 +436,21 @@ return (
 
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',  
+      alignItems: 'center',
+      padding: 0,
+      marginTop: -10,
+      marginBottom: -10, 
+      borderRadius: 24,
+  },
+  dot: {
+      fontSize: 30,
+      marginHorizontal: 2,
+      color: '#D7D7D7',
+      marginBottom: 15,
+  },
   header: {
     width: '100%',
     height: 54,
@@ -403,7 +464,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   messageContainer: {
-    // padding: 16,
+    padding: 16,
     marginLeft: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -416,6 +477,14 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'flex-start',
     display: 'inline-flex',
+
+
+    // width: '100%',
+    // flexDirection: 'row',
+    // flexWrap: 'wrap',
+    // marginBottom: 45,
+    // marginTop: -20,
+    // marginLeft: 10,
   },
   botMessage: {
     alignSelf: 'flex-start',
@@ -497,7 +566,9 @@ const styles = StyleSheet.create({
   logoContainer: {
     flexDirection: 'column',
     alignItems: 'flex-start',
-    marginBottom: 16,
+    // marginBottom: 16,
+    marginBottom: 10,
+    marginLeft: 10,
   },
   logoBackground: {
     width: 36,
