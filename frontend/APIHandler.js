@@ -96,7 +96,23 @@ export const VeteranDataProvider = ({ children }) => {
  const sendVeteranDataToBackend = async (veteranData) => {
   const csrfToken = await AsyncStorage.getItem('csrf_token');
 
+  // Log each piece of data to confirm it's being passed correctly
+  console.log('Disability Rating:', veteranData.disabilityRating);
+  console.log('Service History:', veteranData.serviceHistory);
+  console.log('Status:', veteranData.status);
+  console.log('Letters:', veteranData.letters);
+
   try {
+    // Ensure that all required fields are included in the veteranData object
+    const requiredKeys = ['disabilityRating', 'serviceHistory', 'status', 'letters'];
+    const missingKeys = requiredKeys.filter(key => !veteranData[key]);
+
+    if (missingKeys.length > 0) {
+      console.error('Missing required data fields:', missingKeys.join(', '));
+      throw new Error(`Missing required data fields: ${missingKeys.join(', ')}`);
+    }
+
+    // Send the data to the backend
     const response = await axios.post('http://localhost:8000/api/save-veteran-data/', veteranData, {
       headers: {
         'Content-Type': 'application/json',
@@ -113,7 +129,6 @@ export const VeteranDataProvider = ({ children }) => {
   } catch (error) {
     if (error.response) {
       // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
       console.error('Backend error:', error.response.data);
       console.error('Backend response status:', error.response.status);
     } else if (error.request) {
@@ -125,6 +140,7 @@ export const VeteranDataProvider = ({ children }) => {
     }
   }
 };
+
 
 
 useEffect(() => {
