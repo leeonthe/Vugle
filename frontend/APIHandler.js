@@ -11,7 +11,6 @@ const endpoints = {
  eligibleLetters: '/eligible-letters',
 };
 
-
 const fetchVeteranData = async (accessToken, endpoint) => {
  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
    method: 'GET',
@@ -26,7 +25,6 @@ const fetchVeteranData = async (accessToken, endpoint) => {
  return response.json();
 };
 
-
 const fetchEligibleLetters = async (accessToken, icn) => {
  if (!icn) {
    console.error('ICN is required to fetch eligible letters');
@@ -36,7 +34,7 @@ const fetchEligibleLetters = async (accessToken, icn) => {
  const response = await fetch(`${API_LETTER_URL}${endpoints.eligibleLetters}?icn=${icn}`, {
    method: 'GET',
    headers: {
-     'Authorization': `Bearer ${accessToken}`,
+     Authorization: `Bearer ${accessToken}`,
      'Content-Type': 'application/json',
    },
  });
@@ -45,18 +43,13 @@ const fetchEligibleLetters = async (accessToken, icn) => {
    const newAccessToken = await fetchLetterAccessToken();
    return fetchEligibleLetters(newAccessToken, icn);
  }
-  if (response.status !== 200) {
+ if (response.status !== 200) {
    console.error(`Failed to fetch eligible letters: ${response.statusText}`);
    console.log('[ELIGIBLE]Response', response);
    throw new Error(`Failed to fetch eligible letters: ${response.statusText}`);
  }
  return response.json();
 };
-
-
-
-
-
 
 const fetchLetterAccessToken = async () => {
  try {
@@ -65,7 +58,6 @@ const fetchLetterAccessToken = async () => {
      console.error('Failed to fetch access token, due to response status:', response.status);
      throw new Error('Failed to fetch access token, due to response status');
    }
-
 
    const data = await response.json();
    const accessToken = data.access_token;
@@ -77,13 +69,7 @@ const fetchLetterAccessToken = async () => {
  }
 };
 
-
-
-
-
-
 const VeteranDataContext = createContext();
-
 
 export const VeteranDataProvider = ({ children }) => {
  const [userInfo, setUserInfo] = useState({});
@@ -92,122 +78,129 @@ export const VeteranDataProvider = ({ children }) => {
  const [loading, setLoading] = useState(true);
  const [error, setError] = useState(null);
 
+ const resetVeteranData = async () => {
+  // Clear AsyncStorage data
+  await AsyncStorage.removeItem('access_token');
+  await AsyncStorage.removeItem('letters_access_token');
+  await AsyncStorage.removeItem('state');
 
- const sendVeteranDataToBackend = async (veteranData) => {
-  const csrfToken = await AsyncStorage.getItem('csrf_token');
+  // Reset in-memory state
+  setUserInfo({});
+  setDisabilityRatingId(null);
+  setEligibleLetters({});
+  setLoading(true);
+  setError(null);
 
-  // Log each piece of data to confirm it's being passed correctly
-  // console.log('Disability Rating:', veteranData.disabilityRating);
-  // console.log('Service History:', veteranData.serviceHistory);
-  // console.log('Status:', veteranData.status);
-  // console.log('Letters:', veteranData.letters);
+  console.log("RESET VETERAN DATA");
+  console.log("USER INFO: ", userInfo);
+  console.log("DISABILITY RATING ID: ", disabilityRatingId);
+  console.log("ELIGIBLE LETTERS: ", eligibleLetters);
+  console.log("LOADING: ", loading);
 
-  try {
-    // Ensure that all required fields are included in the veteranData object
-    const requiredKeys = ['disabilityRating', 'serviceHistory', 'status', 'letters'];
-    const missingKeys = requiredKeys.filter(key => !veteranData[key]);
-
-    if (missingKeys.length > 0) {
-      console.error('Missing required data fields:', missingKeys.join(', '));
-      throw new Error(`Missing required data fields: ${missingKeys.join(', ')}`);
-    }
-
-    console.log("SENDING DATA TO BACKEND: ", veteranData);
-
-    // Send the data to the backend
-    const response = await axios.post('http://localhost:8000/api/save-veteran-data/', veteranData, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrfToken, // Include the CSRF token in the headers
-      },
-    });
-
-    // Check if the response is JSON
-    if (response.headers['content-type'].includes('application/json') && response.status === 200) {
-      console.log('Data successfully sent to the backend:', response.data);
-    } else {
-      console.error('Unexpected content-type, expected JSON but got:', response.headers['content-type']);
-    }
-  } catch (error) {
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      console.error('Backend error:', error.response.data);
-      console.error('Backend response status:', error.response.status);
-    } else if (error.request) {
-      // The request was made but no response was received
-      console.error('No response received from backend:', error.request);
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      console.error('Error in setting up the request:', error.message);
-    }
-  }
+  console.log('Veteran data reset successfully');
 };
 
 
+ const sendVeteranDataToBackend = async (veteranData) => {
+   const csrfToken = await AsyncStorage.getItem('csrf_token');
 
-useEffect(() => {
-  const fetchAllData = async () => {
-    setLoading(true);
-    const token = await AsyncStorage.getItem('access_token');
-    if (!token) {
-      setError('Access token not found');
-      setLoading(false);
-      return;
-    }
+   try {
+     const requiredKeys = ['disabilityRating', 'serviceHistory', 'status', 'letters'];
+     const missingKeys = requiredKeys.filter(key => !veteranData[key]);
 
-    try {
-      const [disabilityRating, serviceHistory, status] = await Promise.all([
-        fetchVeteranData(token, endpoints.disabilityRating),
-        fetchVeteranData(token, endpoints.serviceHistory),
-        fetchVeteranData(token, endpoints.status),
-      ]);
+     if (missingKeys.length > 0) {
+       console.error('Missing required data fields:', missingKeys.join(', '));
+       throw new Error(`Missing required data fields: ${missingKeys.join(', ')}`);
+     }
 
-      // Set userInfo and extract disabilityRatingId
-      setUserInfo({ disabilityRating, serviceHistory, status });
-      if (disabilityRating && disabilityRating.data && disabilityRating.data.id) {
-        const icn = disabilityRating.data.id;
-        setDisabilityRatingId(icn);
-        
-        let lettersAccessToken = await AsyncStorage.getItem('letters_access_token');
-        if (!lettersAccessToken) {
-          lettersAccessToken = await fetchLetterAccessToken();
-        }
+     console.log("SENDING DATA TO BACKEND: ", veteranData);
 
-        // Fetch eligible letters
-        const letters = await fetchEligibleLetters(lettersAccessToken, icn);
-        setEligibleLetters(letters);
+     const response = await axios.post('http://localhost:8000/api/save-veteran-data/', veteranData, {
+       headers: {
+         'Content-Type': 'application/json',
+         'X-CSRFToken': csrfToken,
+       },
+     });
 
-        // Combine all fetched data into a single object
-        const veteranData = {
-          disabilityRating,
-          serviceHistory,
-          status,
-          letters
-        };
+     if (response.headers['content-type'].includes('application/json') && response.status === 200) {
+       console.log('Data successfully sent to the backend:', response.data);
+     } else {
+       console.error('Unexpected content-type, expected JSON but got:', response.headers['content-type']);
+     }
+   } catch (error) {
+     if (error.response) {
+       console.error('Backend error:', error.response.data);
+       console.error('Backend response status:', error.response.status);
+     } else if (error.request) {
+       console.error('No response received from backend:', error.request);
+     } else {
+       console.error('Error in setting up the request:', error.message);
+     }
+   }
+ };
 
-        // Send the combined data to the backend
-        await sendVeteranDataToBackend(veteranData);
-      }
+ useEffect(() => {
+   const fetchAllData = async () => {
+     setLoading(true);
+     const token = await AsyncStorage.getItem('access_token');
+     if (!token) {
+       setError('Access token not found');
+       setLoading(false);
+       return;
+     }
 
-    } catch (error) {
-      setError(`Error: ${error.message}`);
-    }
-    setLoading(false);
-  };
+     try {
+       const [disabilityRating, serviceHistory, status] = await Promise.all([
+         fetchVeteranData(token, endpoints.disabilityRating),
+         fetchVeteranData(token, endpoints.serviceHistory),
+         fetchVeteranData(token, endpoints.status),
+       ]);
 
-  fetchAllData();
-}, []);
+       setUserInfo({ disabilityRating, serviceHistory, status });
+       if (disabilityRating && disabilityRating.data && disabilityRating.data.id) {
+         const icn = disabilityRating.data.id;
+         setDisabilityRatingId(icn);
 
+         let lettersAccessToken = await AsyncStorage.getItem('letters_access_token');
+         if (!lettersAccessToken) {
+           lettersAccessToken = await fetchLetterAccessToken();
+         }
+
+         const letters = await fetchEligibleLetters(lettersAccessToken, icn);
+         setEligibleLetters(letters);
+
+         const veteranData = {
+           disabilityRating,
+           serviceHistory,
+           status,
+           letters,
+         };
+
+         await sendVeteranDataToBackend(veteranData);
+       }
+     } catch (error) {
+       setError(`Error: ${error.message}`);
+     }
+     setLoading(false);
+   };
+
+   fetchAllData();
+ }, []);
 
  return (
-   <VeteranDataContext.Provider value={{ userInfo, disabilityRatingId, eligibleLetters, loading, error }}>
+   <VeteranDataContext.Provider
+     value={{
+       userInfo,
+       disabilityRatingId,
+       eligibleLetters,
+       loading,
+       error,
+       resetVeteranData, // Provide resetVeteranData function in the context
+     }}
+   >
      {children}
    </VeteranDataContext.Provider>
  );
 };
 
-
 export const useVeteranData = () => useContext(VeteranDataContext);
-
-
-
