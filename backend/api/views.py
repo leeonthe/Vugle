@@ -17,7 +17,8 @@ from urllib.parse import urlencode
 import logging
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.middleware.csrf import get_token
-
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 logger = logging.getLogger(__name__)
 
@@ -130,17 +131,36 @@ class OAuthCallbackView(View):
             return HttpResponseBadRequest("Token exchange failed")
         
 class SaveVeteranDataView(View):
+
+    @csrf_exempt
     def post(self, request):
         try:
+            # Parse the JSON data from the request body
             data = json.loads(request.body)
-            # Process the data as required, for example, save it to the database
-            # or use it to generate a response.
-            print('Received Veteran Data:', data)
 
-            # Assuming you process the data successfully
-            return JsonResponse({'status': 'success', 'message': 'Veteran data processed successfully.'})
+            # Extract the necessary fields from the data
+            disability_rating = data.get('disabilityRating')
+            service_history = data.get('serviceHistory')
+            status = data.get('status')
+            letters = data.get('letters')
+
+            # Validate that all required fields are present
+            if not all([disability_rating, service_history, status, letters]):
+                return JsonResponse({'error': 'Missing required data fields'}, status=400)
+
+            # Store the data in the session
+            request.session['disability_rating'] = disability_rating
+            request.session['service_history'] = service_history
+            request.session['status'] = status
+            request.session['letters'] = letters
+
+            print("GOT THE DATA FROM FRONTEND", request.session['disability_rating'], request.session['service_history'], request.session['status'], request.session['letters'])
+
+            return JsonResponse({'message': 'Veteran data saved successfully'}, status=200)
+
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)    
+            return JsonResponse({'error': str(e)}, status=500)
+        
 
 class GenerateJWTView(View):
     CLIENT_ID = '0oaxj51zcfaczzOaw2p7'
@@ -198,3 +218,4 @@ class GetAccessTokenView(View):
             print(f"Token exchange failed: {response.status_code}, {response.text}")
             logger.error(f"Token exchange failed: {response.status_code}, {response.text}")
             return HttpResponseBadRequest("Token exchange failed")
+        

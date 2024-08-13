@@ -47,6 +47,8 @@ const DexConsultPageScreen = () => {
     });
   }, [navigation]);
 
+
+
   const ExpandingDot = ({ delay }) => {
     return (
         <Animatable.Text
@@ -139,11 +141,6 @@ const displayLoadingMessage = () => {
     return updatedChatHistory;
   });
 };
-
-
-
-
-
 
 const updateLoadingMessage = (newText) => {
   setChatHistory(prevChatHistory => {
@@ -320,6 +317,11 @@ const handlePotentialConditionsReturn = (addedConditions) => {
   }
 };
 
+useEffect(() => {
+  if (currentStep === 'finding_right_claim') {
+    handleFindingRightClaim();
+  }
+}, [currentStep]);
 const handlePainScaleSubmit = async () => {
   setChatHistory(prevChatHistory => [
     ...prevChatHistory,
@@ -334,12 +336,57 @@ const handlePainScaleSubmit = async () => {
       headers: { 'X-CSRFToken': csrfToken }
     });
 
+    console.log('Setting currentStep to finding_right_claim');
     setCurrentStep('finding_right_claim');
-    handleStepChange('finding_right_claim', chatFlow.finding_right_claim.prompt, chatFlow.finding_right_claim.options);
+    console.log("AFTER SETTING, THE CURRENT STEP IS: ", currentStep);
+    // Trigger the function to fetch the GPT response
+
   } catch (error) {
     console.error("Error during pain scale submission:", error);
+    updateLoadingMessage('Error: Unable to fetch response.');
   }
 };
+
+
+const handleFindingRightClaim = async () => {
+  try {
+    // Display the loading animation
+    await displayLoadingMessage();
+    console.log("CURRENT STEP for finding right claim:", currentStep);
+
+    // Make a GET request to retrieve the GPT response stored in the session
+    const response = await axios.get('http://localhost:8000/chatbot/finding_right_claim/', {
+      headers: { 'X-CSRFToken': csrfToken }
+    });
+
+    console.log("RESPONSE for finding right claim:", response.data);
+    
+    // Assuming the response contains a 'claim_response' field with the GPT's suggestion
+    const { claim_response, error } = response.data;
+
+    if (error) {
+      updateLoadingMessage(`Error: ${error}`);
+    } else {
+      // Extract the 'content' from the response
+      const content = claim_response.choices[0].message.content;
+
+      // Handle the GPT response by adding the content to the chat history
+      handleStepChange('bot_response', content);
+    }
+
+  } catch (error) {
+    console.error("Error fetching GPT response for finding_right_claim:", error);
+    updateLoadingMessage('Error: Unable to fetch response.');
+  } finally {
+    setCurrentStep('service_connect');  // Move to the next step
+  }
+};
+
+
+
+
+
+
 
 const renderStyledText = (text) => {
   const parts = [];
@@ -393,10 +440,8 @@ return (
         ]}
       >
         {chat.isImagePlaceholder && chat.imageSource ? (
-          // <View style={styles.logoBackground}>
-            <View style={styles.logoBackground}>
-              <Logo style={styles.logo} />
-            {/* </View> */}
+          <View style={styles.logoBackground}>
+            <Logo style={styles.logo} />
           </View>
         ) : chat.text && (
           <Text style={[styles.messageText, chat.type === 'user' ? styles.userText : styles.botText]}>
