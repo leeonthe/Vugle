@@ -192,17 +192,28 @@ chatbot_flow = {
     },
 }
     
+
+def apply_styling(prompt, user_name):
+    """
+    Apply styling to the prompt text.
+    Replaces placeholders with actual HTML tags or other required format.
+    """
+    processed_prompt = prompt.replace('{user_name}', user_name)
+    processed_prompt = processed_prompt.replace('[BOLD]', '<b>')  # Start bold
+    processed_prompt = processed_prompt.replace('[CLOSE]', '</b>')  # End bold
+    processed_prompt = processed_prompt.replace('[NEWLINE]', '\n')  # For new lines within a paragraph
+    processed_prompt = processed_prompt.replace('[LINK_START]', '<a href="#">').replace('[LINK_END]', '</a>')  # For link text
+    processed_prompt = processed_prompt.replace('[IMAGE]', '<img src="IMAGE_PLACEHOLDER" alt="Image">')  # Replace image placeholder
+
+    return processed_prompt
+
 def handle_step_change(prompt, user_name):
     if not prompt:
         return []
 
-    processed_prompt = prompt.replace('{user_name}', user_name)
-    processed_prompt = processed_prompt.replace('[BOLD]', '**')  # Start bold
-    processed_prompt = processed_prompt.replace('[CLOSE]', '**')  # End bold
-    processed_prompt = processed_prompt.replace('[NEWLINE]', '\n')  # For new lines
-    processed_prompt = processed_prompt.replace('[LINK_START]', '[').replace('[LINK_END]', ']()')  # For link text
-
-    return processed_prompt.split('\n')
+    styled_prompt = apply_styling(prompt, user_name)
+    message_containers = styled_prompt.split('[BR]')
+    return message_containers
 
 def handle_uploaded_file(file):
     logger.debug(f'Handling file upload: {file.name}')
@@ -240,8 +251,9 @@ class ChatbotView(View):
                 if request.GET.get('current_step') == 'upload_dd214':
                     # Return loading message
                     loading_prompt = chatbot_flow['loading']['prompt']
+                    processed_prompts = handle_step_change(loading_prompt, user_name)
                     return JsonResponse({
-                        "prompts": [loading_prompt],
+                        "prompts": processed_prompts,
                         "options": chatbot_flow['loading']['options'],
                     })
 
@@ -287,8 +299,9 @@ class ChatbotView(View):
                 # Return the loading prompt
                 print("LOADING CALLED")
                 loading_prompt = chatbot_flow['loading']['prompt']
+                processed_prompts = handle_step_change(loading_prompt, user_name)
                 return JsonResponse({
-                    "prompts": [loading_prompt],
+                    "prompts": processed_prompts,
                     "options": chatbot_flow['loading']['options'],
                 })
 
