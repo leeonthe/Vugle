@@ -126,13 +126,8 @@ chatbot_flow = {
 
     # TODO: add: Assessment completed! 🙌 Thanks for your time, Robert!
     # TODO: add: Reviewing DD214, etc
-<<<<<<< Updated upstream
-     "finding_right_claim": {
-        "prompt": "[[IMAGE]][BR][BOLD]We’re finding right claim for your condition based on your files[CLOSE]"+
-=======
     "finding_right_claim": {
         "prompt": "[[IMAGE]][BR][BOLD]Assessment completed! 🙌[CLOSE][NEWLINE]Thanks for your time, {user_name}"+
->>>>>>> Stashed changes
         
         "[BR][BOLD]We’re finding right claim for your condition based on your files[CLOSE][NEWLINE]We will now review your documents to determine which type of claim is best suited for you."
         
@@ -316,9 +311,6 @@ class ChatbotView(View):
 
                 # TODO: Add logic to find right clia
             elif current_step == "finding_right_claim":
-<<<<<<< Updated upstream
-                next_step = "service_connect"
-=======
                 print("Finding right claim is CALLING")
                 return self.process_finding_right_claim(request)
             # should navigate to "service_connect" in frontend
@@ -328,7 +320,6 @@ class ChatbotView(View):
                 next_step = "check_if_user_been_to_private_clinics"
             elif current_step == "check_if_user_been_to_private_clinics":
                 next_step = "hospital_linking"
->>>>>>> Stashed changes
             elif current_step == "reset":
                 clear_session_data(request.session)
                 return JsonResponse({"status": "success", "message": "Session data cleared."})
@@ -353,9 +344,6 @@ class ChatbotView(View):
         except Exception as e:
             logger.error(f'Unexpected error: {e}')
             return JsonResponse({'error': 'Internal server error'}, status=500)
-<<<<<<< Updated upstream
-
-=======
         
     def process_finding_right_claim(request):
         try:
@@ -397,4 +385,3 @@ class ChatbotView(View):
         except Exception as e:
             # Handle any unexpected errors
             return JsonResponse({'error': str(e)}, status=500)
->>>>>>> Stashed changes
