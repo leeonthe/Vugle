@@ -97,10 +97,10 @@ export const VeteranDataProvider = ({ children }) => {
   const csrfToken = await AsyncStorage.getItem('csrf_token');
 
   // Log each piece of data to confirm it's being passed correctly
-  console.log('Disability Rating:', veteranData.disabilityRating);
-  console.log('Service History:', veteranData.serviceHistory);
-  console.log('Status:', veteranData.status);
-  console.log('Letters:', veteranData.letters);
+  // console.log('Disability Rating:', veteranData.disabilityRating);
+  // console.log('Service History:', veteranData.serviceHistory);
+  // console.log('Status:', veteranData.status);
+  // console.log('Letters:', veteranData.letters);
 
   try {
     // Ensure that all required fields are included in the veteranData object
@@ -112,6 +112,8 @@ export const VeteranDataProvider = ({ children }) => {
       throw new Error(`Missing required data fields: ${missingKeys.join(', ')}`);
     }
 
+    console.log("SENDING DATA TO BACKEND: ", veteranData);
+
     // Send the data to the backend
     const response = await axios.post('http://localhost:8000/api/save-veteran-data/', veteranData, {
       headers: {
@@ -121,7 +123,7 @@ export const VeteranDataProvider = ({ children }) => {
     });
 
     // Check if the response is JSON
-    if (response.headers['content-type'].includes('application/json')) {
+    if (response.headers['content-type'].includes('application/json') && response.status === 200) {
       console.log('Data successfully sent to the backend:', response.data);
     } else {
       console.error('Unexpected content-type, expected JSON but got:', response.headers['content-type']);

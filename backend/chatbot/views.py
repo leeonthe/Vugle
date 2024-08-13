@@ -5,7 +5,7 @@ import json, logging
 
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from dex_scripts.dex_chat import analyze_document, generate_potential_conditions, clear_session_data,  config_path
+from dex_scripts.dex_chat import analyze_document, generate_potential_conditions, clear_session_data,  config_path, get_best_suited_claim
 
 logger = logging.getLogger(__name__)
 image = "static/vugle.png"
@@ -126,8 +126,13 @@ chatbot_flow = {
 
     # TODO: add: Assessment completed! 🙌 Thanks for your time, Robert!
     # TODO: add: Reviewing DD214, etc
+<<<<<<< Updated upstream
      "finding_right_claim": {
         "prompt": "[[IMAGE]][BR][BOLD]We’re finding right claim for your condition based on your files[CLOSE]"+
+=======
+    "finding_right_claim": {
+        "prompt": "[[IMAGE]][BR][BOLD]Assessment completed! 🙌[CLOSE][NEWLINE]Thanks for your time, {user_name}"+
+>>>>>>> Stashed changes
         
         "[BR][BOLD]We’re finding right claim for your condition based on your files[CLOSE][NEWLINE]We will now review your documents to determine which type of claim is best suited for you."
         
@@ -214,6 +219,9 @@ def handle_uploaded_file(file):
     except Exception as e:
         logger.error(f'Error handling file upload: {e}')
         raise e
+
+
+
 
 class ChatbotView(View):
     def get(self, request):
@@ -305,8 +313,22 @@ class ChatbotView(View):
             elif current_step == "scaling_pain":
                 request.session['pain_severity'] = user_response
                 next_step = "finding_right_claim"
+
+                # TODO: Add logic to find right clia
             elif current_step == "finding_right_claim":
+<<<<<<< Updated upstream
                 next_step = "service_connect"
+=======
+                print("Finding right claim is CALLING")
+                return self.process_finding_right_claim(request)
+            # should navigate to "service_connect" in frontend
+            
+
+            elif current_step == "service_connect":
+                next_step = "check_if_user_been_to_private_clinics"
+            elif current_step == "check_if_user_been_to_private_clinics":
+                next_step = "hospital_linking"
+>>>>>>> Stashed changes
             elif current_step == "reset":
                 clear_session_data(request.session)
                 return JsonResponse({"status": "success", "message": "Session data cleared."})
@@ -331,4 +353,48 @@ class ChatbotView(View):
         except Exception as e:
             logger.error(f'Unexpected error: {e}')
             return JsonResponse({'error': 'Internal server error'}, status=500)
+<<<<<<< Updated upstream
 
+=======
+        
+    def process_finding_right_claim(request):
+        try:
+            print("PROCESS_FINDING_RIGHT_CLAIM")
+            # Retrieve the necessary data from the session (fetched in SaveVeteranDataView)
+            disability_rating = request.session.get('disability_rating')
+            service_history = request.session.get('service_history')
+            status = request.session.get('status')
+            letters = request.session.get('letters')
+
+            # Retrieve the user response data stored during the chatbot flow
+            user_condition = request.session.get('user_condition')
+            potential_conditions = request.session.get('potential_conditions')
+            condition_duration = request.session.get('condition_duration')
+            pain_severity = request.session.get('pain_severity')
+
+            # Ensure that all the required data is available
+            if not all([disability_rating, service_history, status, letters, user_condition, potential_conditions, condition_duration, pain_severity]):
+                return JsonResponse({'error': 'Missing required data fields'}, status=400)
+
+            # Combine all necessary data into a single dictionary
+            session_data = {
+                "disability_rating": disability_rating,
+                "service_history": service_history,
+                "status": status,
+                "letters": letters,
+                "user_condition": user_condition,
+                "potential_conditions": potential_conditions,
+                "condition_duration": condition_duration,
+                "pain_severity": pain_severity,
+            }
+            print("[PROCESS_FINDING_RIGHT_DATA] SESSION DATA COMBINED", session_data)
+            # Call the function to determine the best-suited claim
+            claim_response = get_best_suited_claim(session_data)
+            print("[PROCESS_FINDING_RIGHT_DATA] CLAIM RESPONSE", claim_response)
+            # Return the claim response to the frontend
+            return JsonResponse({"claim_response": claim_response}, status=200)
+
+        except Exception as e:
+            # Handle any unexpected errors
+            return JsonResponse({'error': str(e)}, status=500)
+>>>>>>> Stashed changes
