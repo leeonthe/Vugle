@@ -227,7 +227,8 @@ class ChatbotView(View):
         return JsonResponse(response)
 
     def post(self, request):
-        print("Config Path:", config_path)
+        # print("Config Path:", config_path)
+        print("Entered the ChatbotView post method")
         
         try:
             user_name = 'User'
@@ -266,9 +267,16 @@ class ChatbotView(View):
 
             # Handle non-file related logic
             data = json.loads(request.body)
+            print(f"Request body data: {data}")
+            rightClaimResponse = ""
+
             user_response = data.get('response')
             current_step = data.get('current_step')
+            print(f"Received current_step: {current_step}")
+
             user_name = data.get('user_name', 'User')
+
+
 
             logger.debug(f'POST data: {data}')
             logger.debug(f'Current step: {current_step}')
@@ -300,6 +308,8 @@ class ChatbotView(View):
             elif current_step == "potential_condition_linking":
                 potential_conditions = request.session.get('potential_conditions', [])
                 next_step = "navigate_potential_condition"
+                print("Session data in ChatbotView:", dict(request.session.items()))
+
 
             elif current_step == "basic_assessment":
                 request.session['condition_duration'] = user_response #save user response
@@ -308,11 +318,18 @@ class ChatbotView(View):
             elif current_step == "scaling_pain":
                 request.session['pain_severity'] = user_response
                 next_step = "finding_right_claim"
+                
+                if next_step == "finding_right_claim":
+                    # prepare response first? 
+                    rightClaimResponse = self.process_finding_right_claim(request)
+                    request.session['right_claim_response'] = rightClaimResponse
 
                 # TODO: Add logic to find right clia
             elif current_step == "finding_right_claim":
-                print("Finding right claim is CALLING")
-                return self.process_finding_right_claim(request)
+                self.get_finding_right_claim(request)
+
+            
+
             # should navigate to "service_connect" in frontend
             
 
@@ -344,11 +361,22 @@ class ChatbotView(View):
         except Exception as e:
             logger.error(f'Unexpected error: {e}')
             return JsonResponse({'error': 'Internal server error'}, status=500)
+    
+    def get_finding_right_claim(request):
+        try:
+            right_claim_response = request.session.get('right_claim_response')
+            if right_claim_response:
+                return JsonResponse(right_claim_response)
+            else:
+                return JsonResponse({"error": "No right claim response found in session"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+                
         
-    def process_finding_right_claim(request):
+    def process_finding_right_claim(self,request):
         try:
             print("PROCESS_FINDING_RIGHT_CLAIM")
-            # Retrieve the necessary data from the session (fetched in SaveVeteranDataView)
+            # Retrieve the necessary data from the session
             disability_rating = request.session.get('disability_rating')
             service_history = request.session.get('service_history')
             status = request.session.get('status')
@@ -361,7 +389,10 @@ class ChatbotView(View):
             pain_severity = request.session.get('pain_severity')
 
             # Ensure that all the required data is available
+            # paste this
+            # 
             if not all([disability_rating, service_history, status, letters, user_condition, potential_conditions, condition_duration, pain_severity]):
+                print("Missing required session data")
                 return JsonResponse({'error': 'Missing required data fields'}, status=400)
 
             # Combine all necessary data into a single dictionary
@@ -375,13 +406,21 @@ class ChatbotView(View):
                 "condition_duration": condition_duration,
                 "pain_severity": pain_severity,
             }
-            print("[PROCESS_FINDING_RIGHT_DATA] SESSION DATA COMBINED", session_data)
+            # print("[PROCESS_FINDING_RIGHT_DATA] SESSION DATA COMBINED", session_data)
             # Call the function to determine the best-suited claim
+
             claim_response = get_best_suited_claim(session_data)
             print("[PROCESS_FINDING_RIGHT_DATA] CLAIM RESPONSE", claim_response)
-            # Return the claim response to the frontend
-            return JsonResponse({"claim_response": claim_response}, status=200)
+            
+            # Return the raw data (dictionary) instead of a JsonResponse object
+            return {"claim_response": claim_response}
+            # claim_response = get_best_suited_claim(session_data)
+            # print("[PROCESS_FINDING_RIGHT_DATA] CLAIM RESPONSE", claim_response)
+            # # Return the claim response to the frontend
+            # return JsonResponse({"claim_response": claim_response}, status=200)
 
         except Exception as e:
             # Handle any unexpected errors
-            return JsonResponse({'error': str(e)}, status=500)
+            print(f"Error in process_finding_right_claim: {e}")
+            return {"error": str(e)}
+

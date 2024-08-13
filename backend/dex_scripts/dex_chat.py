@@ -102,45 +102,58 @@ def generate_potential_conditions(user_input):
 def get_best_suited_claim(session_data):
     try:
         # Extract the relevant information from the session data
-        disability_rating_info = session_data['disability_rating']['attributes']
-        combined_disability_rating = disability_rating_info.get('combined_disability_rating')
-        individual_ratings = disability_rating_info.get('individual_ratings', [])
+        # disability_rating_info = session_data['disability_rating']['attributes']
+        # combined_disability_rating = disability_rating_info.get('combined_disability_rating')
+        # individual_ratings = disability_rating_info.get('individual_ratings', [])
 
-        service_history_info = session_data['service_history']['data'][0]['attributes']
-        branch_of_service = service_history_info.get('branch_of_service')
-        service_type = service_history_info.get('service_type')
-        discharge_status = service_history_info.get('discharge_status')
+        # service_history_info = session_data['service_history']['data'][0]['attributes']
+        # branch_of_service = service_history_info.get('branch_of_service')
+        # service_type = service_history_info.get('service_type')
+        # discharge_status = service_history_info.get('discharge_status')
 
-        veteran_status_info = session_data['status']['attributes'].get('veteran_status')
+        # veteran_status_info = session_data['status']['attributes'].get('veteran_status')
 
-        benefit_info = session_data['letters']['benefitInformation']
-        service_connected_percentage = benefit_info.get('serviceConnectedPercentage')
-        monthly_award_amount = benefit_info.get('monthlyAwardAmount', {}).get('value')
-        service_connected_disabilities = benefit_info.get('serviceConnectedDisabilities')
+        # benefit_info = session_data['letters']['benefitInformation']
+        # service_connected_percentage = benefit_info.get('serviceConnectedPercentage')
+        # monthly_award_amount = benefit_info.get('monthlyAwardAmount', {}).get('value')
+        # service_connected_disabilities = benefit_info.get('serviceConnectedDisabilities')
 
-        # USER INPUT DATA
+
+        TEST_disability_rating_info = session_data['disability_rating']
+        TEST_service_history_info = session_data['service_history'] 
+        TEST_status_info = session_data['status']
+        TEST_letter = session_data['letters']
+        # USER INPUT DATA  
         user_condition = session_data['user_condition']
         potential_conditions = session_data['potential_conditions']
         condition_duration = session_data['condition_duration']
         pain_severity = session_data['pain_severity']
         
         # Construct a prompt using this extracted information
+
+        # PASTE THIS BELOW POTENTAIL CONDITIONS
+        # - Condition Duration: {condition_duration}
+        # - Pain Severity: {pain_severity}
+        # - Combined Disability Rating: {combined_disability_rating}%
+        # - Individual Ratings:
+        # {"".join([f"  - {rating['diagnostic_text']} ({rating['rating_percentage']}%)" for rating in individual_ratings])}
+        # - Branch of Service: {branch_of_service}
+        # - Service Type: {service_type}
+        # - Discharge Status: {discharge_status}
+        # - Veteran Status: {veteran_status_info}
+        # - Service-Connected Disabilities: {service_connected_disabilities}
+        # - Service-Connected Percentage: {service_connected_percentage}%
+        # - Monthly Award Amount: ${monthly_award_amount}
         prompt = f"""
         Based on the following veteran's data:
-        - Combined Disability Rating: {combined_disability_rating}%
-        - Individual Ratings:
-        {"".join([f"  - {rating['diagnostic_text']} ({rating['rating_percentage']}%)" for rating in individual_ratings])}
-        - Branch of Service: {branch_of_service}
-        - Service Type: {service_type}
-        - Discharge Status: {discharge_status}
-        - Veteran Status: {veteran_status_info}
-        - Service-Connected Disabilities: {service_connected_disabilities}
-        - Service-Connected Percentage: {service_connected_percentage}%
-        - Monthly Award Amount: ${monthly_award_amount}
-
+        - Disability Rating: {TEST_disability_rating_info}
+        - Service History: {TEST_service_history_info}
+        - Status: {TEST_status_info}
+        - Letters: {TEST_letter}
+        
         - User Condition: {user_condition}
         - Potential Conditions: {potential_conditions}
-        - Condition Duration: {condition_duration}
+        -Condition Duration: {condition_duration}
         - Pain Severity: {pain_severity}
 
         
@@ -148,17 +161,16 @@ def get_best_suited_claim(session_data):
         Respond only with the following format:
         "[[IMAGE]][BR][BOLD]{{TYPE OF CLAIM}}[CLOSE][NEWLINE]{{One ~ two sentence description why this type of claim is best suited for this user given user input and data}}"
         """
-
-        # Call the GPT API with the constructed prompt
-        response = openai.Completion.create(
-            engine="gpt-4",  # Replace with your engine or model of choice
-            prompt=prompt,
-            max_tokens=1000,  # Adjust token length based on the expected response size
-            temperature=0.7  # Adjust temperature for response creativity
+        gpt_response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant, analyzing medical and military history documents."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=500
         )
 
         # Extract the GPT response
-        gpt_response = response.choices[0].text.strip()
 
         # Log or handle the response if needed
         # print("GPT Response:", gpt_response)
