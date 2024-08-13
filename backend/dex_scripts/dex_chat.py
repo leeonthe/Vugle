@@ -128,6 +128,8 @@ def get_best_suited_claim(session_data):
         potential_conditions = session_data['potential_conditions']
         condition_duration = session_data['condition_duration']
         pain_severity = session_data['pain_severity']
+
+        
         
         # Construct a prompt using this extracted information
 
@@ -156,9 +158,10 @@ def get_best_suited_claim(session_data):
         -Condition Duration: {condition_duration}
         - Pain Severity: {pain_severity}
 
-        
-        Determine the most suitable type of VA claim for this veteran. The options of VA claim are New Claim, Increased Claim, and Secondary Service-Connected Claim.
-        Respond only with the following format:
+        Determine the most suitable type of VA claim for this veteran. Consider the following options:
+        1. **New Claim**: A claim for a condition not previously claimed or recognized by the VA.
+        2. **Increased Claim**: A claim indicating that a service-connected condition has worsened.
+        3. **Secondary Service-Connected Claim**: A claim for a new condition that is caused or aggravated by an existing service-connected disability.        Respond only with the following format:
         "[[IMAGE]][BR][BOLD]{{TYPE OF CLAIM}}[CLOSE][NEWLINE]{{One ~ two sentence description why this type of claim is best suited for this user given user input and data}}"
         """
         gpt_response = openai.ChatCompletion.create(
