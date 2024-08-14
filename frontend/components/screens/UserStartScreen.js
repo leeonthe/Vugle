@@ -76,6 +76,10 @@ function UserStartScreen({ route }) {
       <TouchableOpacity style={styles.continueButton} onPress={() => navigation.navigate('HomePage')}>
         <Text style={styles.continueButtonText}>Continue</Text>
       </TouchableOpacity>
+
+
+      {/* Temporary Test Button to Navigate to HospitalPageScreen */}
+      
     </ScrollView>
   );
 }

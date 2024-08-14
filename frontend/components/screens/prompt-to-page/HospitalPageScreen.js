@@ -1,5 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
 import FilterIcon from '../../../assets/filter-icon.svg';
 import FullStar from '../../../assets/full-star.svg';
 import HalfStar from '../../../assets/half-star.svg';
@@ -8,8 +10,15 @@ import HospitalImage from '../../../assets/hospital1.png'; // Assume this is the
 import HospitalImage2 from '../../../assets/hospital2.png'; // Assume this is the correct path to your image
 import HospitalImage3 from '../../../assets/hospital3.png'; // Assume this is the correct path to your image
 import HospitalImage4 from '../../../assets/hospital4.png'; // Assume this is the correct path to your image
-
+import HospitalImage5 from '../../../assets/hospital5.png'; // Assume this is the correct path to your image
 const HospitalPageScreen = () => {
+  const navigation = useNavigation();
+
+  const handlePress = (hospitalName) => {
+    navigation.navigate('HospitalDetailScreen', { hospitalName });
+  };
+
+  
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -36,82 +45,116 @@ const HospitalPageScreen = () => {
           <Text style={styles.availabilityHeader}>Availability</Text>
         </View>
 
-        <View style={styles.resultItem}>
-          <View style={styles.resultInfo}>
-            <Text style={styles.resultTitle}>San Francisco VA Center</Text>
-            <View style={styles.resultRatingContainer}>
-              <Text style={styles.resultRating}>4.5</Text>
-              <View style={styles.resultStars}>
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <FullStar key={index} style={styles.star} />
-                ))}
-                <HalfStar style={styles.halfStar} />
+        <TouchableOpacity onPress={() => handlePress('San Francisco VA Center')}>
+          <View style={styles.resultItem}>
+            <View style={styles.resultInfo}>
+              <Text style={styles.resultTitle}>San Francisco VA Center</Text>
+              <View style={styles.resultRatingContainer}>
+                <Text style={styles.resultRating}>4.5</Text>
+                <View style={styles.resultStars}>
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <FullStar key={index} style={styles.star} />
+                  ))}
+                  <HalfStar style={styles.halfStar} />
+                </View>
               </View>
+              <View style={styles.resultDistanceContainer}>
+                <Text style={styles.resultDistance}>0.7 mi</Text>
+                <Text style={styles.resultType}>Veterans hospital</Text>
+              </View>
+              <Text style={styles.resultAddress}>401 3rd St, San Francisco</Text>
+              <Text style={styles.resultAppointment}>Appointment by call</Text>
+              <Text style={styles.resultAvailability}>Available today</Text>
             </View>
-            <View style={styles.resultDistanceContainer}>
-              <Text style={styles.resultDistance}>0.7 mi</Text>
-              <Text style={styles.resultType}>Veterans hospital</Text>
-            </View>
-            <Text style={styles.resultAddress}>401 3rd St, San Francisco</Text>
-            <Text style={styles.resultAppointment}>Appointment by call</Text>
-            <Text style={styles.resultAvailability}>Available today</Text>
+            <Image
+              source={HospitalImage}
+              style={styles.resultImage}
+              resizeMode="cover"
+            />
           </View>
-          <Image
-            source={HospitalImage}
-            style={styles.resultImage}
-            resizeMode="cover"
-          />
-        </View>
+        </TouchableOpacity>
 
         {/* Add more result items here */}
-
-        <View style={styles.resultItem}>
-          <View style={styles.resultInfo}>
-            <Text style={styles.resultTitle}>San Francisco VA Downtown</Text>
-            <View style={styles.resultRatingContainer}>
-              <Text style={styles.resultRating}>4.3</Text>
-              <View style={styles.resultStars}>
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <FullStar key={index} style={styles.star} />
-                ))}
+        <TouchableOpacity onPress={() => handlePress('San Francisco VA Downtown')}>
+          <View style={styles.resultItem}>
+            <View style={styles.resultInfo}>
+              <Text style={styles.resultTitle}>San Francisco VA Downtown</Text>
+              <View style={styles.resultRatingContainer}>
+                <Text style={styles.resultRating}>4.3</Text>
+                <View style={styles.resultStars}>
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <FullStar key={index} style={styles.star} />
+                  ))}
+                </View>
               </View>
+              <View style={styles.resultDistanceContainer}>
+                <Text style={styles.resultDistance}>5.5 mi</Text>
+                <Text style={styles.resultType}>Medical clinic</Text>
+              </View>
+              <Text style={styles.resultAddress}>4150 Clement St, San Francisco</Text>
+              <Text style={styles.resultAppointment}>Online appointment</Text>
+              <Text style={styles.resultAvailability}>Available Tuesday</Text>
             </View>
-            <View style={styles.resultDistanceContainer}>
-              <Text style={styles.resultDistance}>5.5 mi</Text>
-              <Text style={styles.resultType}>Medical clinic</Text>
-            </View>
-            <Text style={styles.resultAddress}>4150 Clement St, San Francisco</Text>
-            <Text style={styles.resultAppointment}>Online appointment</Text>
-            <Text style={styles.resultAvailability}>Available Tuesday</Text>
+            <Image
+              source={HospitalImage2}
+              style={styles.resultImage}
+              resizeMode="cover"
+            />
           </View>
-          <Image
-            source={HospitalImage2}
-            style={styles.resultImage}
-            resizeMode="cover"
-          />
-        </View>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => handlePress('San Bruno VA Clinic')}>                
+          <View style={styles.resultItem}>
+            <View style={styles.resultInfo}>
+              <Text style={styles.resultTitle}>San Bruno VA Clinic</Text>
+              <View style={styles.resultRatingContainer}>
+                <Text style={styles.resultRating}>4.0</Text>
+                <View style={styles.resultStars}>
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <FullStar key={index} style={styles.star} />
+                  ))}
+                  <BlankStar style={styles.star} />
+                  <BlankStar style={styles.star} />
+
+                </View>
+              </View>
+              <View style={styles.resultDistanceContainer}>
+                <Text style={styles.resultDistance}>3.7 mi</Text>
+                <Text style={styles.resultType}>Medical clinic</Text>
+              </View>
+              <Text style={styles.resultAddress}>3801 Miranda Ave, San Francisco</Text>
+              <Text style={styles.resultAppointment}>Appointment by call</Text>
+              <Text style={styles.resultAvailability}>Available Wednesday</Text>
+            </View>
+            <Image
+              source={HospitalImage5}
+              style={styles.resultImage}
+              resizeMode="cover"
+            />
+          </View>
+        </TouchableOpacity>            
 
         <View style={styles.resultItem}>
           <View style={styles.resultInfo}>
-            <Text style={styles.resultTitle}>San Bruno VA Clinic</Text>
+            <Text style={styles.resultTitle}>Palo Alto VA Medical Center</Text>
             <View style={styles.resultRatingContainer}>
               <Text style={styles.resultRating}>4.0</Text>
               <View style={styles.resultStars}>
                 {Array.from({ length: 3 }).map((_, index) => (
                   <FullStar key={index} style={styles.star} />
                 ))}
-                <BlankStar style={styles.star} />
+                <HalfStar style={styles.star} />
                 <BlankStar style={styles.star} />
 
               </View>
             </View>
             <View style={styles.resultDistanceContainer}>
-              <Text style={styles.resultDistance}>3.7 mi</Text>
-              <Text style={styles.resultType}>Medical clinic</Text>
+              <Text style={styles.resultDistance}>11 mi</Text>
+              <Text style={styles.resultType}>Veterans hospital</Text>
             </View>
-            <Text style={styles.resultAddress}>3801 Miranda Ave, San Francisco</Text>
+            <Text style={styles.resultAddress}>5855 Silver Creek PI</Text>
             <Text style={styles.resultAppointment}>Appointment by call</Text>
-            <Text style={styles.resultAvailability}>Available Wednesday</Text>
+            <Text style={styles.resultAvailability}>Available Friday</Text>
           </View>
           <Image
             source={HospitalImage3}
@@ -119,7 +162,6 @@ const HospitalPageScreen = () => {
             resizeMode="cover"
           />
         </View>
-
         {/* Repeat for other results... */}
       </ScrollView>
     </View>

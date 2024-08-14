@@ -154,15 +154,28 @@ chatbot_flow = {
         "options": [
             {
                 "text": "Yes, I have",
-                "next": "hospital_linking"
+                "next": "need_doctor_appointment"
             },
             {
                 "text": "No, I haven't",
-                "next": "hospital_linking"   
+                "next": "need_doctor_appointment"   
             }
         ]
     },
 
+    "need_doctor_appointment": {
+        "prompt": "[[IMAGE]][BR][BOLD]Need to make doctor’s appointment?[CLOSE][NEWLINE]No worries! Seems like there are several VA medical centers nearby your place. We can help you schedule a doctor’s appointment for you.",
+        "options": [
+            {
+                "text": "Yes, that'd be great",
+                "next": "hospital_linking"
+            },
+            {
+                "text": "No, I can do it myself",
+                "next": "hospital_linking"
+            }
+        ]
+    },
 #   TODO: Text styling + 
     "hospital_linking": {
         "prompt": "[[IMAGE]][BR][BOLD]List of VA medicals near by you[CLOSE][NEWLINE]Here you go! Some centers offer virtual option as well. Please check the availability for each centers carefully.",
@@ -356,6 +369,8 @@ class ChatbotView(View):
             elif current_step == "service_connect":
                 next_step = "check_if_user_been_to_private_clinics"
             elif current_step == "check_if_user_been_to_private_clinics":
+                next_step = "need_doctor_appointment"
+            elif current_step == "need_doctor_appointment":
                 next_step = "hospital_linking"
             elif current_step == "reset":
                 clear_session_data(request.session)

@@ -40,6 +40,10 @@ function OnboardingScreen({ navigation }) {
       <TouchableOpacity style={styles.button} onPress={() => navigation.replace('Login')}>
         <Text style={styles.buttonText}>Get Started</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.continueButton, styles.testButton]} onPress={() => navigation.navigate('HospitalPageScreen')}>
+        <Text style={styles.continueButtonText}>Go to Hospital Page</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -109,6 +113,15 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  continueButton:{
+    width: '90%',
+    backgroundColor: '#007AFF',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  
 });
 
 export default OnboardingScreen;
