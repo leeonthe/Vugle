@@ -57,7 +57,7 @@ function HomePage() {
             <View style={styles.cardHeader}>
               <Text style={styles.cardHeaderText}>
                 Earn additional {'\n'}
-                <Text style={styles.cardHeaderHighlight}>$16,286 </Text>
+                <Text style={styles.cardHeaderHighlight}>$28,511 </Text>
                 benefits annually
               </Text>
               
@@ -87,11 +87,11 @@ function HomePage() {
               <View style={[styles.graphItem, styles.graphItemMargin]}>
                 <View style={styles.barsContainer}>
                   <View style={styles.barGroup}>
-                    <Text style={styles.barLabel}>$782</Text>
+                    <Text style={styles.barLabel}>$1,362</Text>
                     <View style={styles.barLow} />
                   </View>
                   <View style={styles.barGroup}>
-                    <Text style={styles.barLabelHighlight}>$2,682</Text>
+                    <Text style={styles.barLabelHighlight}>$3,737</Text>
                     <View style={styles.barHigh} />
                   </View>
                 </View>
@@ -314,12 +314,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 8,
     marginBottom: 24,
+    marginRight: 119, 
   },
   averageIncreaseText: {
     fontSize: 10.5,
     fontWeight: '510',
     lineHeight: 12,
     textAlign: 'center',
+
   },
   averageIncreaseHighlight: {
     color: '#237AF2',
@@ -369,6 +371,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
   },
+
   graphLabel: {
     color: '#6B7685',
     fontSize: 10.5,

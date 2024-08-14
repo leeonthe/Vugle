@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   },
   sliderContainer: {
     width: '100%',
-    height: 40,
+    height: 30,
     justifyContent: 'center',
   },
   segmentedBarWrapper: {
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   painScaleText: {
     position: 'absolute',
-    top: -30,
+    top: -15,
     fontSize: 23,
     fontFamily: 'SF Pro',
     fontWeight: '510',

@@ -6,6 +6,8 @@ import { useVeteranData } from '../../../APIHandler'; // Adjust the import path 
 import axios from 'axios';
 import Logo from '../../../assets/logo.svg'
 import Back from '../../../assets/back.svg'
+
+
 const ConsultPageScreen = () => {
   const navigation = useNavigation();
   const { userInfo, loading, error } = useVeteranData();
@@ -72,6 +74,8 @@ const ConsultPageScreen = () => {
             After that, I will guide you through the rest of the claim process!          </Text>
           </Animatable.View>
       </View>
+
+
       
       {showInitialButton && (
         <Animatable.View animation="fadeIn" duration={1000} delay={4000} style={styles.buttonContainer}>

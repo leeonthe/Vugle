@@ -281,7 +281,7 @@ const handleOptionClick = async (option, index) => {
         if (navigation_url) {
           if (navigation_url === "/potential_condition") {
             const formattedConditions = potential_conditions.map(cond => {
-              const [name, risk, description] = cond.split('\n').map(line => line.split(': ')[1]);
+              const [name, risk, description] = cond.split('\n').map(line => line.split(': ')[1]?.trim());
               return { name, risk, description, riskColor: risk === 'High risk' ? 'red' : risk === 'Medium risk' ? 'orange' : 'green' };
             });
     
@@ -489,7 +489,7 @@ return (
       <Button title="Submit" onPress={handleUserInputSubmit} />
     </View>
   )}
-{/*  */}
+
 
     {currentStep === 'scaling_pain' && (
       <PainScaleSlider painScale={painScale} setPainScale={setPainScale} onSubmit={handlePainScaleSubmit} />
