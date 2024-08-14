@@ -6,6 +6,7 @@ import TimeIcon from '../../../assets/time.svg';
 import DistanceIcon from '../../../assets/distance.svg';
 import FullStar from '../../../assets/full-star.svg';
 import HalfStar from '../../../assets/half-star.svg';
+import CopyIcon from '../../../assets/copyIcon.svg';
 import { Ionicons } from '@expo/vector-icons'; 
 
 const HospitalDetailScreen = () => {
@@ -21,11 +22,31 @@ const HospitalDetailScreen = () => {
   const handleCloseModal = () => {
     setModalVisible(false);
   };
+
+  const Map = () => (
+    <View style={styles.mapContainer}>
+        <Text style={styles.mapTitle}>Location</Text>
+        <View style={styles.mapImageContainer}>
+            <Image
+                style={styles.mapImage}
+                source={require('../../../assets/hospitalMap.png')}
+            />
+            
+        </View>
+        <View style={styles.locationContainer}>
+            <Text style={styles.locationText}>401 3rd St, San Francisco <CopyIcon style={styles.copyIcon}/> </Text>
+            <View style={styles.locationIconContainer}>
+               
+            </View>
+        </View>
+    </View>
+);
+
   return (
     <SafeAreaView style={styles.safeContainer}>
       <ScrollView style={styles.container}>
         <Image
-          source={require('../../../assets/hospital1.png')} // Use actual image from assets
+          source={require('../../../assets/hospital6.png')} // Use actual image from assets
           style={styles.hospitalImage}
         />
         <View style={styles.infoContainer}>
@@ -93,7 +114,7 @@ const HospitalDetailScreen = () => {
                     <Text style={styles.timeText}>8 AM - 4:30 PM</Text>
                 </View>
                 <View style={styles.dayContainer}>
-                    <Text style={{ color: 'blue', paddingBottom: 8, paddingTop: 2}}>Saturday</Text>
+                    <Text style={{ color: '#367CDD', paddingBottom: 8, paddingTop: 2}}>Saturday</Text>
                     <Text style={styles.closedText}>Closed</Text>
                 </View>
                 </View>
@@ -131,6 +152,8 @@ const HospitalDetailScreen = () => {
             <View style={styles.dividerLine} />
           </View>
         </View>
+
+        <Map />
 
         
         {/* Clinics Section */}
@@ -257,8 +280,7 @@ const styles = StyleSheet.create({
 
   },
   hospitalImage: {
-    width: '100%',
-    height: 200,
+    width: '100%', 
   },
   infoContainer: {
     padding: 16,
@@ -528,6 +550,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 10,
+    paddingLeft: 80,
+    paddingRight: 80,
   },
   appointmentButtonText: {
     color: 'white',
@@ -553,7 +577,7 @@ const styles = StyleSheet.create({
     paddingBottom: 17,
     paddingRight: 133,
     borderBottomWidth: 0.33,
-    borderBottomColor: 'rgba(128, 128, 128, 0.55) solid',
+    borderBottomColor: 'rgba(128, 128, 128, 0.55)',
     justifyContent: 'flex-start',
     alignItems: 'center',
     flexDirection: 'row',
@@ -587,6 +611,7 @@ const styles = StyleSheet.create({
   clinicsContainer: {
     width: '100%',
     padding: 24,
+    marginBottom: 50,
     backgroundColor: 'white',
   },
   clinicsHeader: {
@@ -652,6 +677,100 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     lineHeight: 22,
   },
+  mapContainer: {
+    // width: '100%',
+    // height: '100%',
+    padding: 24,
+    backgroundColor: 'white',
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    gap: 16,
+},
+mapTitle: {
+    alignSelf: 'stretch',
+    color: 'black',
+    fontSize: 16,
+    fontFamily: 'SF Pro Display',
+    fontWeight: '600',
+    lineHeight: 22,
+    wordWrap: 'break-word',
+},
+mapImageContainer: {
+    width: 345,
+    height: 236,
+    position: 'relative',
+},
+mapImage: {
+    width: 345,
+    height: 232,
+    left: 0,
+    top: 0,
+    position: 'absolute',
+    borderRadius: 16,
+},
+mapMarker: {
+    width: 48,
+    height: 36,
+    left: 4,
+    top: 200,
+    position: 'absolute',
+    mixBlendMode: 'multiply',
+
+},
+locationContainer: {
+    // justifyContent: 'flex-start',
+    // alignItems: 'center',
+    // gap: 6,
+    // display: 'inline-flex',
+    flexDirection: 'row', // Ensure text and icon are in a row
+    alignItems: 'center', // Align items to the center vertically
+    gap: 6,
+    // marginBottom: 16,
+},
+locationText: {
+    // width: 153,
+    height: 20,
+    color: '#202020',
+    fontSize: 13,
+    fontFamily: 'SF Pro',
+    fontWeight: '510',
+    lineHeight: 28,
+    wordWrap: 'break-word',
+
+},
+locationIconContainer: {
+    width: 14,
+    height: 14,
+    position: 'relative',
+},
+locationIcon: {
+    width: 14,
+    height: 14,
+    left: 0,
+    top: 0,
+    position: 'absolute',
+},
+copyIcon: {
+  marginLeft: 4, 
+  marginBottom: 3, 
+},
+iconOuter: {
+    width: 14,
+    height: 14,
+    left: 0,
+    top: 0,
+    position: 'absolute',
+    backgroundColor: 'black',
+},
+iconInner: {
+    width: 11.08,
+    height: 12.83,
+    left: 1.17,
+    top: 0.58,
+    position: 'absolute',
+    backgroundColor: '#838383',
+},
 });
 
 export default HospitalDetailScreen;

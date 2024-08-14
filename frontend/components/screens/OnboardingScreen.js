@@ -41,9 +41,10 @@ function OnboardingScreen({ navigation }) {
         <Text style={styles.buttonText}>Get Started</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.continueButton, styles.testButton]} onPress={() => navigation.navigate('HospitalPageScreen')}>
+ {/* TEMP LINK TO HOSPITAL */}
+      {/* <TouchableOpacity style={[styles.continueButton, styles.testButton]} onPress={() => navigation.navigate('HospitalPageScreen')}>
         <Text style={styles.continueButtonText}>Go to Hospital Page</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }

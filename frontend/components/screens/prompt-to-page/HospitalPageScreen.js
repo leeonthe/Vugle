@@ -85,6 +85,7 @@ const HospitalPageScreen = () => {
                   {Array.from({ length: 4 }).map((_, index) => (
                     <FullStar key={index} style={styles.star} />
                   ))}
+                  <BlankStar style={styles.star} />
                 </View>
               </View>
               <View style={styles.resultDistanceContainer}>
@@ -138,7 +139,7 @@ const HospitalPageScreen = () => {
           <View style={styles.resultInfo}>
             <Text style={styles.resultTitle}>Palo Alto VA Medical Center</Text>
             <View style={styles.resultRatingContainer}>
-              <Text style={styles.resultRating}>4.0</Text>
+              <Text style={styles.resultRating}>3.5</Text>
               <View style={styles.resultStars}>
                 {Array.from({ length: 3 }).map((_, index) => (
                   <FullStar key={index} style={styles.star} />
