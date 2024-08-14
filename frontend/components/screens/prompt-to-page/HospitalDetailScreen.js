@@ -1,15 +1,26 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, SafeAreaView , Modal} from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import Divider from '../../../assets/divider.svg';
 import TimeIcon from '../../../assets/time.svg';
 import DistanceIcon from '../../../assets/distance.svg';
 import FullStar from '../../../assets/full-star.svg';
 import HalfStar from '../../../assets/half-star.svg';
+import { Ionicons } from '@expo/vector-icons'; 
+
 const HospitalDetailScreen = () => {
+    const [modalVisible, setModalVisible] = useState(false);
+
   const route = useRoute();
   const { hospitalName } = route.params;
 
+  const handleAppointmentPress = () => {
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
   return (
     <SafeAreaView style={styles.safeContainer}>
       <ScrollView style={styles.container}>
@@ -207,10 +218,31 @@ const HospitalDetailScreen = () => {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.appointmentButton}>
+        <TouchableOpacity style={styles.appointmentButton} onPress={handleAppointmentPress}>
           <Text style={styles.appointmentButtonText}>Schedule an appointment</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal for showing phone number */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <View style={styles.phoneNumberHeader}>
+              <Ionicons name="call" size={24} color="#434343" style={styles.phoneIcon} />
+              <Text style={styles.phoneNumberText}>Call +1 (415) 729 9656</Text>
+            </View>
+            <View style={styles.separator} />
+            <TouchableOpacity onPress={handleCloseModal} style={styles.cancelButtonContainer}>
+              <Text style={styles.cancelButton}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -488,17 +520,69 @@ const styles = StyleSheet.create({
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: '#E5E8EB',
+    alignItems: 'center',
   },
   appointmentButton: {
     backgroundColor: '#237AF2',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
+    marginBottom: 10,
   },
   appointmentButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    backgroundColor: 'white',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    paddingBottom: 20,
+    alignItems: 'center',
+    width: '100%',
+  },
+  phoneNumberHeader: {
+    width: '100%',
+    paddingTop: 17,
+    paddingBottom: 17,
+    paddingRight: 133,
+    borderBottomWidth: 0.33,
+    borderBottomColor: 'rgba(128, 128, 128, 0.55) solid',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  phoneIcon: {
+    marginLeft: 24,
+  },
+  phoneNumberText: {
+    textAlign: 'center',
+    color: '#007AFF',
+    fontSize: 17,
+    fontFamily: 'SF Pro',
+    fontWeight: '400',
+    lineHeight: 22,
+    marginLeft: 25,
+  },
+  separator: {
+    width: '100%',
+    height: 1,
+    backgroundColor: 'rgba(153, 153, 153, 0.97)',
+  },
+  cancelButtonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 15,
+  },
+  cancelButton: {
+    fontSize: 18,
+    color: '#007AFF',
   },
   clinicsContainer: {
     width: '100%',
