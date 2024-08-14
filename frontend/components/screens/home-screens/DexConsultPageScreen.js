@@ -489,7 +489,7 @@ return (
       <Button title="Submit" onPress={handleUserInputSubmit} />
     </View>
   )}
-
+{/*  */}
 
     {currentStep === 'scaling_pain' && (
       <PainScaleSlider painScale={painScale} setPainScale={setPainScale} onSubmit={handlePainScaleSubmit} />
