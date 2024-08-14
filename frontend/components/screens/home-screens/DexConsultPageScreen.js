@@ -24,6 +24,9 @@ const DexConsultPageScreen = () => {
   const userMessageIndices = useRef([]);
   const inputRef = useRef(null);
 
+  const [inputSubmitted, setInputSubmitted] = useState(false);
+
+
   useEffect(() => {
     axios.get('http://localhost:8000/chatbot/')
       .then(response => {
@@ -111,6 +114,12 @@ const handleStepChange = (step, prompt, options = []) => {
         }
     ]);
   });
+
+  if (step === 'new_condition' || step === 'basic_assessment') {
+    setInputSubmitted(false);
+  }
+
+  setCurrentStep(step);
 };
 
 const displayLoadingMessage = () => {
@@ -158,6 +167,7 @@ const updateLoadingMessage = (newText) => {
 const handleUserInputSubmit = async () => {
   if (userInput.trim()) {
     console.log("User Input Submitted:", userInput);
+    setInputSubmitted(true);
     setChatHistory(prevChatHistory => [
       ...prevChatHistory,
       { type: 'user', text: userInput }
@@ -343,6 +353,8 @@ const handlePainScaleSubmit = async () => {
   }
 };
 
+
+// 
 const handleFindingRightClaim = async () => {
   try {
     // Display the loading animation
@@ -367,7 +379,7 @@ const handleFindingRightClaim = async () => {
 
   } catch (error) {
     console.error("Error fetching GPT response for finding_right_claim:", error);
-    updateLoadingMessage('Error: Unable to fetch response.');
+    // updateLoadingMessage('Error: Unable to fetch response.');
   } finally {
     setCurrentStep('service_connect');  // Move to the next step
   }
@@ -464,19 +476,20 @@ return (
       </Animatable.View>
     ))}
 
-    {(currentStep === 'new_condition' || currentStep === 'basic_assessment') && (
-      <View style={styles.inputContainer}>
-        <TextInput
-          ref={inputRef}
-          style={styles.input}
-          placeholder={currentStep === 'basic_assessment' ? "Describe your condition..." : "Type your condition here..."}
-          value={userInput}
-          onChangeText={setUserInput}
-          autoFocus={true}
-        />
-        <Button title="Submit" onPress={handleUserInputSubmit} />
-      </View>
-    )}
+  {(currentStep === 'new_condition' || currentStep === 'basic_assessment') && !inputSubmitted && (
+    <View style={styles.inputContainer}>
+      <TextInput
+        ref={inputRef}
+        style={styles.input}
+        placeholder={currentStep === 'basic_assessment' ? "Describe your condition..." : "Type your condition here..."}
+        value={userInput}
+        onChangeText={setUserInput}
+        autoFocus={true}
+      />
+      <Button title="Submit" onPress={handleUserInputSubmit} />
+    </View>
+  )}
+
 
     {currentStep === 'scaling_pain' && (
       <PainScaleSlider painScale={painScale} setPainScale={setPainScale} onSubmit={handlePainScaleSubmit} />

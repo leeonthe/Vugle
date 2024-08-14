@@ -258,10 +258,11 @@ class ChatbotView(View):
             user_name = 'User'
             potential_conditions = []
             if request.GET.get('current_step') == 'start':
-                keys_to_clear = ['user_condition', 'potential_conditions', 'condition_duration', 'pain_severity']
+                keys_to_clear = ['user_condition', 'potential_conditions', 'condition_duration', 'pain_severity', 'right_claim_response']
                 clear_session_data(request.session, keys_to_clear)
                 print("Session data cleared at the start of a new session")
                 print("AFTER CLEAR DATA IN SESSION", dict(request.session.items()))
+                print("DOUBLE CHECK THE RIGHT CLAIM IS CLEARED", request.session.get('right_claim_response'))
 
             # Check if we have a file upload in the request
             if request.FILES.get('dd214'):
