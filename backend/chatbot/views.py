@@ -132,11 +132,7 @@ chatbot_flow = {
         
         ,
         "options": [
-            {
-            "text": "Start",
-            "next": "service_connect",
-            # Define options or further steps here...
-            }
+            
         ]
     },
 
@@ -327,14 +323,23 @@ class ChatbotView(View):
                 request.session['pain_severity'] = user_response
                 next_step = "finding_right_claim"
                 
-                if next_step == "finding_right_claim":
-                    # prepare response first? 
-                    rightClaimResponse = self.process_finding_right_claim(request)
-                    request.session['right_claim_response'] = rightClaimResponse
+                next_prompt = chatbot_flow[next_step]['prompt']
+                processed_prompts = handle_step_change(next_prompt, user_name)
+                
+                return JsonResponse({
+                    "prompts": processed_prompts,
+                    "options": chatbot_flow[next_step].get('options', [])
+                })
 
                 # TODO: Add logic to find right clia
             elif current_step == "finding_right_claim":
-                self.get_finding_right_claim(request)
+                rightClaimResponse = self.process_finding_right_claim(request)
+                request.session['right_claim_response'] = rightClaimResponse
+                if rightClaimResponse:
+                    return JsonResponse(rightClaimResponse)
+                else:
+                    return JsonResponse({"error": "No right claim response found in session"}, status=404)
+
 
             
 

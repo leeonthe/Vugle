@@ -316,17 +316,15 @@ const handlePotentialConditionsReturn = (addedConditions) => {
     }
   }
 };
-
-useEffect(() => {
-  if (currentStep === 'finding_right_claim') {
-    handleFindingRightClaim();
-  }
-}, [currentStep]);
 const handlePainScaleSubmit = async () => {
   setChatHistory(prevChatHistory => [
     ...prevChatHistory,
     { type: 'user', text: painScale.toString() }
   ]);
+
+  // Display 'finding_right_claim' prompt
+  handleStepChange('finding_right_claim', chatFlow.finding_right_claim.prompt);
+  displayLoadingMessage();
 
   try {
     const response = await axios.post('http://localhost:8000/chatbot/', {
@@ -339,14 +337,11 @@ const handlePainScaleSubmit = async () => {
     console.log('Setting currentStep to finding_right_claim');
     setCurrentStep('finding_right_claim');
     console.log("AFTER SETTING, THE CURRENT STEP IS: ", currentStep);
-    // Trigger the function to fetch the GPT response
-
   } catch (error) {
     console.error("Error during pain scale submission:", error);
     updateLoadingMessage('Error: Unable to fetch response.');
   }
 };
-
 
 const handleFindingRightClaim = async () => {
   try {
@@ -361,17 +356,13 @@ const handleFindingRightClaim = async () => {
 
     console.log("RESPONSE for finding right claim:", response.data);
     
-    // Assuming the response contains a 'claim_response' field with the GPT's suggestion
     const { claim_response, error } = response.data;
 
     if (error) {
       updateLoadingMessage(`Error: ${error}`);
     } else {
-      // Extract the 'content' from the response
       const content = claim_response.choices[0].message.content;
-
-      // Handle the GPT response by adding the content to the chat history
-      handleStepChange('bot_response', content);
+      handleStepChange('service_connect', content, chatFlow.service_connect.options);
     }
 
   } catch (error) {
@@ -381,6 +372,12 @@ const handleFindingRightClaim = async () => {
     setCurrentStep('service_connect');  // Move to the next step
   }
 };
+
+useEffect(() => {
+  if (currentStep === 'finding_right_claim') {
+    handleFindingRightClaim();
+  }
+}, [currentStep]);
 
 
 
