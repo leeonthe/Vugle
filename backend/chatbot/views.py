@@ -109,7 +109,7 @@ chatbot_flow = {
 
     "basic_assessment":{
         "prompt": "[[IMAGE]][BR][BOLD]Basic Assessment📄[CLOSE][NEWLINE]Thanks Robert. Now we will ask a few questions that will help us understand your conditions better."
-        +"[BR][BOLD]How long has your knee pain been troubling you?[CLOSE]",
+        +"[BR][BOLD]How long has your condition been troubling you?[CLOSE]",
         "options": [
             # USER INPUT
         ]
@@ -117,7 +117,7 @@ chatbot_flow = {
     },
 
     "scaling_pain":{
-        "prompt": "[[IMAGE]][BR][BOLD]How severe is your knee pain now?[CLOSE][NEWLINE]On a scale of (1 - 10)",
+        "prompt": "[[IMAGE]][BR][BOLD]How severe is your condition now?[CLOSE][NEWLINE]On a scale of (1 - 10)",
         # move to finding_right_claim
     },
 
