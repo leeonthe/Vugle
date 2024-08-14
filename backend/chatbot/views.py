@@ -244,6 +244,11 @@ class ChatbotView(View):
         try:
             user_name = 'User'
             potential_conditions = []
+            if request.GET.get('current_step') == 'start':
+                keys_to_clear = ['user_condition', 'potential_conditions', 'condition_duration', 'pain_severity']
+                clear_session_data(request.session, keys_to_clear)
+                print("Session data cleared at the start of a new session")
+                print("AFTER CLEAR DATA IN SESSION", dict(request.session.items()))
 
             # Check if we have a file upload in the request
             if request.FILES.get('dd214'):
@@ -325,6 +330,7 @@ class ChatbotView(View):
                 if next_step == "finding_right_claim":
                     rightClaimResponse = self.process_finding_right_claim(request)
                     request.session['right_claim_response'] = rightClaimResponse
+
                 next_prompt = chatbot_flow[next_step]['prompt']
                 processed_prompts = handle_step_change(next_prompt, user_name)
                 
@@ -405,9 +411,27 @@ class ChatbotView(View):
             # Ensure that all the required data is available
             # paste this
             # 
-            if not all([disability_rating, service_history, status, letters, user_condition, potential_conditions, condition_duration, pain_severity]):
-                print("Missing required session data")
-                return JsonResponse({'error': 'Missing required data fields'}, status=400)
+            if not disability_rating:
+                print("Missing data: disability_rating is None or empty")
+            if not service_history:
+                print("Missing data: service_history is None or empty")
+            if not status:
+                print("Missing data: status is None or empty")
+            if not letters:
+                print("Missing data: letters is None or empty")
+            if not user_condition:
+                print("Missing data: user_condition is None or empty")
+            if not potential_conditions:
+                print("Missing data: potential_conditions is None or empty")
+            if not condition_duration:
+                print("Missing data: condition_duration is None or empty")
+            if not pain_severity:
+                print("Missing data: pain_severity is None or empty")
+
+            # if not all([disability_rating, service_history, status, letters, user_condition, potential_conditions, condition_duration, pain_severity]):
+            #     print(f"Missing data: disability_rating={disability_rating}, service_history={service_history}, status={status}, letters={letters}, user_condition={user_condition}, potential_conditions={potential_conditions}, condition_duration={condition_duration}, pain_severity={pain_severity}")
+
+            #     return JsonResponse({'error': 'Missing required data fields'}, status=400)
 
             # Combine all necessary data into a single dictionary
             session_data = {

@@ -204,8 +204,7 @@ def get_best_suited_claim(session_data):
         return "[[IMAGE]][BR][BOLD]Error[CLOSE][NEWLINE]There was an error determining the best suited claim. Please try again later."
 
 
-
-
-
-def clear_session_data(session):
-    session.flush()
+def clear_session_data(session, keys_to_clear):
+    for key in keys_to_clear:
+        if key in session:
+            del session[key]

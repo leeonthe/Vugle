@@ -5,9 +5,9 @@ import FullStar from '../../../assets/full-star.svg';
 import HalfStar from '../../../assets/half-star.svg';
 import BlankStar from '../../../assets/blank-star.svg';
 import HospitalImage from '../../../assets/hospital1.png'; // Assume this is the correct path to your image
-
-
-
+import HospitalImage2 from '../../../assets/hospital2.png'; // Assume this is the correct path to your image
+import HospitalImage3 from '../../../assets/hospital3.png'; // Assume this is the correct path to your image
+import HospitalImage4 from '../../../assets/hospital4.png'; // Assume this is the correct path to your image
 
 const HospitalPageScreen = () => {
   return (
@@ -84,6 +84,11 @@ const HospitalPageScreen = () => {
             <Text style={styles.resultAppointment}>Online appointment</Text>
             <Text style={styles.resultAvailability}>Available Tuesday</Text>
           </View>
+          <Image
+            source={HospitalImage2}
+            style={styles.resultImage}
+            resizeMode="cover"
+          />
         </View>
 
         <View style={styles.resultItem}>
@@ -108,6 +113,11 @@ const HospitalPageScreen = () => {
             <Text style={styles.resultAppointment}>Appointment by call</Text>
             <Text style={styles.resultAvailability}>Available Wednesday</Text>
           </View>
+          <Image
+            source={HospitalImage3}
+            style={styles.resultImage}
+            resizeMode="cover"
+          />
         </View>
 
         {/* Repeat for other results... */}
