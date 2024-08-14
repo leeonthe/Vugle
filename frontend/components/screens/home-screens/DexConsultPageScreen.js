@@ -338,7 +338,7 @@ const handlePainScaleSubmit = async () => {
     setCurrentStep('finding_right_claim');
     console.log("AFTER SETTING, THE CURRENT STEP IS: ", currentStep);
   } catch (error) {
-    console.error("Error during pain scale submission:", error);
+    console.error("Error during pain scale submissioㅇn:", error);
     updateLoadingMessage('Error: Unable to fetch response.');
   }
 };
