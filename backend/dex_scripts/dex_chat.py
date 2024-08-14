@@ -129,7 +129,13 @@ def get_best_suited_claim(session_data):
         condition_duration = session_data['condition_duration']
         pain_severity = session_data['pain_severity']
 
-        
+        medical_record = "Condition: Paralysis of the Sciatic Nerve Treatment: Medication management, physical therapy, and possible surgical intervention."
+
+        medical_record += "Condition: Renal Failure Treatment: Dietary changes, medication, monitoring of kidney function, with dialysis or kidney transplant as potential future options."
+
+        medical_record += "Condition: Post Traumatic Stress Disorder (PTSD) Treatment: Cognitive Behavioral Therapy (CBT), antidepressants, and anxiolytics."
+
+        medical_record += "Condition: Diabetes Mellitus Type II (DM Type II) Treatment: Lifestyle modifications (diet and exercise), insulin, and oral hypoglycemics."
         
         # Construct a prompt using this extracted information
 
@@ -152,16 +158,27 @@ def get_best_suited_claim(session_data):
         - Service History: {TEST_service_history_info}
         - Status: {TEST_status_info}
         - Letters: {TEST_letter}
-        
+
+        - Medical Record: {medical_record}
+
         - User Condition: {user_condition}
         - Potential Conditions: {potential_conditions}
-        -Condition Duration: {condition_duration}
+        - Condition Duration: {condition_duration}
         - Pain Severity: {pain_severity}
 
+        
+        
+
+
         Determine the most suitable type of VA claim for this veteran. Consider the following options:
-        1. **New Claim**: A claim for a condition not previously claimed or recognized by the VA.
-        2. **Increased Claim**: A claim indicating that a service-connected condition has worsened.
-        3. **Secondary Service-Connected Claim**: A claim for a new condition that is caused or aggravated by an existing service-connected disability.        Respond only with the following format:
+        1. **New Claim**: A claim for a new sevice-connected condition not previously submitted to or recognized by the VA, i.e. if there is an existing disability rating, it should not be because of this new condition.
+        2. **Increased Claim**: A claim indicating that an existing service-connected condition has worsened.
+        3. **Secondary Service-Connected Claim**: A claim for a new condition that is caused or aggravated by an existing service-connected disability, or other health conditions found in the user's medical history: {medical_record}.        
+        
+        * if 'diagnostic_type_name' in {TEST_disability_rating_info} could be a casue of {user_condition}, then the most suitable type of VA claim for this veteran would be a Secondary Service-Connected Claim.
+
+
+        Respond only with the following format:
         "[[IMAGE]][BR][BOLD]{{TYPE OF CLAIM}}[CLOSE][NEWLINE]{{One ~ two sentence description why this type of claim is best suited for this user given user input and data}}"
         """
         gpt_response = openai.ChatCompletion.create(
