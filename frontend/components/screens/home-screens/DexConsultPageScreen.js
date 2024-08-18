@@ -500,6 +500,7 @@ return (
 
 
 const styles = StyleSheet.create({
+
   loadingContainer: {
       flexDirection: 'row',
       justifyContent: 'center',  
