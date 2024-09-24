@@ -1,6 +1,7 @@
 {
   "expo": {
     "scheme": "yourapp",
+    "jsEngine": "jsc",
     "name": "reactProject",
     "slug": "reactProject",
     "version": "1.0.0",
@@ -18,16 +19,28 @@
         "NSDocumentDirectoryUsageDescription": "This app needs access to your documents to allow file uploads.",
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to upload images."
       },
-      "bundleIdentifier": "com.hoooing.reactProject"
+      "bundleIdentifier": "com.hoooing.reactProject",
+      "runtimeVersion": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b691baae-41d2-493b-be6d-09aea58bc63c"
+      }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b691baae-41d2-493b-be6d-09aea58bc63c"
     }
   }
 }

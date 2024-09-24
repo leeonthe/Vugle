@@ -97,6 +97,7 @@ class OAuthCallbackView(View):
             'grant_type': 'authorization_code',
             'code': code,
             'client_id': '0oax86sg7sEgacnY52p7',
+            # 'client_id': '0oayqi7m10K54uczp2p7
             'redirect_uri': 'yourapp://oauthredirect',
             'code_verifier': code_verifier,
         }

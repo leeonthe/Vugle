@@ -2,5 +2,5 @@ npm install react-native-app-auth
 npm install react-native-document-picker react-native-image-picker
 npm install react-native-document-picker react-native-image-picker
 expo install expo-document-picker expo-image-picker
- npm install @react-native-community/slider
+npm install @react-native-community/slider
 npm i react-native-svg-transformer
