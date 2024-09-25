@@ -45,8 +45,10 @@ class OAuthLoginView(View):
         print('[login] code_challenge ', code_challenge)
 
         params = {
-            'client_id': '0oax86sg7sEgacnY52p7',
-            'redirect_uri': 'http://localhost:8000/api/oauth/callback/',
+            # 'client_id': '0oax86sg7sEgacnY52p7',
+            # 'redirect_uri': 'http://localhost:8000/api/oauth/callback/',
+            'client_id': '0oayqkyj7ra7hyMwZ2p7',
+            'redirect_uri': 'https://expo.dev/accounts/hoooing/projects/reactProject/updates/oauth/callback/',
             'response_type': 'code',
             'scope': 'profile openid offline_access disability_rating.read service_history.read veteran_status.read',
             'state': state,
@@ -98,7 +100,7 @@ class OAuthCallbackView(View):
             'code': code,
             'client_id': '0oax86sg7sEgacnY52p7',
             # 'client_id': '0oayqi7m10K54uczp2p7
-            'redirect_uri': 'yourapp://oauthredirect',
+            'redirect_uri': 'https://expo.dev/accounts/hoooing/projects/reactProject/updates/oauth/callback/',
             'code_verifier': code_verifier,
         }
 
