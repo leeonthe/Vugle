@@ -17,8 +17,9 @@ import os, datetime
 
 load_dotenv()
 VA_API_URL = os.getenv('VA_API_URL')
-VA_CLIENT_ID = '0oax7g1h68fkSGhHT2p7'
-JWT_CLIENT_ID = '0oaxj51zcfaczzOaw2p7'
+VA_CLIENT_ID = '0oazgkvayq5yfCqkJ2p7'
+# JWT_CLIENT_ID = '0oaxj51zcfaczzOaw2p7'
+JWT_CLIENT_ID = '0oazgkvayq5yfCqkJ2p7'
 VA_REDIRECT_URI = 'http://localhost:8000/api/oauth/callback/'
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
