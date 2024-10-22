@@ -49,6 +49,7 @@ const LoginScreen = () => {
      const { auth_url, state } = data;
      console.log('auth_url:', auth_url);
      await AsyncStorage.setItem('state', state);
+     console.log("STATE: ", state)
      setShowWebView(true); // Show WebView to handle OAuth flow
    } catch (error) {
      console.error('Failed to initiate OAuth flow', error);
@@ -57,10 +58,13 @@ const LoginScreen = () => {
 
 
  const handleWebViewMessage = async (event) => {
+   console.log("Event received from WebView:", event.nativeEvent.data);
    const accessToken = event.nativeEvent.data;
    if (accessToken) {
-     console.log("accessToken:", accessToken);
+     console.log("Access token received: ", accessToken);
      await AsyncStorage.setItem('access_token', accessToken);
+     const savedToken = await AsyncStorage.getItem('access_token');
+     console.log("Token saved: ", savedToken);
      setShowWebView(false); // Hide WebView after receiving the token
      navigation.navigate('UserStart', { tokenData: { access_token: accessToken } });
    } else {
@@ -83,6 +87,8 @@ const LoginScreen = () => {
      <WebView
        source={{ uri: authUrl }}
        onMessage={handleWebViewMessage}
+       javaScriptEnabled={true}
+       domStorageEnabled={true}
        style={{ marginTop: 20 }}
      />
    );

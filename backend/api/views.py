@@ -97,7 +97,7 @@ class OAuthCallbackView(View):
             'grant_type': 'authorization_code',
             'code': code,
             'client_id': CLIENT_ID,
-            'redirect_uri': 'yourapp://oauthredirect',
+            'redirect_uri': 'http://localhost:8000/api/oauth/callback/',
             'code_verifier': code_verifier,
         }
 
@@ -113,6 +113,7 @@ class OAuthCallbackView(View):
             <head>
                 <title>OAuth Redirect</title>
                 <script type="text/javascript">
+                    console.log('DJANGO HTML LOADING');
                     function postToken() {{
                         window.ReactNativeWebView.postMessage("{access_token}");
                     }}
