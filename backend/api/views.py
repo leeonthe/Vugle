@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 # Store code_verifier and state in a temporary dictionary for simplicity (not suitable for production)
 # In a production setting, you might use a database or more secure storage
 TEMP_STORAGE = {}
-
+CLIENT_ID = os.getenv('VA_CLIENT_ID')
 
 class GetCSRFTokenView(View):
     def get(self, request):
@@ -45,7 +45,7 @@ class OAuthLoginView(View):
         print('[login] code_challenge ', code_challenge)
 
         params = {
-            'client_id': '0oax86sg7sEgacnY52p7',
+            'client_id': CLIENT_ID,
             'redirect_uri': 'http://localhost:8000/api/oauth/callback/',
             'response_type': 'code',
             'scope': 'profile openid offline_access disability_rating.read service_history.read veteran_status.read',
@@ -96,7 +96,7 @@ class OAuthCallbackView(View):
         token_data = {
             'grant_type': 'authorization_code',
             'code': code,
-            'client_id': '0oax86sg7sEgacnY52p7',
+            'client_id': CLIENT_ID,
             'redirect_uri': 'yourapp://oauthredirect',
             'code_verifier': code_verifier,
         }
