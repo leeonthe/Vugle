@@ -163,7 +163,7 @@ class SaveVeteranDataView(View):
         
 
 class GenerateJWTView(View):
-    CLIENT_ID = '0oaxj51zcfaczzOaw2p7'
+    JWT_CLIENT_ID = os.getenv('JWT_CLIENT_ID')
     PRIVATE_KEY_PATH = Path(__file__).resolve().parent.parent.parent / 'private.pem'
     audience = 'https://deptva-eval.okta.com/oauth2/ausftw7zk6eHr7gMN2p7/v1/token'
     def get(self, request):
@@ -177,8 +177,8 @@ class GenerateJWTView(View):
         exp = iat + 300
         payload = {
             "aud": self.audience,
-            "iss": self.CLIENT_ID,
-            "sub": self.CLIENT_ID,
+            "iss": self.JWT_CLIENT_ID,
+            "sub": self.JWT_CLIENT_ID,
             "iat": iat,
             "exp": exp,
             "jti": str(uuid.uuid4())
@@ -190,7 +190,7 @@ class GenerateJWTView(View):
         return JsonResponse({"jwt_token": jwt_token_str})
     
 class GetAccessTokenView(View):
-    CLIENT_ID = '0oaxj51zcfaczzOaw2p7'
+    JWT_CLIENT_ID = os.getenv('JWT_CLIENT_ID')
     TOKEN_URL = 'https://sandbox-api.va.gov/oauth2/va-letter-generator/system/v1/token'
     
     def get(self, request):

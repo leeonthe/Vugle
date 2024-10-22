@@ -1,0 +1,49 @@
+node_modules/
+yarn.lock
+package-lock.json
+
+.expo/
+.expo-shared/
+
+dist/
+web-build/
+
+.env
+env
+frontend/.env
+backend/.env
+
+
+private.pem
+public.pem
+public.jwk
+
+venv/
+venv/bin/
+venv/lib/
+
+# __pycache__ directories, generated Python bytecode
+__pycache__/
+*.py[cod]
+
+# Django migrations (optional, if you want to recreate migrations)
+*/migrations/*.py
+!*/migrations/__init__.py
+
+# Log files (optional)
+*.log
+
+# Ignore OS specific and IDE files
+.DS_Store
+*.swp
+*.swo
+
+# Static and media files (if you're using Django for serving them)
+static/
+media/
+
+# For Django secret key or configuration in settings.py (if applicable)
+config/settings.py
+
+frontend/build/
+frontend/.expo/
